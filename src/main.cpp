@@ -3,19 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lalex-ku <lalex-ku@42sp.org.br>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/22 16:04:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/05/22 16:14:52 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/05/22 18:26:16 by lalex-ku         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
+#include "Webserv.hpp"
 
-using namespace std;
-
-int main()
-{
-	cout << "Hello World" << endl;
-	return 0;
+int main() {
+    Webserv server(8080);
+    server.run();
+    return 0;
 }

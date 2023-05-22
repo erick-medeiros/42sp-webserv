@@ -1,6 +1,6 @@
 NAME = webserv
 
-FILES = main.cpp
+FILES = main.cpp Webserv.cpp
 
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
@@ -14,6 +14,9 @@ OBJ = $(addprefix $(BUILD_DIR)/, $(FILES:.cpp=.o))
 DEP = $(OBJ:.o=.d)
 
 all: $(NAME)
+
+run: all
+	./$(NAME)
 
 $(NAME): $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
