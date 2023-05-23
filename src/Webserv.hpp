@@ -2,10 +2,11 @@
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
-#include <iostream>
-#include <cstring>
-#include <unistd.h>
-#include <netinet/in.h>
+#include <iostream> // cout, cerr
+#include <cstring> // memset
+#include <stdlib.h> // exit
+#include <netinet/in.h> // sockaddr_in
+#include <unistd.h> // close
 
 class Webserv
 {

@@ -5,7 +5,7 @@ Webserv::Webserv(int port)
     // --- Create socket ---
     server_socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); 
     if (server_socket_fd < 0) {
-        perror("ERROR opening socket");
+        std::cerr << "ERROR opening socket" << std::endl;
         exit(1);
     }
     std::cout << "Server socket created: " << server_socket_fd << std::endl;
@@ -13,13 +13,13 @@ Webserv::Webserv(int port)
     // --- Associate socket with port ---
     sockaddr_in server_address = createServerAddress(port);
     if (bind(server_socket_fd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0) {
-        perror("ERROR on binding");
+        std::cerr << "ERROR on binding" << std::endl;
         exit(1);
     }
 
     // --- Set socket to listen for connections ---
     if (listen(server_socket_fd, 5) < 0) {
-        perror("ERROR on listen");
+        std::cerr << "ERROR on listen" << std::endl;
         exit(1);
     }
 }
