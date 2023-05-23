@@ -1,4 +1,3 @@
-// BEGIN: abpxx6d04wxr
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
