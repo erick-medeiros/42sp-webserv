@@ -12,8 +12,11 @@
 
 #include "Webserv.hpp"
 
-int main() {
-    Webserv server(8080);
-    server.run();
-    return 0;
+int main(int argc, char *argv[])
+{
+	Webserv server(8080);
+	if (argc > 1 && std::string(argv[1]) == "NORUN") // TODO: Improve this
+		return 0;
+	server.run();
+	return 0;
 }
