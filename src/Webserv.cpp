@@ -1,9 +1,10 @@
 #include "Webserv.hpp"
 
+
 Webserv::Webserv(int port)
 {
     // --- Create socket ---
-    server_socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); 
+    server_socket_fd = socket(AF_INET, SOCK_STREAM, 0); 
     if (server_socket_fd < 0) {
         std::cerr << "ERROR opening socket" << std::endl;
         exit(1);
@@ -52,7 +53,25 @@ void Webserv::run()
         buffer[n] = '\0';
         std::cout << "Received request:\n" << buffer << std::endl;
 
+        // --- Create response body --- 
+        std::string filename("src/index.html");
+        std::ifstream input_stream(filename.c_str());
+        if (!input_stream.is_open()) {
+            std::cerr << "ERROR opening file" << std::endl;
+            exit(1);
+        }
+        std::stringstream file_content;
+        file_content << input_stream.rdbuf();
+        std::string body(file_content.str());
+
+        // --- Create response headers --- 
+        std::string headers("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"); 
+
+        // --- Create response ---
+        std::string response(headers + "Content-Length : " + std::to_string(body.length()) + "\r\n\r\n" + body);
+
         // --- Send response ---
+        write(client_socket_fd,response.c_str(),response.length());
         close(client_socket_fd);
     }
 }

@@ -6,6 +6,9 @@
 #include <stdlib.h> // exit
 #include <netinet/in.h> // sockaddr_in
 #include <unistd.h> // close
+#include <iostream> // input stream
+#include <fstream> // input stream
+#include <sstream> // stringstream
 
 class Webserv
 {
