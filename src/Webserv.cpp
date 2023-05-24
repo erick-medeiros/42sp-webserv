@@ -63,12 +63,14 @@ void Webserv::run()
         std::stringstream file_content;
         file_content << input_stream.rdbuf();
         std::string body(file_content.str());
+        std::stringstream body_size;
+        body_size << body.length();
 
         // --- Create response headers --- 
         std::string headers("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"); 
 
         // --- Create response ---
-        std::string response(headers + "Content-Length : " + std::to_string(body.length()) + "\r\n\r\n" + body);
+        std::string response(headers + "Content-Length : " + body_size.str() + "\r\n\r\n" + body);
 
         // --- Send response ---
         write(client_socket_fd,response.c_str(),response.length());
