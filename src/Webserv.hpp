@@ -9,6 +9,7 @@
 #include <iostream> // input stream
 #include <fstream> // input stream
 #include <sstream> // stringstream
+#include <string> // to_string
 
 class Webserv
 {
