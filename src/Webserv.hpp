@@ -17,6 +17,7 @@ class Webserv
 	Webserv(int port);
 	~Webserv();
 	void run();
+	int getPort();
 
   private:
 	int         server_socket_fd;

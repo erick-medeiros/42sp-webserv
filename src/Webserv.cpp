@@ -33,6 +33,18 @@ Webserv::~Webserv()
 	close(server_socket_fd);
 }
 
+int Webserv::getPort()
+{
+	sockaddr_in address;
+	socklen_t   len = sizeof(address);
+	if (getsockname(server_socket_fd, (struct sockaddr *) &address, &len) < 0)
+	{
+		std::cerr << "ERROR on getsockname" << std::endl;
+		exit(1);
+	}
+	return ntohs(address.sin_port);
+}
+
 void Webserv::run()
 {
 	sockaddr_in client_addr;
