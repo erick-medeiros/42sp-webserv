@@ -1,6 +1,6 @@
 NAME = webserv
 
-FILES = main.cpp
+FILES = main.cpp Webserv.cpp
 
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
@@ -27,6 +27,9 @@ FORMAT = which clang-format >/dev/null 2>&1 \
 
 all: $(NAME)
 
+run: all
+	./$(NAME)
+
 $(NAME): $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
 
@@ -46,7 +49,7 @@ fclean: clean
 re: fclean all
 
 leaks: $(NAME)
-	$(VALGRIND) ./$(NAME)
+	$(VALGRIND) ./$(NAME) NORUN
 
 $(TESTER): CXXFLAGS += -Ilib
 $(TESTER): $(NAME) $(OBJ_TEST)

@@ -3,19 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: lalex-ku <lalex-ku@42sp.org.br>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/22 16:04:33 by eandre-f          #+#    #+#             */
 /*   Updated: 2023/05/24 16:17:29 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
+#include "Webserv.hpp"
 
-using namespace std;
-
-int main()
+int main(int argc, char *argv[])
 {
-	cout << "Hello World" << endl;
+	Webserv server(8080);
+	if (argc > 1 && std::string(argv[1]) == "NORUN") // TODO: Improve this
+		return 0;
+	server.run();
 	return 0;
 }
