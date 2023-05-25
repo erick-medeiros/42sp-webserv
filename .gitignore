@@ -34,5 +34,8 @@
 # Development container
 .devcontainer
 
+# Local vscode settings 
+.vscode
+
 # bin
 webserv
