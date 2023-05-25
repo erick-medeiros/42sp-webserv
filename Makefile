@@ -49,7 +49,7 @@ fclean: clean
 re: fclean all
 
 leaks: $(NAME)
-	$(VALGRIND) ./$(NAME)
+	$(VALGRIND) ./$(NAME) NORUN
 
 $(TESTER): CXXFLAGS += -Ilib
 $(TESTER): $(NAME) $(OBJ_TEST)
