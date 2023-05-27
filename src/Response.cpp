@@ -1,4 +1,4 @@
-#include "response.hpp"
+#include "Response.hpp"
 
 namespace Webserv {
     Response::Response() {

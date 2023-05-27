@@ -1,5 +1,5 @@
 #include "doctest.h"
-#include "response.hpp"
+#include "Response.hpp"
 
 TEST_CASE("Response test") {
     Webserv::Response response;
