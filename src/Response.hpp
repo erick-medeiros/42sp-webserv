@@ -7,25 +7,31 @@
 
 namespace Webserv {
     class Response {
-    private:
-        std::map<int, std::string> status_messages;
-        std::map<std::string, std::string> headers;
-        int status_code;
-        std::string body;
-
-        void initialize_status_messages();
-
     public:
+        // Constructor
         Response();
-        void set_header(const std::string& key, const std::string& value);
-        std::string get_header(const std::string& key) const;
+
+        // Setters
         void set_status(int code);
+        void set_header(const std::string& key, const std::string& value);
+        void set_body(const std::string& body);
+
+        // Getters
         int get_status_code() const;
         std::string get_status_message(int code) const;
-        std::string build_response() const;
-        void set_body(const std::string& body);
+        std::string get_header(const std::string& key) const;
         std::string get_body() const;
+
+        // Other methods
+        std::string build_response() const;
+
+    private:
+        // Attributes
+        int status_code;
+        std::map<int, std::string> status_messages;
+        std::map<std::string, std::string> headers;
+        std::string body;
     };
 }
 
-#endif  // RESPONSE_H
+#endif
