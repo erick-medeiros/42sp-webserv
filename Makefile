@@ -4,7 +4,7 @@ FILES = main.cpp Webserv.cpp EpollWrapper.cpp
 
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
-CPPFLAGS = -MMD -MP
+CPPFLAGS = -MMD -MP -g
 
 BUILD_DIR = build
 SRC_DIR = src
