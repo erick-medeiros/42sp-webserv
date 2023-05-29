@@ -1,6 +1,6 @@
 NAME = webserv
 
-FILES = main.cpp Webserv.cpp
+FILES = main.cpp Webserv.cpp EpollWrapper.cpp
 
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
