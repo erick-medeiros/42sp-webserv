@@ -18,17 +18,18 @@ namespace Webserv {
 
         // Getters
         int get_status_code() const;
-        std::string get_status_message(int code) const;
         std::string get_header(const std::string& key) const;
         std::string get_body() const;
 
         // Other methods
         std::string build_response() const;
-
     private:
+        // Constants
+        static const std::string HTTP_VERSION;
+
         // Attributes
         int status_code;
-        std::map<int, std::string> status_messages;
+        std::map<int, std::string> reason_phrase;
         std::map<std::string, std::string> headers;
         std::string body;
     };
