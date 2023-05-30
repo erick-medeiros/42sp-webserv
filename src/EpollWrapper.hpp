@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/05/29 17:29:27 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/05/30 18:44:35 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ class EpollWrapper
 	void remove(int fd);
 	int  wait(int timeout);
 
-	int iter(struct epoll_event *event);
+	int get_next_event(struct epoll_event *event);
 
   private:
 	int                epoll_fd;

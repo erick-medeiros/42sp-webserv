@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/05/29 19:02:47 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/05/30 19:09:29 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,87 +17,81 @@
 #include <iostream>
 #include <unistd.h>
 
+#define PIPE_READ 0
+#define PIPE_WRITE 1
+
 TEST_SUITE("EpollWrapper")
 {
-	TEST_CASE("Constructor")
+	TEST_CASE("constructor")
 	{
 		EpollWrapper();
 	}
 	TEST_CASE("add and remove")
 	{
-		EpollWrapper epollWrapper;
+		EpollWrapper epoll;
 
-		int pfd[2];
-		if (pipe(pfd) == -1)
-			return;
+		int pipefd[2];
+		if (pipe(pipefd) == -1)
+			FAIL("Error in pipe()");
 		//
-		epollWrapper.add(pfd[0]);
-		epollWrapper.remove(pfd[0]);
+		epoll.add(pipefd[PIPE_READ]);
+		epoll.remove(pipefd[PIPE_READ]);
 		//
-		close(pfd[0]);
-		close(pfd[1]);
+		close(pipefd[PIPE_READ]);
+		close(pipefd[PIPE_WRITE]);
 	}
 	TEST_CASE("wait")
 	{
-		EpollWrapper epollWrapper;
+		EpollWrapper epoll;
 
-		int fds_ready = epollWrapper.wait(1);
-
-		CHECK_EQ(fds_ready, 0);
+		CHECK_EQ(epoll.wait(0), 0);
 	}
 }
 
-TEST_CASE("iter")
+TEST_CASE("get_next_event")
 {
-	int pfd[2];
-	if (pipe(pfd) == -1)
-		return;
+	int pipefd[2];
+	if (pipe(pipefd) == -1)
+		FAIL("Error in pipe()");
 
-	int timeout = 1;
+	int timeout = 0;
 
-	EpollWrapper       epollWrapper;
+	EpollWrapper       epoll;
 	struct epoll_event event;
-	int                it, fds;
 
 	SUBCASE("no event")
 	{
-		it = epollWrapper.iter(&event);
-		CHECK_EQ(it, -1);
+		CHECK_EQ(epoll.get_next_event(&event), -1);
 	}
 	SUBCASE("one event")
 	{
-		epollWrapper.add(pfd[0]);
+		epoll.add(pipefd[PIPE_READ]);
 
-		fds = epollWrapper.wait(timeout);
-		CHECK_EQ(fds, 0);
+		CHECK_EQ(epoll.wait(timeout), 0);
 
-		write(pfd[1], "test", 4);
+		write(pipefd[PIPE_WRITE], "test", 4);
 
-		fds = epollWrapper.wait(timeout);
-		CHECK_EQ(fds, 1);
+		CHECK_EQ(epoll.wait(timeout), 1);
 
 		SUBCASE("access event")
 		{
-			it = epollWrapper.iter(&event);
-			CHECK_EQ(it, 0);
-			CHECK_EQ(event.data.fd, pfd[0]);
+			CHECK_EQ(epoll.get_next_event(&event), 0);
+			CHECK_EQ(event.data.fd, pipefd[PIPE_READ]);
 
 			SUBCASE("use event")
 			{
 				char buff[11];
 				read(event.data.fd, buff, 10);
-				fds = epollWrapper.wait(timeout);
-				CHECK_EQ(fds, 0);
+				CHECK_EQ(epoll.wait(timeout), 0);
 			}
 		}
 		SUBCASE("no event")
 		{
-			it = epollWrapper.iter(&event);
 			// temporarily ignore because not working...
-			// CHECK_EQ(it, -1);
+			// CHECK_EQ(epoll.get_next_event(&event), -1);
 		}
 	}
 
-	close(pfd[0]);
-	close(pfd[1]);
+	close(pipefd[PIPE_READ]);
+	close(pipefd[PIPE_WRITE]);
 }

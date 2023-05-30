@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/05/29 19:03:30 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/05/30 18:44:51 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ int EpollWrapper::wait(int timeout)
 	return fds_ready;
 }
 
-int EpollWrapper::iter(struct epoll_event *event)
+int EpollWrapper::get_next_event(struct epoll_event *event)
 {
 	static int it = 0;
 
