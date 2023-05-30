@@ -11,13 +11,17 @@
 #include <string>       // to_string
 #include <unistd.h>     // close
 
+#include "Request.hpp"
+
+class Request;
+
 class Webserv
 {
   public:
 	Webserv(int port);
 	~Webserv();
 	void run();
-	int getPort();
+	int  getPort();
 
   private:
 	int         server_socket_fd;
