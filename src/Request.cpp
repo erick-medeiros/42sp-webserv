@@ -4,25 +4,18 @@ std::string &trim(std::string &s);
 
 Request::Request(void){};
 
-Request::Request(char *buff)
+Request::Request(std::string const req)
 {
-	std::istringstream iss(buff);
+	std::istringstream iss(req);
 
-	try
-	{
-		init_start_line(iss);
-		init_headers(iss);
-		parse_URL();
-	}
-	catch (std::exception const &e)
-	{
-		throw e;
-	}
+	initStartLine(iss);
+	initHeaders(iss);
+	parseURL();
 };
 
 Request::~Request(void){};
 
-void Request::init_start_line(std::istringstream &iss)
+void Request::initStartLine(std::istringstream &iss)
 {
 	std::string row;
 
@@ -40,29 +33,30 @@ void Request::init_start_line(std::istringstream &iss)
 	{
 		throw std::runtime_error("parsing request method");
 	}
-	this->start_line["Method"] = trim(token);
+	this->startLine["Method"] = trim(token);
 
 	ss >> token;
 	if (ss.fail())
 	{
 		throw std::runtime_error("parsing request resource");
 	}
-	this->start_line["URL"] = trim(token);
+	this->startLine["URL"] = trim(token);
 
 	ss >> token;
 	if (ss.fail())
 	{
 		throw std::runtime_error("parsing request version");
 	}
-	this->start_line["Version"] = trim(token);
+	this->startLine["Version"] = trim(token);
 }
 
-void Request::init_headers(std::istringstream &iss)
+void Request::initHeaders(std::istringstream &iss)
 {
 	std::string       row;
 	std::string       key;
 	std::string       value;
 	std::stringstream ss;
+	bool              isInvalidHeader = false;
 
 	while (std::getline(iss, row))
 	{
@@ -70,28 +64,136 @@ void Request::init_headers(std::istringstream &iss)
 		{
 			throw std::runtime_error("parsing request header");
 		}
-		if (row.size() == 1)
+		row = trim(row);
+		if (row.size() == 0)
 		{
 			ss << iss.rdbuf();
 			break;
 		}
 
-		key = std::string(std::strtok((char *) row.c_str(), ":"));
-		value = std::string(row.begin() + row.find(" "), row.end());
-		value = trim(value);
+		int offset = row.find(":");
+		if (offset < 0)
+		{
+			isInvalidHeader = true;
+			break;
+		}
+		key = row.substr(0, offset);
 
-		this->header[key] = value;
+		value = std::string(row.begin() + offset + 1, row.end());
+		value = trim(value);
+		if (value.empty())
+		{
+			throw std::runtime_error("invalid header value");
+		}
+		this->header[trim(key)] = value;
 	}
 	if (!iss.eof())
 	{
 		this->body = ss.str();
 	}
+	else
+	{
+		this->body = "";
+	}
+
+	if (isInvalidHeader)
+	{
+		throw std::runtime_error("invalid header syntax");
+	}
 }
 
-std::vector<std::string> Request::get_all_params(void)
+void Request::parseURL(void)
+{
+	std::string resource = this->startLine["URL"];
+
+	int offset = resource.find("?");
+	if (offset != -1)
+	{
+		this->resourcePath = resource.substr(0, offset);
+
+		std::string query = resource.substr(offset + 1);
+		int         queryOffset = query.find("?");
+		if (queryOffset != -1)
+		{
+			query = query.substr(0, queryOffset);
+		}
+		this->resourceQuery = query;
+	}
+	else
+	{
+		this->resourcePath = resource;
+		this->resourceQuery = "";
+	}
+}
+
+// debug
+void Request::displayInfo(void) const
+{
+	std::cout << CYAN "========== START LINE ==========" RES << std::endl;
+	std::map<std::string, std::string> sl = this->getStartLine();
+	for (std::map<std::string, std::string>::const_iterator it = sl.begin();
+	     it != sl.end(); ++it)
+	{
+		std::cout << GRAY << it->first << RES ": " BLUE << it->second
+		          << RES "\n";
+	}
+
+	std::cout << CYAN "\n===========  HEADER  ===========" RES << std::endl;
+	std::map<std::string, std::string> header = this->getHeaders();
+	for (std::map<std::string, std::string>::const_iterator it = header.begin();
+	     it != header.end(); ++it)
+	{
+		std::cout << GRAY << it->first << RES ": " BLUE << it->second
+		          << RES "\n";
+	}
+
+	std::cout << CYAN "\n============  BODY  ============" RES << std::endl;
+	std::cout << GREEN << this->getBody() << RES << std::endl;
+
+	std::cout << CYAN "\n============== EXTRA =============" RES << std::endl;
+	std::vector<std::string> params = this->getAllParams();
+	std::cout << GRAY "Path:   " BLUE << this->getResourcePath() << RES
+	          << std::endl;
+	std::cout << GRAY "Params: " BLUE << this->getResourceQuery() << RES
+	          << std::endl;
+	for (std::vector<std::string>::const_iterator it = params.begin();
+	     it != params.end(); ++it)
+	{
+		std::cout << YELLOW << *it << RES << std::endl;
+	}
+	std::cout << CYAN "==================================" RES << std::endl;
+}
+
+// getters
+std::map<std::string, std::string> Request::getStartLine(void) const
+{
+	return this->startLine;
+}
+
+std::map<std::string, std::string> Request::getHeaders(void) const
+{
+	return this->header;
+}
+
+std::string Request::getBody(void) const
+{
+	return this->body;
+}
+
+std::string Request::getResourcePath(void) const
+{
+	return this->resourcePath;
+}
+
+std::string Request::getResourceQuery(void) const
+{
+	return this->resourceQuery;
+}
+
+std::vector<std::string> Request::getAllParams(void) const
 {
 	std::vector<std::string> params;
-	std::stringstream        ss(this->res_query);
+	std::stringstream        ss(this->resourceQuery);
 	std::string              token;
 
 	while (std::getline(ss, token, '&'))
@@ -106,126 +208,37 @@ std::vector<std::string> Request::get_all_params(void)
 	return params;
 }
 
-void Request::parse_URL(void)
-{
-	std::string resource = this->start_line["URL"];
-
-	int offset = resource.find("?");
-	if (offset != -1)
-	{
-		this->res_path = resource.substr(0, offset);
-
-		std::string query = resource.substr(offset + 1);
-		int         query_offset = query.find("?");
-		if (query_offset != -1)
-		{
-			query = query.substr(0, query_offset);
-		}
-		this->res_query = query;
-	}
-	else
-	{
-		this->res_path = resource;
-		this->res_query = "";
-	}
-}
-
-// debug
-void Request::display_info(void)
-{
-	std::cout << CYAN "========== START LINE ==========" RES << std::endl;
-	std::map<std::string, std::string> start_line = this->get_start_line();
-	for (std::map<std::string, std::string>::const_iterator it =
-	         start_line.begin();
-	     it != start_line.end(); ++it)
-	{
-		std::cout << GRAY << it->first << RES ": " BLUE << it->second
-		          << RES "\n";
-	}
-
-	std::cout << CYAN "\n===========  HEADER  ===========" RES << std::endl;
-	std::map<std::string, std::string> header = this->get_header();
-	for (std::map<std::string, std::string>::const_iterator it = header.begin();
-	     it != header.end(); ++it)
-	{
-		std::cout << GRAY << it->first << RES ": " BLUE << it->second
-		          << RES "\n";
-	}
-
-	std::cout << CYAN "\n============  BODY  ============" RES << std::endl;
-	std::cout << GREEN << this->get_body() << RES << std::endl;
-
-	std::cout << CYAN "\n============== EXTRA =============" RES << std::endl;
-	std::vector<std::string> params = this->get_all_params();
-	std::cout << GRAY "Path:   " BLUE << this->get_resource_path() << RES
-	          << std::endl;
-	std::cout << GRAY "Params: " BLUE << this->get_resource_query() << RES
-	          << std::endl;
-	for (std::vector<std::string>::const_iterator it = params.begin();
-	     it != params.end(); ++it)
-	{
-		std::cout << YELLOW << *it << RES << std::endl;
-	}
-	std::cout << CYAN "==================================" RES << std::endl;
-}
-
-// getters
-std::map<std::string, std::string> Request::get_start_line(void) const
-{
-	return this->start_line;
-}
-
-std::map<std::string, std::string> Request::get_header(void) const
-{
-	return this->header;
-}
-
-std::string Request::get_body(void) const
-{
-	return this->body;
-}
-
-std::string Request::get_resource_path(void) const
-{
-	return this->res_path;
-}
-
-std::string Request::get_resource_query(void) const
-{
-	return this->res_query;
-}
-
-std::string Request::get_method(void) const
+std::string Request::getMethod(void) const
 {
 	std::map<std::string, std::string>::const_iterator it =
-	    this->start_line.find("Method");
-	if (it == this->start_line.end())
+	    this->startLine.find("Method");
+	if (it == this->startLine.end())
 	{
 		return "";
 	}
 	return it->second;
 };
 
-std::string Request::get_url(void) const
+std::string Request::getUrl(void) const
 {
 	std::map<std::string, std::string>::const_iterator it =
-	    this->start_line.find("URL");
-	if (it == this->start_line.end())
+	    this->startLine.find("URL");
+	if (it == this->startLine.end())
 	{
 		return "";
 	}
 	return it->second;
 };
 
-std::string Request::get_header_value(std::string const header) const
+std::string Request::getHeaderValue(std::string const headerValue) const
 {
 	std::map<std::string, std::string>::const_iterator it =
-	    this->start_line.find(header);
-	if (it == this->start_line.end())
+	    this->header.find(headerValue);
+	if (it != this->header.end())
 	{
-		return "";
+		return it->second;
 	}
-	return it->second;
+	throw std::runtime_error("request header not found");
 };
 
 // utils

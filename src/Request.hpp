@@ -22,30 +22,29 @@ class Request
 {
   private:
 	Request(void);
-	std::map<std::string, std::string> start_line;
+	std::map<std::string, std::string> startLine;
 	std::map<std::string, std::string> header;
 	std::string                        body;
-	std::string                        res_path;
-	std::string                        res_query;
-	void                               init_start_line(std::istringstream &iss);
-	void                               init_headers(std::istringstream &iss);
-	void                               parse_URL(void);
+	std::string                        resourcePath;
+	std::string                        resourceQuery;
+	void                               initStartLine(std::istringstream &iss);
+	void                               initHeaders(std::istringstream &iss);
+	void                               parseURL(void);
 
   public:
-	Request(char *buff);
+	Request(std::string const req);
 	~Request(void);
 
-	std::map<std::string, std::string> get_start_line(void) const;
-	std::map<std::string, std::string> get_header(void) const;
-	std::string                        get_body(void) const;
-	std::string                        get_resource_path(void) const;
-	std::string                        get_resource_query(void) const;
-	std::vector<std::string>           get_all_params(void);
-	std::string                        get_method(void) const;
-	std::string                        get_url(void) const;
-	std::string get_header_value(std::string const header) const;
-
-	void display_info(void);
+	std::map<std::string, std::string> getStartLine(void) const;
+	std::map<std::string, std::string> getHeaders(void) const;
+	std::string                        getBody(void) const;
+	std::string                        getResourcePath(void) const;
+	std::string                        getResourceQuery(void) const;
+	std::vector<std::string>           getAllParams(void) const;
+	std::string                        getMethod(void) const;
+	std::string                        getUrl(void) const;
+	std::string                        getHeaderValue(std::string const) const;
+	void                               displayInfo(void) const;
 };
 
 #endif
