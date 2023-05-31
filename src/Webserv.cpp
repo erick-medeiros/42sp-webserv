@@ -94,16 +94,16 @@ void Webserv::run()
 
 		// --- Request ---
 		char buff[2048];
-		int  bytes_written = recv(client_socket_fd, buff, sizeof(buff), 0);
-		if (bytes_written == -1)
+		int  bytesWritten = recv(client_socket_fd, buff, sizeof(buff), 0);
+		if (bytesWritten == -1)
 		{
 			std::cerr << RED "--- Error: while receiving data" RES << std::endl;
 			perror("Error"); // cant be used...
 			continue;
 		}
-		buff[bytes_written] = 0;
+		buff[bytesWritten] = 0;
 
-		if (bytes_written == 0)
+		if (bytesWritten == 0)
 		{
 			std::cerr << RED "--- Error: client has closed its connection" RES
 			          << std::endl;
@@ -113,13 +113,15 @@ void Webserv::run()
 			          << std::endl;
 			continue;
 		}
-		std::cout << GRAY "Request size: " BLUE << bytes_written << " bytes" RES
+		std::cout << GRAY "Request size: " BLUE << bytesWritten << " bytes" RES
 		          << std::endl;
+
+		std::string const header = buff;
 
 		try
 		{
 			Request req(buff);
-			req.display_info();
+			req.displayInfo();
 		}
 		catch (std::exception const &e)
 		{
