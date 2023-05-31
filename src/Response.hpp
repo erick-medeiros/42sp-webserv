@@ -2,37 +2,39 @@
 #define RESPONSE_H
 
 #include <map>
-#include <string>
 #include <sstream>
+#include <string>
 
-namespace Webserv {
-    class Response {
-    public:
-        // Constructor
-        Response();
+#define HTTP_VERSION "HTTP/1.1"
 
-        // Setters
-        void set_status(int code);
-        void set_header(const std::string& key, const std::string& value);
-        void set_body(const std::string& body);
+namespace Webserv
+{
+class Response
+{
+  public:
+	// Constructor
+	Response();
 
-        // Getters
-        int get_status_code() const;
-        std::string get_header(const std::string& key) const;
-        std::string get_body() const;
+	// Setters
+	void setStatus(int code);
+	void setHeader(const std::string &key, const std::string &value);
+	void setBody(const std::string &body);
 
-        // Other methods
-        std::string build_response() const;
-    private:
-        // Constants
-        static const std::string HTTP_VERSION;
+	// Getters
+	int         getStatusCode() const;
+	std::string getHeader(const std::string &key) const;
+	std::string getBody() const;
 
-        // Attributes
-        int status_code;
-        std::map<int, std::string> reason_phrase;
-        std::map<std::string, std::string> headers;
-        std::string body;
-    };
-}
+	// Other methods
+	std::string buildResponse() const;
+
+  private:
+	// Attributes
+	int                                statusCode;
+	std::map<int, std::string>         reasonPhrase;
+	std::map<std::string, std::string> headers;
+	std::string                        body;
+};
+} // namespace Webserv
 
 #endif

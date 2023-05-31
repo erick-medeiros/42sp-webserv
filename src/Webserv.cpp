@@ -51,7 +51,7 @@ int Webserv::getPort()
 	return ntohs(address.sin_port);
 }
 
-void display_initial_connection_msg(int const port_number)
+void displayInitialConnectionMsg(int const port_number)
 {
 	std::stringstream ss;
 	std::string       port;
@@ -76,7 +76,7 @@ void Webserv::run()
 
 	while (true)
 	{
-		display_initial_connection_msg(this->getPort());
+		displayInitialConnectionMsg(this->getPort());
 
 		// Block until client connects and the server accepts the connection
 		int client_socket_fd =
