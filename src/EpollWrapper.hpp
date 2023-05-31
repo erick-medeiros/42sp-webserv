@@ -33,7 +33,7 @@ class EpollWrapper
 	void remove(int fd);
 	int  wait(int timeout);
 
-	int get_next_event(struct epoll_event *event);
+	int getNextEvent(struct epoll_event *event);
 
   private:
 	int                epoll_fd;

@@ -12,7 +12,6 @@
 
 #include "EpollWrapper.hpp"
 #include "doctest.h"
-#include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <unistd.h>
@@ -61,7 +60,7 @@ TEST_CASE("get_next_event")
 
 	SUBCASE("no event")
 	{
-		CHECK_EQ(epoll.get_next_event(&event), -1);
+		CHECK_EQ(epoll.getNextEvent(&event), -1);
 	}
 	SUBCASE("one event")
 	{
@@ -75,7 +74,7 @@ TEST_CASE("get_next_event")
 
 		SUBCASE("access event")
 		{
-			CHECK_EQ(epoll.get_next_event(&event), 0);
+			CHECK_EQ(epoll.getNextEvent(&event), 0);
 			CHECK_EQ(event.data.fd, pipefd[PIPE_READ]);
 
 			SUBCASE("use event")

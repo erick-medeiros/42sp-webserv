@@ -57,7 +57,7 @@ int EpollWrapper::wait(int timeout)
 	return fds_ready;
 }
 
-int EpollWrapper::get_next_event(struct epoll_event *event)
+int EpollWrapper::getNextEvent(struct epoll_event *event)
 {
 	static int it = 0;
 
