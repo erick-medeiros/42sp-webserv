@@ -2,6 +2,7 @@
 #define SERVER_HPP
 
 #include <cstring>      // memset
+#include <fcntl.h>      // fcntl
 #include <fstream>      // input stream
 #include <iostream>     // cout, cerr
 #include <iostream>     // input stream
@@ -11,9 +12,12 @@
 #include <string>       // to_string
 #include <unistd.h>     // close
 
+#include "EpollWrapper.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 #include "log_utils.hpp"
+
+#define MAX_EVENTS 500
 
 class Request;
 
@@ -26,11 +30,12 @@ class Server
 	int  getPort();
 
   private:
-	int         serverSocket;
-	int         listenToPort(int port);
-	sockaddr_in createServerAddress(int port);
-	int         waitForClient(void);
-	std::string getRawRequest(int clientSocket);
+	int          serverSocket;
+	int          listenToPort(int port);
+	sockaddr_in  createServerAddress(int port);
+	int          acceptNewClient(void);
+	std::string  getRawRequest(int clientSocket);
+	EpollWrapper waiting_list;
 };
 
 #endif

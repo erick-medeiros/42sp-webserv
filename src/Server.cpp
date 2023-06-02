@@ -2,10 +2,12 @@
 
 Server::Server(std::string config_file)
 {
-	// TODO: Ignoring config_file for now
-	(void) config_file;
+	(void) config_file; // TODO: Ignoring config_file for now
 
 	listenToPort(8080);
+
+	// --- Add server socket to waiting list, so it is managed by epoll ---
+	waiting_list.add(serverSocket, EPOLLIN | EPOLLOUT);
 }
 
 Server::~Server()
@@ -13,7 +15,6 @@ Server::~Server()
 	close(serverSocket);
 }
 
-// Method to listen to a port called by the constructor
 int Server::listenToPort(int port)
 {
 	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -32,12 +33,25 @@ int Server::listenToPort(int port)
 		close(serverSocket);
 		exit(1);
 	}
+	// --- Set non-blocking ---
+	int flags = fcntl(serverSocket, F_GETFL, 0);
+	if (flags == -1)
+	{
+		logError("--- Error: fcntl");
+		exit(1);
+	}
+	if (fcntl(serverSocket, F_SETFL, flags | O_NONBLOCK) == -1)
+	{
+		logError("--- Error: fcntl");
+		exit(1);
+	}
 	// --- Set socket to listen for connections ---
 	if (listen(serverSocket, 5) < 0)
 	{
 		logError("--- Error: listen");
 		exit(1);
 	}
+	logInfo("Server listening on port", port);
 	return serverSocket;
 }
 
@@ -53,28 +67,25 @@ int Server::getPort()
 	return ntohs(address.sin_port);
 }
 
-int Server::waitForClient(void)
+int Server::acceptNewClient(void)
 {
 	sockaddr_in clientAddr;
 	socklen_t   clilen = sizeof(clientAddr);
 
-	logNotice("Waiting new connection in port", getPort());
 	int clientSocket =
 	    accept(serverSocket, (struct sockaddr *) &clientAddr, &clilen);
-
-	if (clientSocket < 0)
+	if (clientSocket == -1)
 	{
-		logError("--- Error: while accepting a new connection");
-		return -1;
+		logError("--- Error: accept");
+		exit(1);
 	}
-	logSuccess("+++ Client connected in socket", clientSocket);
+	logNotice("--- New connection accepted", clientSocket);
 	return clientSocket;
 }
 
 std::string Server::getRawRequest(int clientSocket)
 {
-	// --- Request ---
-	char buff[2048];
+	char buff[1024];
 	int  bytesWritten = recv(clientSocket, buff, sizeof(buff), 0);
 
 	if (bytesWritten == -1)
@@ -96,35 +107,50 @@ std::string Server::getRawRequest(int clientSocket)
 
 void Server::run()
 {
+	struct epoll_event events[MAX_EVENTS];
+
 	while (true)
 	{
-		// --- Accept connection ---
-		int clientSocket = waitForClient();
-		if (clientSocket == -1)
-			continue;
+		int events_count = waiting_list.wait(events, MAX_EVENTS, -1);
 
-		// --- Request ---
-		try
+		for (int i = 0; i < events_count; ++i)
 		{
-			std::string rawRequest = getRawRequest(clientSocket);
-			Request     request(rawRequest);
-			request.displayInfo();
+			// New connection on server
+			if (events[i].data.fd == serverSocket)
+			{
+				int newClient = acceptNewClient();
+				waiting_list.add(newClient, EPOLLIN | EPOLLOUT);
+			}
+			// Data coming in ( Request )
+			else if (events[i].events & EPOLLIN)
+			{
+				int clientSocket = events[i].data.fd;
+				try
+				{
+					std::string rawRequest = getRawRequest(clientSocket);
+					Request     request(rawRequest);
+					request.displayInfo();
+				}
+				catch (std::exception const &e)
+				{
+					logError(e.what());
+					close(clientSocket); // TODO: handle exception properly...
+					continue;
+				}
+				Response response;
+				response.loadFile("src/index.html");
+				response.sendTo(clientSocket);
+				close(clientSocket);
+			}
+			// Client disconnected
+			else if (events[i].events & EPOLLRDHUP)
+			{
+				int clientSocket = events[i].data.fd;
+				logWarning("--- Client disconnected from socket", clientSocket);
+				close(clientSocket);
+				continue;
+			}
 		}
-		catch (std::exception const &e)
-		{
-			logError(e.what());
-			close(clientSocket); // TODO: handle exception properly...
-			continue;
-		}
-
-		// --- Response ---
-		Response response;
-		response.loadFile("src/index.html"); // TODO: Load the path asked by request
-		response.sendTo(clientSocket);
-
-		// --- Close connection ---
-		logWarning("--- Client disconnected from socket", clientSocket);
-		close(clientSocket);
 	}
 }
 
