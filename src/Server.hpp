@@ -29,6 +29,8 @@ class Server
 	int         serverSocket;
 	int         listenToPort(int port);
 	sockaddr_in createServerAddress(int port);
+	int         waitForClient(void);
+	std::string getRawRequest(int clientSocket);
 };
 
 #endif

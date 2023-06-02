@@ -53,60 +53,73 @@ int Server::getPort()
 	return ntohs(address.sin_port);
 }
 
-void Server::run()
+int Server::waitForClient(void)
 {
 	sockaddr_in clientAddr;
 	socklen_t   clilen = sizeof(clientAddr);
 
+	logNotice("Waiting new connection in port", getPort());
+	int clientSocket =
+	    accept(serverSocket, (struct sockaddr *) &clientAddr, &clilen);
+
+	if (clientSocket < 0)
+	{
+		logError("--- Error: while accepting a new connection");
+		return -1;
+	}
+	logSuccess("+++ Client connected in socket", clientSocket);
+	return clientSocket;
+}
+
+std::string Server::getRawRequest(int clientSocket)
+{
+	// --- Request ---
+	char buff[2048];
+	int  bytesWritten = recv(clientSocket, buff, sizeof(buff), 0);
+
+	if (bytesWritten == -1)
+	{
+		logError("--- Error: while receiving data");
+		return "";
+	}
+	buff[bytesWritten] = 0;
+
+	if (bytesWritten == 0)
+	{
+		logError("--- Error: client has closed its connection");
+		close(clientSocket);
+		return "";
+	}
+	logInfo("Request size", bytesWritten);
+	return std::string(buff);
+}
+
+void Server::run()
+{
 	while (true)
 	{
-		logNotice("Waiting new connection in port", getPort());
-		// Block until client connects and the server accepts the connection
-		int clientSocket =
-		    accept(serverSocket, (struct sockaddr *) &clientAddr, &clilen);
-		if (clientSocket < 0)
-		{
-			logError("--- Error: while accepting a new connection");
+		// --- Accept connection ---
+		int clientSocket = waitForClient();
+		if (clientSocket == -1)
 			continue;
-		}
-		logSuccess("+++ Client connected in socket", clientSocket);
 
 		// --- Request ---
-		char buff[2048];
-		int  bytesWritten = recv(clientSocket, buff, sizeof(buff), 0);
-		if (bytesWritten == -1)
-		{
-			logError("--- Error: while receiving data");
-			continue;
-		}
-		buff[bytesWritten] = 0;
-
-		if (bytesWritten == 0)
-		{
-			logError("--- Error: client has closed its connection");
-			close(clientSocket);
-			continue;
-		}
-		logInfo("Request size", bytesWritten);
-
-		std::string const header = buff;
-
 		try
 		{
-			Request req(buff);
-			req.displayInfo();
+			std::string rawRequest = getRawRequest(clientSocket);
+			Request     request(rawRequest);
+			request.displayInfo();
 		}
 		catch (std::exception const &e)
 		{
 			logError(e.what());
-			close(clientSocket);
-			// TODO: handle exception properly...
+			close(clientSocket); // TODO: handle exception properly...
 			continue;
 		}
 
 		// --- Response ---
 		Response response;
-		response.loadFile("src/index.html"); // Should load the path from the request
+		response.loadFile("src/index.html"); // TODO: Load the path asked by request
 		response.sendTo(clientSocket);
 
 		// --- Close connection ---
