@@ -34,13 +34,7 @@ int Server::listenToPort(int port)
 		exit(1);
 	}
 	// --- Set non-blocking ---
-	int flags = fcntl(serverSocket, F_GETFL, 0);
-	if (flags == -1)
-	{
-		logError("--- Error: fcntl");
-		exit(1);
-	}
-	if (fcntl(serverSocket, F_SETFL, flags | O_NONBLOCK) == -1)
+	if (!setNonBlocking(serverSocket))
 	{
 		logError("--- Error: fcntl");
 		exit(1);

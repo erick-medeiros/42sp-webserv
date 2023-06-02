@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/01 11:45:21 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/02 20:08:48 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <cstring>
 #include <errno.h>
+#include <fcntl.h>
 #include <iostream>
 #include <sys/epoll.h>
 #include <unistd.h>
@@ -35,5 +36,7 @@ class EpollWrapper
   private:
 	int epoll_fd;
 };
+
+bool setNonBlocking(int fd);
 
 #endif /* EPOLLWRAPPER_HPP */
