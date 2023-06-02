@@ -1,8 +1,34 @@
 #include "Response.hpp"
 
-namespace Webserv
+#include <fstream>      // ifstream
+#include <sstream>      // stringstream
+#include <sys/socket.h> // send
+
+void Response::loadFile(const std::string &path)
 {
-Response::Response()
+	std::ifstream file(path.c_str());
+	if (!file.is_open())
+	{
+		// Set status code to 404
+		setStatus(404);
+		return;
+	}
+	std::stringstream buffer;
+	buffer << file.rdbuf();
+	setBody(buffer.str());
+	file.close();
+}
+
+void Response::sendTo(int socket) const
+{
+	std::string response = buildResponse();
+	if (send(socket, response.c_str(), response.size(), 0) < 0)
+	{
+		throw std::runtime_error("Error sending response");
+	}
+}
+
+Response::Response() : statusCode(200)
 {
 	// Initialize status messages
 	reasonPhrase[200] = "OK";
@@ -59,8 +85,7 @@ std::string Response::buildResponse() const
 	response << HTTP_VERSION << " " << statusCode << " "
 	         << reasonPhrase.at(statusCode) << "\r\n";
 	// Headers
-	for (std::map<std::string, std::string>::const_iterator it =
-	         headers.begin();
+	for (std::map<std::string, std::string>::const_iterator it = headers.begin();
 	     it != headers.end(); ++it)
 	{
 		response << it->first << ": " << it->second << "\r\n";
@@ -72,4 +97,3 @@ std::string Response::buildResponse() const
 		response << body;
 	return response.str();
 }
-} // namespace Webserv

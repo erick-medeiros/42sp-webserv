@@ -1,29 +1,22 @@
-#include "Webserv.hpp"
+#include "Server.hpp"
 #include "doctest.h"
 #include <sstream>
 #include <streambuf>
 
-TEST_CASE("Webserver")
+TEST_CASE("Server")
 {
 	// redirect std::cout
 	std::streambuf *   oldCoutStreamBuf = std::cout.rdbuf();
 	std::ostringstream oss;
 	std::cout.rdbuf(oss.rdbuf());
 
+	// TODO -> Improve this test when we have the config files
 	WHEN("Has a specific port number")
 	{
-		Webserv webserver(1337);
+		Server server("config_file");
 		THEN("The port number is set")
 		{
-			CHECK(webserver.getPort() == 1337);
-		}
-	}
-	WHEN("Has no port number")
-	{
-		Webserv webserver(0);
-		THEN("It uses a random port")
-		{
-			CHECK(webserver.getPort() != 0);
+			CHECK(server.getPort() == 8080);
 		}
 	}
 

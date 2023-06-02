@@ -1,5 +1,5 @@
-#ifndef WEBSERV_HPP
-#define WEBSERV_HPP
+#ifndef SERVER_HPP
+#define SERVER_HPP
 
 #include <cstring>      // memset
 #include <fstream>      // input stream
@@ -12,19 +12,22 @@
 #include <unistd.h>     // close
 
 #include "Request.hpp"
+#include "Response.hpp"
+#include "log_utils.hpp"
 
 class Request;
 
-class Webserv
+class Server
 {
   public:
-	Webserv(int port);
-	~Webserv();
+	Server(std::string config_file);
+	~Server();
 	void run();
 	int  getPort();
 
   private:
-	int         server_socket_fd;
+	int         serverSocket;
+	int         listenToPort(int port);
 	sockaddr_in createServerAddress(int port);
 };
 

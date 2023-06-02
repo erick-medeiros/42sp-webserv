@@ -3,7 +3,7 @@
 
 TEST_CASE("Response class")
 {
-	Webserv::Response response;
+	Response response;
 
 	SUBCASE("Setters and getters")
 	{
