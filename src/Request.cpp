@@ -2,8 +2,6 @@
 
 std::string &trim(std::string &s);
 
-Request::Request(void){};
-
 Request::Request(std::string const req)
 {
 	std::istringstream iss(req);
@@ -134,8 +132,7 @@ void Request::displayInfo(void) const
 	for (std::map<std::string, std::string>::const_iterator it = sl.begin();
 	     it != sl.end(); ++it)
 	{
-		std::cout << GRAY << it->first << RES ": " BLUE << it->second
-		          << RES "\n";
+		std::cout << GRAY << it->first << RES ": " BLUE << it->second << RES "\n";
 	}
 
 	std::cout << CYAN "\n===========  HEADER  ===========" RES << std::endl;
@@ -143,8 +140,7 @@ void Request::displayInfo(void) const
 	for (std::map<std::string, std::string>::const_iterator it = header.begin();
 	     it != header.end(); ++it)
 	{
-		std::cout << GRAY << it->first << RES ": " BLUE << it->second
-		          << RES "\n";
+		std::cout << GRAY << it->first << RES ": " BLUE << it->second << RES "\n";
 	}
 
 	std::cout << CYAN "\n============  BODY  ============" RES << std::endl;
@@ -152,8 +148,7 @@ void Request::displayInfo(void) const
 
 	std::cout << CYAN "\n============== EXTRA =============" RES << std::endl;
 	std::vector<std::string> params = this->getAllParams();
-	std::cout << GRAY "Path:   " BLUE << this->getResourcePath() << RES
-	          << std::endl;
+	std::cout << GRAY "Path:   " BLUE << this->getResourcePath() << RES << std::endl;
 	std::cout << GRAY "Params: " BLUE << this->getResourceQuery() << RES
 	          << std::endl;
 	for (std::vector<std::string>::const_iterator it = params.begin();

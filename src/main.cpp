@@ -10,13 +10,23 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Webserv.hpp"
+#include "Server.hpp"
 
 int main(int argc, char *argv[])
 {
-	Webserv server(8080);
-	if (argc > 1 && std::string(argv[1]) == "NORUN") // TODO: Improve this
+	if (argc > 1 &&
+	    std::string(argv[1]) == "NORUN") // TODO: Improve this, used by leaks test
 		return 0;
+	std::string config_file;
+	if (argc == 1)
+	{
+		std::cout << "No config file passed, using default config file" << std::endl;
+		config_file = "config/default.conf";
+	}
+	else
+	{
+		config_file = argv[1];
+	}
+	Server server(config_file);
 	server.run();
-	return 0;
 }

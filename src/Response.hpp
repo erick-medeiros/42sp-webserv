@@ -7,8 +7,6 @@
 
 #define HTTP_VERSION "HTTP/1.1"
 
-namespace Webserv
-{
 class Response
 {
   public:
@@ -26,6 +24,8 @@ class Response
 	std::string getBody() const;
 
 	// Other methods
+	void        loadFile(const std::string &path);
+	void        sendTo(int socket) const;
 	std::string buildResponse() const;
 
   private:
@@ -35,6 +35,5 @@ class Response
 	std::map<std::string, std::string> headers;
 	std::string                        body;
 };
-} // namespace Webserv
 
 #endif

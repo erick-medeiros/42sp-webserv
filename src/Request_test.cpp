@@ -104,8 +104,8 @@ TEST_CASE("Client request body")
 	    {"GET / HTTP/1.1\r\n", "\r\n", "foo", 3},
 	    {"GET / HTTP/1.1\r\n", "\r\n", "foo bar baz", 11},
 	    {"GET / HTTP/1.1\r\n", "\r\n", "{\"k\": \"v\"}", 10},
-	    {"GET / HTTP/1.1\r\n", "h1: foo\r\n\r\n",
-	     "{\"k1\": \"v1\", \"k2\": \"v2\"}", 24},
+	    {"GET / HTTP/1.1\r\n", "h1: foo\r\n\r\n", "{\"k1\": \"v1\", \"k2\": \"v2\"}",
+	     24},
 	};
 
 	std::size_t n = sizeof(tt) / sizeof(*tt);
@@ -113,8 +113,7 @@ TEST_CASE("Client request body")
 	std::size_t i = -1;
 	while (++i < n)
 	{
-		std::string const request =
-		    tt[i].startLine + tt[i].headers + tt[i].body;
+		std::string const request = tt[i].startLine + tt[i].headers + tt[i].body;
 		Request           req(request);
 		std::string const requestBody = req.getBody();
 
@@ -270,16 +269,11 @@ TEST_CASE("getHeaderValue")
 		bool        expectException;
 	} tt[] = {
 	    {"GET / HTTP/1.1\r\nkey: value\r\n\r\n", "key", "value", false},
-	    {"GET / HTTP/1.1\r\nfoo: 1\r\nbar: 2\r\nbaz: 3\r\n\r\n", "foo", "1",
-	     false},
-	    {"GET / HTTP/1.1\r\nfoo: 1\r\nbar: 2\r\nbaz: 3\r\n\r\n", "bar", "2",
-	     false},
-	    {"GET / HTTP/1.1\r\nfoo: 1\r\nbar: 2\r\nbaz: 3\r\n\r\n", "baz", "3",
-	     false},
-	    {"GET / HTTP/1.1\r\nfoo:1\r\nbar:2\r\nbaz:3\r\n\r\n", "foo", "1",
-	     false},
-	    {"GET / HTTP/1.1\r\nfoo:1\r\nbar:2\r\nbaz:3\r\n\r\n", "baz", "3",
-	     false},
+	    {"GET / HTTP/1.1\r\nfoo: 1\r\nbar: 2\r\nbaz: 3\r\n\r\n", "foo", "1", false},
+	    {"GET / HTTP/1.1\r\nfoo: 1\r\nbar: 2\r\nbaz: 3\r\n\r\n", "bar", "2", false},
+	    {"GET / HTTP/1.1\r\nfoo: 1\r\nbar: 2\r\nbaz: 3\r\n\r\n", "baz", "3", false},
+	    {"GET / HTTP/1.1\r\nfoo:1\r\nbar:2\r\nbaz:3\r\n\r\n", "foo", "1", false},
+	    {"GET / HTTP/1.1\r\nfoo:1\r\nbar:2\r\nbaz:3\r\n\r\n", "baz", "3", false},
 	    {"GET / HTTP/1.1\r\nfoo:1\r\nbar:2\r\nbaz:3\r\n\r\n", "", "", true},
 	    {"GET / HTTP/1.1\r\nkey: value\r\n\r\n", "foo", "", true},
 	};
@@ -293,8 +287,7 @@ TEST_CASE("getHeaderValue")
 		if (tt[i].expectException)
 		{
 			Request req(request);
-			CHECK_THROWS_AS(req.getHeaderValue(tt[i].value),
-			                std::runtime_error);
+			CHECK_THROWS_AS(req.getHeaderValue(tt[i].value), std::runtime_error);
 		}
 		else
 		{

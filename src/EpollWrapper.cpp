@@ -42,8 +42,8 @@ int EpollWrapper::remove(int fd)
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, 0) == -1)
 	{
 		cerr << "EpollWrapper: "
-		     << "Failed to remove file descriptor from epoll: "
-		     << strerror(errno) << endl;
+		     << "Failed to remove file descriptor from epoll: " << strerror(errno)
+		     << endl;
 		return -1;
 	}
 	return 0;
@@ -55,8 +55,7 @@ int EpollWrapper::wait(struct epoll_event *events, int maxevents, int timeout)
 	if (fds_ready == -1)
 	{
 		cerr << "EpollWrapper: "
-		     << "Failed to wait for events on epoll: " << strerror(errno)
-		     << endl;
+		     << "Failed to wait for events on epoll: " << strerror(errno) << endl;
 	}
 	return fds_ready;
 }
