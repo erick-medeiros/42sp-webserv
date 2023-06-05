@@ -298,3 +298,77 @@ TEST_CASE("getHeaderValue")
 		}
 	}
 }
+
+TEST_CASE("isValidMethod")
+{
+	struct s_tt
+	{
+		std::string header;
+		bool        expected;
+	} tt[] = {
+	    {"GET / HTTP/1.1\r\n\r\n", true},
+	    {"POST / HTTP/1.1\r\n\r\n", true},
+	    {"DELETE / HTTP/1.1\r\n\r\n", true},
+	    {"UPDATE / HTTP/1.1\r\n\r\n", false},
+	    {"get / HTTP/1.1\r\n\r\n", false},
+	    {"GET / HTTP/1.1\r\nh1: value1\r\n\r\n", true},
+	    {"POST / HTTP/1.1\r\nh1: value1\r\n\r\n", true},
+	    {"DELETE / HTTP/1.1\r\nh1: value1\r\n\r\n", true},
+	    {"post / HTTP/1.1\r\nh1: value1\r\n\r\n", false},
+	    {"FOO / HTTP/1.1\r\nh1: value1\r\n\r\n", false},
+	    {"OPTIONS / HTTP/1.1\r\nh1: value1\r\n\r\n", false},
+	};
+
+	std::size_t n = sizeof(tt) / sizeof(*tt);
+
+	std::size_t i = -1;
+	while (++i < n)
+	{
+		std::string const request = tt[i].header;
+		if (tt[i].expected == false)
+		{
+			CHECK_THROWS_AS(new Request(request), std::runtime_error);
+		}
+		else
+		{
+			Request           req(request);
+			std::string const requestMethod = req.getMethod();
+			bool              isValidMethod = req.isValidMethod(requestMethod);
+
+			CHECK_EQ(isValidMethod, tt[i].expected);
+		}
+	}
+}
+
+TEST_CASE("isValidHttpVersion")
+{
+	struct s_tt
+	{
+		std::string header;
+		bool        expected;
+	} tt[] = {
+	    {"GET / HTTP/1.0\r\n\r\n", true},    {"GET / HTTP/1.1\r\n\r\n", true},
+	    {"GET / HTTP/1.2\r\n\r\n", false},   {"GET / HTTP/2.0\r\n\r\n", false},
+	    {"GET / HTTP/1.0.0\r\n\r\n", false}, {"GET / HTTP/1.1.0\r\n\r\n", false},
+	};
+
+	std::size_t n = sizeof(tt) / sizeof(*tt);
+
+	std::size_t i = -1;
+	while (++i < n)
+	{
+		std::string const request = tt[i].header;
+		if (tt[i].expected == false)
+		{
+			CHECK_THROWS_AS(new Request(request), std::runtime_error);
+		}
+		else
+		{
+			Request           req(request);
+			std::string const requestMethod = req.getMethod();
+			bool              isValidMethod = req.isValidMethod(requestMethod);
+
+			CHECK_EQ(isValidMethod, tt[i].expected);
+		}
+	}
+}

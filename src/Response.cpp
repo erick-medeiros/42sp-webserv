@@ -35,6 +35,8 @@ Response::Response() : statusCode(200)
 	reasonPhrase[404] = "Not Found";
 }
 
+Response::~Response(){};
+
 // -- Setters ---
 void Response::setStatus(int code)
 {

@@ -1,8 +1,15 @@
 #include "Server.hpp"
 
-Server::Server(std::string config_file)
+Server::Server(void) {}
+
+void Server::init(int argc, char **argv)
 {
-	(void) config_file; // TODO: Ignoring config_file for now
+	(void) argc;
+	(void) argv;
+
+	logSuccess("initializing new web server");
+
+	initSignal(this);
 
 	listenToPort(8080);
 
@@ -24,7 +31,14 @@ int Server::listenToPort(int port)
 		exit(1);
 	}
 	logInfo("Server socket created", serverSocket);
-	// --- Associate socket with port ---
+	// --- Configure socket options ---
+	int yes = 1;
+	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+	{
+		logError("--- Error: setsockopt");
+		exit(1);
+	}
+	// --- Bind socket with port ---
 	sockaddr_in server_address = createServerAddress(port);
 	if (bind(serverSocket, (struct sockaddr *) &server_address,
 	         sizeof(server_address)) < 0)
@@ -79,7 +93,7 @@ int Server::acceptNewClient(void)
 		logError("--- Error: accept");
 		exit(1);
 	}
-	logNotice("--- New connection accepted", clientSocket);
+	logSuccess("+++ New connection accepted on socket", clientSocket);
 	return clientSocket;
 }
 
@@ -129,24 +143,26 @@ void Server::run()
 				{
 					std::string rawRequest = getRawRequest(clientSocket);
 					Request     request(rawRequest);
-					request.displayInfo();
+					std::cout << request << std::endl;
 				}
 				catch (std::exception const &e)
 				{
 					logError(e.what());
+					logInfo("--- Client disconnected from socket", clientSocket);
 					close(clientSocket); // TODO: handle exception properly...
 					continue;
 				}
 				Response response;
 				response.loadFile("src/index.html");
 				response.sendTo(clientSocket);
+				logInfo("--- Client disconnected from socket", clientSocket);
 				close(clientSocket);
 			}
 			// Client disconnected
 			else if (events[i].events & EPOLLRDHUP)
 			{
 				int clientSocket = events[i].data.fd;
-				logWarning("--- Client disconnected from socket", clientSocket);
+				logInfo("--- Client disconnected from socket", clientSocket);
 				close(clientSocket);
 				continue;
 			}
