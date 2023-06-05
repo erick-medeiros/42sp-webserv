@@ -127,6 +127,8 @@ void Server::run()
 			if (events[i].data.fd == serverSocket)
 			{
 				int newClient = acceptNewClient();
+				if (!setNonBlocking(newClient))
+					logError("--- Error: set nonblocking: new client");
 				waiting_list.add(newClient, EPOLLIN);
 			}
 			// Data coming in ( Request )
