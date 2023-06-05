@@ -1,22 +1,28 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#define BLUE "\x1b[38;5;25m"
-#define CYAN "\x1b[38;5;51m"
-#define YELLOW "\x1b[38;5;220m"
-#define PURPLE "\x1b[38;5;162m"
-#define RED "\x1b[38;5;196m"
-#define GRAY "\x1b[38;5;8m"
-#define GREEN "\x1b[38;5;40m"
-#define RES "\x1b[0m"
-
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <sstream>
 #include <stdexcept>
-#include <string.h>
 #include <vector>
+
+#include "utils.hpp"
+
+enum
+{
+	GET,
+	POST,
+	DELETE
+};
+
+enum
+{
+	V10,
+	V11
+};
 
 class Request
 {
@@ -44,7 +50,10 @@ class Request
 	std::string                        getMethod(void) const;
 	std::string                        getUrl(void) const;
 	std::string                        getHeaderValue(std::string const) const;
-	void                               displayInfo(void) const;
+	bool isValidMethod(std::string const &requestMethod) const;
+	bool isValidHttpVersion(std::string &requestVersion) const;
 };
+
+std::ostream &operator<<(std::ostream &os, Request const &req);
 
 #endif

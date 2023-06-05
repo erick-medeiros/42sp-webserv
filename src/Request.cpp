@@ -1,7 +1,5 @@
 #include "Request.hpp"
 
-std::string &trim(std::string &s);
-
 Request::Request(std::string const req)
 {
 	std::istringstream iss(req);
@@ -18,9 +16,9 @@ void Request::initStartLine(std::istringstream &iss)
 	std::string row;
 
 	std::getline(iss, row);
-	if (iss.fail())
+	if (iss.fail() || row.empty())
 	{
-		throw std::runtime_error("parsing request start-line");
+		throw std::runtime_error("missing request start-line data");
 	}
 
 	std::stringstream ss(row);
@@ -29,23 +27,37 @@ void Request::initStartLine(std::istringstream &iss)
 	ss >> token;
 	if (ss.fail())
 	{
-		throw std::runtime_error("parsing request method");
+		throw std::runtime_error("missing HTTP request method");
 	}
-	this->startLine["Method"] = trim(token);
+	if (isValidMethod(token))
+	{
+		this->startLine["Method"] = trim(token);
+	}
+	else
+	{
+		throw std::runtime_error("non supported HTTP method: " + token);
+	}
 
 	ss >> token;
 	if (ss.fail())
 	{
-		throw std::runtime_error("parsing request resource");
+		throw std::runtime_error("missing request URL");
 	}
 	this->startLine["URL"] = trim(token);
 
 	ss >> token;
 	if (ss.fail())
 	{
-		throw std::runtime_error("parsing request version");
+		throw std::runtime_error("missing HTTP protocol version");
 	}
-	this->startLine["Version"] = trim(token);
+	if (isValidHttpVersion(token))
+	{
+		this->startLine["Version"] = trim(token);
+	}
+	else
+	{
+		throw std::runtime_error("invalid HTTP protocol version: " + token);
+	}
 }
 
 void Request::initHeaders(std::istringstream &iss)
@@ -125,39 +137,6 @@ void Request::parseURL(void)
 }
 
 // debug
-void Request::displayInfo(void) const
-{
-	std::cout << CYAN "========== START LINE ==========" RES << std::endl;
-	std::map<std::string, std::string> sl = this->getStartLine();
-	for (std::map<std::string, std::string>::const_iterator it = sl.begin();
-	     it != sl.end(); ++it)
-	{
-		std::cout << GRAY << it->first << RES ": " BLUE << it->second << RES "\n";
-	}
-
-	std::cout << CYAN "\n===========  HEADER  ===========" RES << std::endl;
-	std::map<std::string, std::string> header = this->getHeaders();
-	for (std::map<std::string, std::string>::const_iterator it = header.begin();
-	     it != header.end(); ++it)
-	{
-		std::cout << GRAY << it->first << RES ": " BLUE << it->second << RES "\n";
-	}
-
-	std::cout << CYAN "\n============  BODY  ============" RES << std::endl;
-	std::cout << GREEN << this->getBody() << RES << std::endl;
-
-	std::cout << CYAN "\n============== EXTRA =============" RES << std::endl;
-	std::vector<std::string> params = this->getAllParams();
-	std::cout << GRAY "Path:   " BLUE << this->getResourcePath() << RES << std::endl;
-	std::cout << GRAY "Params: " BLUE << this->getResourceQuery() << RES
-	          << std::endl;
-	for (std::vector<std::string>::const_iterator it = params.begin();
-	     it != params.end(); ++it)
-	{
-		std::cout << YELLOW << *it << RES << std::endl;
-	}
-	std::cout << CYAN "==================================" RES << std::endl;
-}
 
 // getters
 std::map<std::string, std::string> Request::getStartLine(void) const
@@ -236,21 +215,77 @@ std::string Request::getHeaderValue(std::string const headerValue) const
 	throw std::runtime_error("request header not found");
 };
 
-// utils
-static std::string &rtrim(std::string &s, const char *t)
+bool Request::isValidMethod(std::string const &requestMethod) const
 {
-	s.erase(s.find_last_not_of(t) + 1);
-	return s;
+	int const         numberOfAvaibleMethods = 3;
+	std::string const methods[numberOfAvaibleMethods] = {"GET", "POST", "DELETE"};
+
+	int index = 0;
+	for (int i = 0; requestMethod != methods[i] && i < numberOfAvaibleMethods; ++i)
+	{
+		index++;
+	}
+
+	switch (index)
+	{
+	case GET:
+	case POST:
+	case DELETE:
+		return true;
+	default:
+		return false;
+	}
 }
 
-static std::string &ltrim(std::string &s, const char *t)
+bool Request::isValidHttpVersion(std::string &requestVersion) const
 {
-	s.erase(0, s.find_first_not_of(t));
-	return s;
+	std::string const protocols[2] = {"HTTP/1.0", "HTTP/1.1"};
+
+	int index = 0;
+	for (int i = 0; requestVersion != protocols[i] && i < 2; ++i)
+	{
+		index++;
+	}
+
+	switch (index)
+	{
+	case V10:
+	case V11:
+		return true;
+	default:
+		return false;
+	}
 }
 
-std::string &trim(std::string &s)
+std::ostream &operator<<(std::ostream &os, Request const &req)
 {
-	const char *ws = " \t\n\r\f\v";
-	return ltrim(rtrim(s, ws), ws);
+	os << CYAN "========== START LINE ==========" RES << std::endl;
+	std::map<std::string, std::string> sl = req.getStartLine();
+	for (std::map<std::string, std::string>::const_iterator it = sl.begin();
+	     it != sl.end(); ++it)
+	{
+		os << GRAY << it->first << RES ": " BLUE << it->second << RES "\n";
+	}
+
+	os << CYAN "\n===========  HEADER  ===========" RES << std::endl;
+	std::map<std::string, std::string> header = req.getHeaders();
+	for (std::map<std::string, std::string>::const_iterator it = header.begin();
+	     it != header.end(); ++it)
+	{
+		os << GRAY << it->first << RES ": " BLUE << it->second << RES "\n";
+	}
+
+	os << CYAN "\n============  BODY  ============" RES << std::endl;
+	os << GREEN << req.getBody() << RES << std::endl;
+
+	os << CYAN "\n============== EXTRA =============" RES << std::endl;
+	std::vector<std::string> params = req.getAllParams();
+	os << GRAY "Path:   " BLUE << req.getResourcePath() << RES << std::endl;
+	os << GRAY "Params: " BLUE << req.getResourceQuery() << RES << std::endl;
+	for (std::vector<std::string>::const_iterator it = params.begin();
+	     it != params.end(); ++it)
+	{
+		os << YELLOW << *it << RES << std::endl;
+	}
+	return os << CYAN "==================================\n" RES << std::endl;
 }
