@@ -127,7 +127,7 @@ void Server::run()
 			if (events[i].data.fd == serverSocket)
 			{
 				int newClient = acceptNewClient();
-				waiting_list.add(newClient, EPOLLIN | EPOLLOUT);
+				waiting_list.add(newClient, EPOLLIN);
 			}
 			// Data coming in ( Request )
 			else if (events[i].events & EPOLLIN)
@@ -146,6 +146,12 @@ void Server::run()
 					close(clientSocket); // TODO: handle exception properly...
 					continue;
 				}
+				waiting_list.modify(clientSocket, EPOLLOUT);
+			}
+			// Response
+			else if (events[i].events & EPOLLOUT)
+			{
+				int      clientSocket = events[i].data.fd;
 				Response response;
 				response.loadFile("src/index.html");
 				response.sendTo(clientSocket);
@@ -153,12 +159,16 @@ void Server::run()
 				close(clientSocket);
 			}
 			// Client disconnected
-			else if (events[i].events & EPOLLRDHUP)
+			else if (events[i].events & (EPOLLRDHUP | EPOLLHUP))
 			{
 				int clientSocket = events[i].data.fd;
 				logInfo("--- Client disconnected from socket", clientSocket);
 				close(clientSocket);
 				continue;
+			}
+			if (events[i].events & EPOLLERR)
+			{
+				logError("epoll error");
 			}
 		}
 	}
