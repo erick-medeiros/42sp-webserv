@@ -12,6 +12,7 @@ class Response
   public:
 	// Constructor
 	Response();
+	~Response();
 
 	// Setters
 	void setStatus(int code);
