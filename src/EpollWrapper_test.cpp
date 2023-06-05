@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/01 12:24:47 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/05 20:07:57 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,33 @@ TEST_SUITE("EpollWrapper")
 		_pipe(pipefd);
 
 		CHECK_EQ(epoll.add(pipefd[PIPE_READ], EPOLLIN), 0);
+
+		_closepipe(pipefd);
+	}
+	TEST_CASE("modify file descriptor")
+	{
+		EpollWrapper epoll;
+		int          pipefd[2];
+		_pipe(pipefd);
+
+		write(pipefd[PIPE_WRITE], "test", 4);
+
+		CHECK_EQ(epoll.add(pipefd[PIPE_READ], EPOLLIN), 0);
+
+		{
+			const int          maxevents = 1;
+			struct epoll_event events[maxevents];
+			CHECK_EQ(epoll.wait(events, maxevents, 0), 1);
+			CHECK_EQ(events[0].events, EPOLLIN);
+			CHECK_EQ(epoll.modify(pipefd[PIPE_READ], EPOLLOUT), 0);
+			CHECK_EQ(epoll.wait(events, maxevents, 0), 0);
+			CHECK_EQ(epoll.modify(pipefd[PIPE_READ], EPOLLIN), 0);
+			CHECK_EQ(epoll.wait(events, maxevents, 0), 1);
+			CHECK_EQ(events[0].events, EPOLLIN);
+		}
+		{
+			CHECK_NE(epoll.modify(pipefd[PIPE_WRITE], EPOLLOUT), 0);
+		}
 
 		_closepipe(pipefd);
 	}
