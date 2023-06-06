@@ -163,7 +163,7 @@ void Server::run()
 			{
 				int      clientSocket = events[i].data.fd;
 				Response response;
-				response.loadFile("src/index.html");
+				response.loadFile("pages/index.html");
 				response.sendTo(clientSocket);
 				disconnectClient(clientSocket);
 			}
