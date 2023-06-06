@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/01 11:47:51 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/05 19:59:11 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,21 @@ int EpollWrapper::add(int fd, uint32_t events)
 	{
 		cerr << "EpollWrapper: "
 		     << "Failed to add an entry to the interest list of the epoll: "
+		     << strerror(errno) << endl;
+		return -1;
+	}
+	return 0;
+}
+
+int EpollWrapper::modify(int fd, uint32_t events)
+{
+	struct epoll_event event;
+	event.events = events;
+	event.data.fd = fd;
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event) == -1)
+	{
+		cerr << "EpollWrapper: "
+		     << "Failed to modify an fd in the interest list of the epoll: "
 		     << strerror(errno) << endl;
 		return -1;
 	}
@@ -63,4 +78,14 @@ int EpollWrapper::wait(struct epoll_event *events, int maxevents, int timeout)
 EpollWrapper::~EpollWrapper(void)
 {
 	close(epoll_fd);
+}
+
+bool setNonBlocking(int fd)
+{
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags == -1)
+		return false;
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
+		return false;
+	return true;
 }

@@ -48,13 +48,7 @@ int Server::listenToPort(int port)
 		exit(1);
 	}
 	// --- Set non-blocking ---
-	int flags = fcntl(serverSocket, F_GETFL, 0);
-	if (flags == -1)
-	{
-		logError("--- Error: fcntl");
-		exit(1);
-	}
-	if (fcntl(serverSocket, F_SETFL, flags | O_NONBLOCK) == -1)
+	if (!setNonBlocking(serverSocket))
 	{
 		logError("--- Error: fcntl");
 		exit(1);
@@ -119,6 +113,13 @@ std::string Server::getRawRequest(int clientSocket)
 	return std::string(buff);
 }
 
+int Server::disconnectClient(int clientSocket)
+{
+	logInfo("--- Client disconnected from socket", clientSocket);
+	waiting_list.remove(clientSocket);
+	return close(clientSocket);
+}
+
 void Server::run()
 {
 	struct epoll_event events[MAX_EVENTS];
@@ -133,7 +134,9 @@ void Server::run()
 			if (events[i].data.fd == serverSocket)
 			{
 				int newClient = acceptNewClient();
-				waiting_list.add(newClient, EPOLLIN | EPOLLOUT);
+				if (!setNonBlocking(newClient))
+					logError("--- Error: set nonblocking: new client");
+				waiting_list.add(newClient, EPOLLIN);
 			}
 			// Data coming in ( Request )
 			else if (events[i].events & EPOLLIN)
@@ -148,23 +151,32 @@ void Server::run()
 				catch (std::exception const &e)
 				{
 					logError(e.what());
-					logInfo("--- Client disconnected from socket", clientSocket);
-					close(clientSocket); // TODO: handle exception properly...
+					disconnectClient(clientSocket);
+					// TODO: handle exception properly...
 					continue;
 				}
+				waiting_list.modify(clientSocket, EPOLLOUT);
+				// TODO: set criteria for finish request and after set EPOLLOUT
+			}
+			// Response
+			else if (events[i].events & EPOLLOUT)
+			{
+				int      clientSocket = events[i].data.fd;
 				Response response;
 				response.loadFile("src/index.html");
 				response.sendTo(clientSocket);
-				logInfo("--- Client disconnected from socket", clientSocket);
-				close(clientSocket);
+				disconnectClient(clientSocket);
 			}
 			// Client disconnected
-			else if (events[i].events & EPOLLRDHUP)
+			else if (events[i].events & (EPOLLRDHUP | EPOLLHUP))
 			{
 				int clientSocket = events[i].data.fd;
-				logInfo("--- Client disconnected from socket", clientSocket);
-				close(clientSocket);
+				disconnectClient(clientSocket);
 				continue;
+			}
+			if (events[i].events & EPOLLERR)
+			{
+				logError("epoll error");
 			}
 		}
 	}
