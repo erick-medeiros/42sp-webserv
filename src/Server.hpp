@@ -38,6 +38,7 @@ class Server
 	sockaddr_in  createServerAddress(int port);
 	int          acceptNewClient(void);
 	std::string  getRawRequest(int clientSocket);
+	int          disconnectClient(int clientSocket);
 };
 
 #endif

@@ -113,6 +113,13 @@ std::string Server::getRawRequest(int clientSocket)
 	return std::string(buff);
 }
 
+int Server::disconnectClient(int clientSocket)
+{
+	logInfo("--- Client disconnected from socket", clientSocket);
+	waiting_list.remove(clientSocket);
+	return close(clientSocket);
+}
+
 void Server::run()
 {
 	struct epoll_event events[MAX_EVENTS];
@@ -144,11 +151,12 @@ void Server::run()
 				catch (std::exception const &e)
 				{
 					logError(e.what());
-					logInfo("--- Client disconnected from socket", clientSocket);
-					close(clientSocket); // TODO: handle exception properly...
+					disconnectClient(clientSocket);
+					// TODO: handle exception properly...
 					continue;
 				}
 				waiting_list.modify(clientSocket, EPOLLOUT);
+				// TODO: set criteria for finish request and after set EPOLLOUT
 			}
 			// Response
 			else if (events[i].events & EPOLLOUT)
@@ -157,15 +165,13 @@ void Server::run()
 				Response response;
 				response.loadFile("src/index.html");
 				response.sendTo(clientSocket);
-				logInfo("--- Client disconnected from socket", clientSocket);
-				close(clientSocket);
+				disconnectClient(clientSocket);
 			}
 			// Client disconnected
 			else if (events[i].events & (EPOLLRDHUP | EPOLLHUP))
 			{
 				int clientSocket = events[i].data.fd;
-				logInfo("--- Client disconnected from socket", clientSocket);
-				close(clientSocket);
+				disconnectClient(clientSocket);
 				continue;
 			}
 			if (events[i].events & EPOLLERR)
