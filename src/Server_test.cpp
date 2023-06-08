@@ -5,22 +5,16 @@
 
 TEST_CASE("Server")
 {
-	// redirect std::cout
-	std::streambuf *   oldCoutStreamBuf = std::cout.rdbuf();
-	std::ostringstream oss;
-	std::cout.rdbuf(oss.rdbuf());
-
 	// TODO -> Improve this test when we have the config files
 	WHEN("Has a specific port number")
 	{
+		freopen("/dev/null", "w", stdout);
 		Server server;
 		server.init(0, NULL);
+		freopen("/dev/tty", "w", stdout);
 		THEN("The port number is set")
 		{
 			CHECK(server.getPort() == 8080);
 		}
 	}
-
-	// restore old std::cout
-	std::cout.rdbuf(oldCoutStreamBuf);
 }
