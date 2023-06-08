@@ -32,7 +32,7 @@ class EpollWrapper
 	~EpollWrapper(void);
 
 	int add(int fd, uint32_t events);
-	int modify(Request *request, uint32_t events);
+	int modify(epoll_event event, uint32_t events);
 	int remove(int fd);
 	int wait(struct epoll_event *events, int maxevents, int timeout);
 

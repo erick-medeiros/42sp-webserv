@@ -39,11 +39,11 @@ int EpollWrapper::add(int fd, uint32_t events)
 	return 0;
 }
 
-int EpollWrapper::modify(Request *request, uint32_t events)
+int EpollWrapper::modify(epoll_event event, uint32_t new_events)
 {
-	struct epoll_event event;
-	int                fd = request->getFd();
-	event.events = events;
+	Request *request = (Request *) event.data.ptr;
+	int      fd = request->getFd();
+	event.events = new_events;
 	event.data.ptr = request;
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{

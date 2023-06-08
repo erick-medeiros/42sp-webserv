@@ -6,7 +6,7 @@
 TEST_CASE("Server")
 {
 	// redirect std::cout
-	std::streambuf    *oldCoutStreamBuf = std::cout.rdbuf();
+	std::streambuf *   oldCoutStreamBuf = std::cout.rdbuf();
 	std::ostringstream oss;
 	std::cout.rdbuf(oss.rdbuf());
 

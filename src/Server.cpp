@@ -176,7 +176,7 @@ void Server::run()
 					continue;
 				}
 				// TODO: Esperar request estar "pronta" pra enviar resposta
-				monitoredSockets.modify(request, EPOLLOUT);
+				monitoredSockets.modify(events[i], EPOLLOUT);
 				continue;
 			}
 

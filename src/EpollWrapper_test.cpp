@@ -57,19 +57,19 @@ TEST_SUITE("EpollWrapper")
 
 		CHECK_EQ(epoll.add(pipefd[PIPE_READ], EPOLLIN), 0);
 
+		const int          maxevents = 1;
+		struct epoll_event events[maxevents];
 		{
-			const int          maxevents = 1;
-			struct epoll_event events[maxevents];
 			CHECK_EQ(epoll.wait(events, maxevents, 0), 1);
 			CHECK_EQ(events[0].events, EPOLLIN);
-			CHECK_EQ(epoll.modify(pipefd[PIPE_READ], EPOLLOUT), 0);
+			CHECK_EQ(epoll.modify(events[0], EPOLLOUT), 0);
 			CHECK_EQ(epoll.wait(events, maxevents, 0), 0);
-			CHECK_EQ(epoll.modify(pipefd[PIPE_READ], EPOLLIN), 0);
+			CHECK_EQ(epoll.modify(events[0], EPOLLIN), 0);
 			CHECK_EQ(epoll.wait(events, maxevents, 0), 1);
 			CHECK_EQ(events[0].events, EPOLLIN);
 		}
 		{
-			CHECK_NE(epoll.modify(pipefd[PIPE_WRITE], EPOLLOUT), 0);
+			CHECK_NE(epoll.modify(events[1], EPOLLOUT), 0);
 		}
 
 		_closepipe(pipefd);
