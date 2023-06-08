@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/08 10:35:07 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/08 11:08:04 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,13 +21,11 @@ EpollWrapper::EpollWrapper()
 	}
 }
 
-int EpollWrapper::add(int fd, uint32_t events)
+int EpollWrapper::add(int fd, epoll_data_t data, uint32_t events)
 {
-	Request *request = new Request(fd);
-
 	struct epoll_event event;
 	event.events = events;
-	event.data.ptr = request;
+	event.data = data;
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event) == -1)
 	{
 		logError("EpollWrapper: add: ", strerror(errno));
@@ -36,12 +34,11 @@ int EpollWrapper::add(int fd, uint32_t events)
 	return 0;
 }
 
-int EpollWrapper::modify(epoll_event event, uint32_t new_events)
+int EpollWrapper::modify(int fd, epoll_data_t data, uint32_t new_events)
 {
-	Request *request = (Request *) event.data.ptr;
-	int      fd = request->getFd();
+	struct epoll_event event;
 	event.events = new_events;
-	event.data.ptr = request;
+	event.data = data;
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
 		logError("EpollWrapper: modify: ", strerror(errno));

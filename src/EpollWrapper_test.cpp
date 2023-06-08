@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/05 20:07:57 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/08 11:15:10 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "doctest.h"
 #include <cstdlib>
 #include <iostream>
+#include <sys/epoll.h>
 #include <unistd.h>
 
 #define PIPE_READ 0
@@ -43,7 +44,9 @@ TEST_SUITE("EpollWrapper")
 		int          pipefd[2];
 		_pipe(pipefd);
 
-		CHECK_EQ(epoll.add(pipefd[PIPE_READ], EPOLLIN), 0);
+		epoll_data_t data = {0};
+		data.fd = pipefd[PIPE_READ];
+		CHECK_EQ(epoll.add(pipefd[PIPE_READ], data, EPOLLIN), 0);
 
 		_closepipe(pipefd);
 	}
@@ -55,21 +58,24 @@ TEST_SUITE("EpollWrapper")
 
 		write(pipefd[PIPE_WRITE], "test", 4);
 
-		CHECK_EQ(epoll.add(pipefd[PIPE_READ], EPOLLIN), 0);
+		epoll_data_t data = {0};
+		data.fd = pipefd[PIPE_READ];
+		CHECK_EQ(epoll.add(pipefd[PIPE_READ], data, EPOLLIN), 0);
 
 		const int          maxevents = 1;
 		struct epoll_event events[maxevents];
 		{
 			CHECK_EQ(epoll.wait(events, maxevents, 0), 1);
 			CHECK_EQ(events[0].events, EPOLLIN);
-			CHECK_EQ(epoll.modify(events[0], EPOLLOUT), 0);
+			CHECK_EQ(epoll.modify(events[0].data.fd, events[0].data, EPOLLOUT), 0);
 			CHECK_EQ(epoll.wait(events, maxevents, 0), 0);
-			CHECK_EQ(epoll.modify(events[0], EPOLLIN), 0);
+			CHECK_EQ(epoll.modify(events[0].data.fd, events[0].data, EPOLLIN), 0);
 			CHECK_EQ(epoll.wait(events, maxevents, 0), 1);
 			CHECK_EQ(events[0].events, EPOLLIN);
 		}
 		{
-			CHECK_NE(epoll.modify(events[1], EPOLLOUT), 0);
+			epoll_data_t data = {0};
+			CHECK_NE(epoll.modify(pipefd[PIPE_WRITE], data, EPOLLOUT), 0);
 		}
 
 		_closepipe(pipefd);
@@ -80,7 +86,9 @@ TEST_SUITE("EpollWrapper")
 		int          pipefd[2];
 		_pipe(pipefd);
 
-		CHECK_EQ(epoll.add(pipefd[PIPE_READ], EPOLLIN), 0);
+		epoll_data_t data = {0};
+		data.fd = pipefd[PIPE_READ];
+		CHECK_EQ(epoll.add(pipefd[PIPE_READ], data, EPOLLIN), 0);
 		CHECK_EQ(epoll.remove(pipefd[PIPE_READ]), 0);
 		CHECK_EQ(epoll.remove(pipefd[PIPE_WRITE]), -1);
 
@@ -107,7 +115,9 @@ TEST_SUITE("EpollWrapper::wait")
 		int pipefd[2];
 		_pipe(pipefd);
 
-		CHECK_EQ(epoll.add(pipefd[PIPE_READ], EPOLLIN), 0);
+		epoll_data_t data = {0};
+		data.fd = pipefd[PIPE_READ];
+		CHECK_EQ(epoll.add(pipefd[PIPE_READ], data, EPOLLIN), 0);
 		CHECK_EQ(epoll.wait(events, maxevents, 0), 0);
 
 		{ // write in pipe
@@ -155,8 +165,12 @@ TEST_SUITE("EpollWrapper::wait")
 		_pipe(pipefd_two);
 
 		{ // add
-			CHECK_EQ(epoll.add(pipefd_one[PIPE_READ], EPOLLIN), 0);
-			CHECK_EQ(epoll.add(pipefd_two[PIPE_READ], EPOLLIN), 0);
+			epoll_data_t data_one = {0};
+			data_one.fd = pipefd_one[PIPE_READ];
+			epoll_data_t data_two = {0};
+			data_two.fd = pipefd_two[PIPE_READ];
+			CHECK_EQ(epoll.add(pipefd_one[PIPE_READ], data_one, EPOLLIN), 0);
+			CHECK_EQ(epoll.add(pipefd_two[PIPE_READ], data_two, EPOLLIN), 0);
 			CHECK_EQ(epoll.wait(events, maxevents, 0), 0);
 		}
 
@@ -220,7 +234,9 @@ TEST_SUITE("EpollWrapper::wait")
 		_pipe(pipefd);
 
 		// -- edge triggered
-		CHECK_EQ(epoll.add(pipefd[PIPE_READ], EPOLLIN | EPOLLET), 0);
+		epoll_data_t data = {0};
+		data.fd = pipefd[PIPE_READ];
+		CHECK_EQ(epoll.add(pipefd[PIPE_READ], data, EPOLLIN | EPOLLET), 0);
 		CHECK_EQ(epoll.wait(events, maxevents, 0), 0);
 
 		{ // write in pipe

@@ -125,7 +125,8 @@ void Server::run()
 	struct epoll_event events[MAX_EVENTS];
 
 	// --- Add server socket to waiting list, so it is managed by epoll ---
-	monitoredSockets.add(serverSocket, EPOLLIN | EPOLLOUT);
+	epoll_data_t data = {0};
+	monitoredSockets.add(serverSocket, data, EPOLLIN | EPOLLOUT);
 
 	while (true)
 	{
@@ -141,7 +142,9 @@ void Server::run()
 			{
 				int newClient = acceptNewClient();
 				setNonBlocking(newClient);
-				monitoredSockets.add(newClient, EPOLLIN);
+				epoll_data_t data;
+				data.ptr = new Request(newClient);
+				monitoredSockets.add(newClient, data, EPOLLIN);
 				continue;
 			}
 
@@ -176,7 +179,7 @@ void Server::run()
 					continue;
 				}
 				// TODO: Esperar request estar "pronta" pra enviar resposta
-				monitoredSockets.modify(events[i], EPOLLOUT);
+				monitoredSockets.modify(request->getFd(), events[i].data, EPOLLOUT);
 				continue;
 			}
 

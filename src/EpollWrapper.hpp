@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/05 19:57:46 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/08 11:07:37 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ class EpollWrapper
 	EpollWrapper(void);
 	~EpollWrapper(void);
 
-	int add(int fd, uint32_t events);
-	int modify(epoll_event event, uint32_t events);
+	int add(int fd, epoll_data_t data, uint32_t events);
+	int modify(int fd, epoll_data_t data, uint32_t new_events);
 	int remove(int fd);
 	int wait(struct epoll_event *events, int maxevents, int timeout);
 
