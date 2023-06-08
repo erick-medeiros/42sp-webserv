@@ -13,6 +13,8 @@
 #ifndef EPOLLWRAPPER_HPP
 #define EPOLLWRAPPER_HPP
 
+#include "Request.hpp"
+#include "log_utils.hpp"
 #include <cstddef>
 #include <cstring>
 #include <errno.h>
@@ -30,7 +32,7 @@ class EpollWrapper
 	~EpollWrapper(void);
 
 	int add(int fd, uint32_t events);
-	int modify(int fd, uint32_t events);
+	int modify(Request *request, uint32_t events);
 	int remove(int fd);
 	int wait(struct epoll_event *events, int maxevents, int timeout);
 

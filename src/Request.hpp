@@ -27,7 +27,7 @@ enum
 class Request
 {
   private:
-	Request(void);
+	int                                fd;
 	std::map<std::string, std::string> startLine;
 	std::map<std::string, std::string> header;
 	std::string                        body;
@@ -38,9 +38,10 @@ class Request
 	void                               parseURL(void);
 
   public:
-	Request(std::string const req);
+	Request(int fd);
 	~Request(void);
 
+	void                               parse(std::string const rawRequest);
 	std::map<std::string, std::string> getStartLine(void) const;
 	std::map<std::string, std::string> getHeaders(void) const;
 	std::string                        getBody(void) const;
@@ -50,6 +51,7 @@ class Request
 	std::string                        getMethod(void) const;
 	std::string                        getUrl(void) const;
 	std::string                        getHeaderValue(std::string const) const;
+	int                                getFd(void) const;
 	bool isValidMethod(std::string const &requestMethod) const;
 	bool isValidHttpVersion(std::string &requestVersion) const;
 };

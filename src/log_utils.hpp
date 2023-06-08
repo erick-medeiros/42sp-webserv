@@ -1,4 +1,15 @@
+#ifndef LOG_UTILS_HPP
+#define LOG_UTILS_HPP
 #include <iostream>
+
+#define BLUE "\x1b[38;5;25m"
+#define CYAN "\x1b[38;5;51m"
+#define YELLOW "\x1b[38;5;220m"
+#define PURPLE "\x1b[38;5;162m"
+#define RED "\x1b[38;5;196m"
+#define GRAY "\x1b[38;5;8m"
+#define GREEN "\x1b[38;5;40m"
+#define RES "\x1b[0m"
 
 // Log Error ( RED )
 template <typename T> void logError(const T &logMessage)
@@ -54,3 +65,5 @@ void logSuccess(const T1 &logMessage, const T2 &additionalInfo)
 {
 	std::cout << GREEN << logMessage << ": " << additionalInfo << RES << std::endl;
 }
+
+#endif // LOG_UTILS_HPP

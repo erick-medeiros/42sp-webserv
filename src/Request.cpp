@@ -1,15 +1,19 @@
 #include "Request.hpp"
 
-Request::Request(std::string const req)
+Request::Request(int fd) : fd(fd){};
+
+Request::~Request(void){};
+
+void Request::parse(std::string const rawInput)
 {
-	std::istringstream iss(req);
+	std::istringstream iss(rawInput);
 
 	initStartLine(iss);
 	initHeaders(iss);
 	parseURL();
-};
-
-Request::~Request(void){};
+	// TODO: Ler o body caso tenha um content-length no header
+	// TODO: Depois de ler tudo que precisa, dizer que o request está finished
+}
 
 void Request::initStartLine(std::istringstream &iss)
 {
@@ -139,6 +143,11 @@ void Request::parseURL(void)
 // debug
 
 // getters
+int Request::getFd(void) const
+{
+	return this->fd;
+}
+
 std::map<std::string, std::string> Request::getStartLine(void) const
 {
 	return this->startLine;

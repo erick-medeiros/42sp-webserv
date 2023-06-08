@@ -24,9 +24,11 @@ EpollWrapper::EpollWrapper()
 
 int EpollWrapper::add(int fd, uint32_t events)
 {
+	Request *request = new Request(fd);
+
 	struct epoll_event event;
 	event.events = events;
-	event.data.fd = fd;
+	event.data.ptr = request;
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event) == -1)
 	{
 		cerr << "EpollWrapper: "
@@ -37,11 +39,12 @@ int EpollWrapper::add(int fd, uint32_t events)
 	return 0;
 }
 
-int EpollWrapper::modify(int fd, uint32_t events)
+int EpollWrapper::modify(Request *request, uint32_t events)
 {
 	struct epoll_event event;
+	int                fd = request->getFd();
 	event.events = events;
-	event.data.fd = fd;
+	event.data.ptr = request;
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
 		cerr << "EpollWrapper: "
@@ -86,6 +89,9 @@ bool setNonBlocking(int fd)
 	if (flags == -1)
 		return false;
 	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
+	{
+		logError("--- Error: set nonblocking for fd", fd);
 		return false;
+	}
 	return true;
 }

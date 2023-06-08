@@ -5,12 +5,15 @@
 #include <sstream>
 #include <string>
 
+#include "Request.hpp"
+
 #define HTTP_VERSION "HTTP/1.1"
 
 class Response
 {
   public:
 	// Constructor
+	Response(const Request &request);
 	Response();
 	~Response();
 
@@ -28,6 +31,7 @@ class Response
 	void        loadFile(const std::string &path);
 	void        sendTo(int socket) const;
 	std::string buildResponse() const;
+	void        parse(const Request &request);
 
   private:
 	// Attributes
