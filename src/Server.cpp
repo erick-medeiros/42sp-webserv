@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-Server::Server(void) {}
+Server::Server(void) : monitoredSockets(MAX_EVENTS) {}
 
 void Server::init(int argc, char **argv)
 {
@@ -122,20 +122,22 @@ int Server::disconnectClient(Request *request)
 
 void Server::run()
 {
-	struct epoll_event events[MAX_EVENTS];
-
 	// --- Add server socket to waiting list, so it is managed by epoll ---
+	// TODO: remove request of socket
+	Request     *request_socket = new Request(serverSocket);
 	epoll_data_t data = {0};
+	data.ptr = request_socket;
 	monitoredSockets.add(serverSocket, data, EPOLLIN | EPOLLOUT);
 
 	while (true)
 	{
-		int numEvents = monitoredSockets.wait(events, MAX_EVENTS, BLOCK_IND);
+		int numEvents = monitoredSockets.wait(BLOCK_IND);
 
 		for (int i = 0; i < numEvents; ++i)
 		{
-			Request *request = (Request *) events[i].data.ptr;
-			int      clientSocket = request->getFd();
+			struct epoll_event &event = monitoredSockets.events[i];
+			Request            *request = (Request *) event.data.ptr;
+			int                 clientSocket = request->getFd();
 
 			// New connection on server
 			if (clientSocket == serverSocket)
@@ -148,14 +150,14 @@ void Server::run()
 				continue;
 			}
 
-			if (events[i].events & EPOLLERR)
+			if (event.events & EPOLLERR)
 			{
 				logError("Epoll error on socket", clientSocket);
 				disconnectClient(request);
 				continue;
 			}
 
-			if (events[i].events & (EPOLLRDHUP | EPOLLHUP))
+			if (event.events & (EPOLLRDHUP | EPOLLHUP))
 			{
 				logError("Client disconnected from socket", clientSocket);
 				disconnectClient(request);
@@ -163,7 +165,7 @@ void Server::run()
 			}
 
 			// Request
-			if (events[i].events & EPOLLIN)
+			if (event.events & EPOLLIN)
 			{
 				try
 				{
@@ -179,12 +181,12 @@ void Server::run()
 					continue;
 				}
 				// TODO: Esperar request estar "pronta" pra enviar resposta
-				monitoredSockets.modify(request->getFd(), events[i].data, EPOLLOUT);
+				monitoredSockets.modify(clientSocket, event.data, EPOLLOUT);
 				continue;
 			}
 
 			// Response
-			if (events[i].events & EPOLLOUT)
+			if (event.events & EPOLLOUT)
 			{
 				Response response(*request);
 				response.sendTo(clientSocket);
@@ -193,6 +195,7 @@ void Server::run()
 		}
 	}
 
+	delete request_socket;
 	monitoredSockets.remove(serverSocket);
 }
 
