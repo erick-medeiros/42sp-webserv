@@ -136,8 +136,8 @@ void Server::run()
 		for (int i = 0; i < numEvents; ++i)
 		{
 			struct epoll_event &event = monitoredSockets.events[i];
-			Request            *request = (Request *) event.data.ptr;
-			int                 clientSocket = request->getFd();
+			Request *request = reinterpret_cast<Request *>(event.data.ptr);
+			int      clientSocket = request->getFd();
 
 			// New connection on server
 			if (clientSocket == serverSocket)
