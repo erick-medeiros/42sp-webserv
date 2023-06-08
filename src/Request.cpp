@@ -33,7 +33,7 @@ void Request::initStartLine(std::istringstream &iss)
 	{
 		throw std::runtime_error("missing HTTP request method");
 	}
-	if (isValidMethod(token))
+	if (!token.empty() && isValidMethod(token))
 	{
 		this->startLine["Method"] = trim(token);
 	}
@@ -230,7 +230,7 @@ bool Request::isValidMethod(std::string const &requestMethod) const
 	std::string const methods[numberOfAvaibleMethods] = {"GET", "POST", "DELETE"};
 
 	int index = 0;
-	for (int i = 0; requestMethod != methods[i] && i < numberOfAvaibleMethods; ++i)
+	for (int i = 0; i < numberOfAvaibleMethods && requestMethod != methods[i]; ++i)
 	{
 		index++;
 	}
@@ -251,7 +251,7 @@ bool Request::isValidHttpVersion(std::string &requestVersion) const
 	std::string const protocols[2] = {"HTTP/1.0", "HTTP/1.1"};
 
 	int index = 0;
-	for (int i = 0; requestVersion != protocols[i] && i < 2; ++i)
+	for (int i = 0; i < 2 && requestVersion != protocols[i]; ++i)
 	{
 		index++;
 	}

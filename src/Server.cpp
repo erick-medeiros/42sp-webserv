@@ -12,9 +12,6 @@ void Server::init(int argc, char **argv)
 	initSignal(this);
 
 	listenToPort(8080);
-
-	// --- Add server socket to waiting list, so it is managed by epoll ---
-	monitoredSockets.add(serverSocket, EPOLLIN | EPOLLOUT);
 }
 
 Server::~Server()
@@ -127,6 +124,9 @@ void Server::run()
 {
 	struct epoll_event events[MAX_EVENTS];
 
+	// --- Add server socket to waiting list, so it is managed by epoll ---
+	monitoredSockets.add(serverSocket, EPOLLIN | EPOLLOUT);
+
 	while (true)
 	{
 		int numEvents = monitoredSockets.wait(events, MAX_EVENTS, BLOCK_IND);
@@ -189,6 +189,8 @@ void Server::run()
 			}
 		}
 	}
+
+	monitoredSockets.remove(serverSocket);
 }
 
 // --- Helper functions ---
