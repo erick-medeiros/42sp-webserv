@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 14:50:36 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/09 15:30:10 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/09 15:56:55 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,15 @@ class Cookie
 	Cookie(void);
 	~Cookie(void);
 
+	std::string const &get(std::string &key);
+	void               set(std::string const &key, std::string const &value);
+
 	std::string generateSession(void) const;
 
 	static std::string getValueCookie(Request const     &request,
 	                                  std::string const &key);
+
+	static std::string getUsername(Request const &request);
 
   private:
 	std::map<std::string, std::string> _db;

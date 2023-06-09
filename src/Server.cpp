@@ -141,6 +141,8 @@ void Server::run()
 	data.ptr = request_socket;
 	monitoredSockets.add(serverSocket, data, EPOLLIN | EPOLLOUT);
 
+	Cookie cookies;
+
 	while (true)
 	{
 		int numEvents = monitoredSockets.wait(BLOCK_IND);
@@ -197,6 +199,28 @@ void Server::run()
 			if (event.events & EPOLLOUT)
 			{
 				Response response(*request);
+
+				if (true) // test
+				{
+					string username = Cookie::getUsername(*request);
+					if (username == "")
+					{
+						string value = Cookie::getValueCookie(*request, "session");
+						if (cookies.get(value) != "")
+						{
+							response.setStatus(200);
+							response.setBody("username " + cookies.get(value));
+						}
+					}
+					else
+					{
+						string session = cookies.generateSession();
+						cookies.set(session, username);
+						response.setHeader("Set-Cookie",
+						                   "session=" + session + ";path=/");
+					}
+				}
+
 				response.sendHttpResponse();
 				disconnectClient(request);
 			}
