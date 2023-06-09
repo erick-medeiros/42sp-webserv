@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "HttpStatus.hpp"
 #include "utils.hpp"
 
 enum
@@ -28,20 +29,27 @@ class Request
 {
   private:
 	int                                fd;
+	int                                errorCode;
 	std::map<std::string, std::string> startLine;
 	std::map<std::string, std::string> header;
 	std::string                        body;
 	std::string                        resourcePath;
 	std::string                        resourceQuery;
-	void                               initStartLine(std::istringstream &iss);
-	void                               initHeaders(std::istringstream &iss);
-	void                               parseURL(void);
+	std::string                        unparsed;
+	void                               parseStartLine(std::istringstream &iss);
+	void                               parseURI();
+	void                               parseHeaders(std::istringstream &iss);
+	void                               parseBody(std::istringstream &iss);
+	bool                               startLineParsed;
+	bool                               headersParsed;
+	bool                               URIParsed;
+	bool                               bodyParsed;
 
   public:
 	Request(int fd);
 	~Request(void);
+	void parse(std::string const rawRequest);
 
-	void                               parse(std::string const rawRequest);
 	std::map<std::string, std::string> getStartLine(void) const;
 	std::map<std::string, std::string> getHeaders(void) const;
 	std::string                        getBody(void) const;
