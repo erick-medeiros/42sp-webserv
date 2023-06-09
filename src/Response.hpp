@@ -8,6 +8,9 @@
 #include "Request.hpp"
 
 #define HTTP_VERSION "HTTP/1.1"
+#define CRLF "\r\n"
+#define SP " "
+#define HEADER_SEPARATOR ": "
 
 class Response
 {
@@ -28,17 +31,19 @@ class Response
 	std::string getBody() const;
 
 	// Other methods
-	void        loadFile(const std::string &path);
-	void        sendTo(int socket) const;
-	std::string buildResponse() const;
 	void        parse(const Request &request);
+	void        loadFile(const std::string &path);
+	void        prepareMessage(void);
+	void        sendHttpResponse(void);
+	std::string getReasonPhrase(void) const;
 
   private:
 	// Attributes
 	int                                statusCode;
-	std::map<int, std::string>         reasonPhrase;
+	int                                clientFd;
 	std::map<std::string, std::string> headers;
 	std::string                        body;
+	std::string                        message;
 };
 
 #endif

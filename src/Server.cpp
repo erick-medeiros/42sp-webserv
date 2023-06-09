@@ -88,10 +88,15 @@ int Server::acceptNewClient(void)
 	return clientSocket;
 }
 
-std::string Server::readFromSocket(int clientSocket)
+std::string Server::readFromSocket(epoll_event *event)
 {
-	char buff[2048];
-	int  bytesRead = recv(clientSocket, buff, sizeof(buff), 0);
+	Request *request = reinterpret_cast<Request *>(event->data.ptr);
+	int      clientSocket = request->getFd();
+
+	int  buffSize = 1024;
+	char buff[buffSize];
+
+	int bytesRead = recv(clientSocket, buff, sizeof(buff), 0);
 
 	if (bytesRead == -1)
 	{
@@ -104,6 +109,11 @@ std::string Server::readFromSocket(int clientSocket)
 		close(clientSocket);
 		return "";
 	}
+	if (bytesRead < buffSize)
+	{
+		monitoredSockets.modify(clientSocket, event->data, EPOLLOUT);
+	}
+
 	buff[bytesRead] = 0;
 	logInfo("Request size", bytesRead);
 	return std::string(buff);
@@ -124,7 +134,7 @@ void Server::run()
 {
 	// --- Add server socket to waiting list, so it is managed by epoll ---
 	// TODO: remove request of socket
-	Request     *request_socket = new Request(serverSocket);
+	Request *    request_socket = new Request(serverSocket);
 	epoll_data_t data = {0};
 	data.ptr = request_socket;
 	monitoredSockets.add(serverSocket, data, EPOLLIN | EPOLLOUT);
@@ -137,10 +147,9 @@ void Server::run()
 		{
 			struct epoll_event &event = monitoredSockets.events[i];
 			Request *request = reinterpret_cast<Request *>(event.data.ptr);
-			int      clientSocket = request->getFd();
 
 			// New connection on server
-			if (clientSocket == serverSocket)
+			if (request->getFd() == serverSocket)
 			{
 				int newClient = acceptNewClient();
 				setNonBlocking(newClient);
@@ -152,14 +161,14 @@ void Server::run()
 
 			if (event.events & EPOLLERR)
 			{
-				logError("Epoll error on socket", clientSocket);
+				logError("Epoll error on socket", request->getFd());
 				disconnectClient(request);
 				continue;
 			}
 
 			if (event.events & (EPOLLRDHUP | EPOLLHUP))
 			{
-				logError("Client disconnected from socket", clientSocket);
+				logError("Client disconnected from socket", request->getFd());
 				disconnectClient(request);
 				continue;
 			}
@@ -169,19 +178,16 @@ void Server::run()
 			{
 				try
 				{
-					std::string rawInput = readFromSocket(clientSocket);
+					std::string rawInput = readFromSocket(&event);
 					request->parse(rawInput);
 					std::cout << *request << std::endl;
 				}
 				catch (std::exception const &e)
 				{
+					// TODO: handle exception properly...
 					logError(e.what());
 					disconnectClient(request);
-					// TODO: handle exception properly...
-					continue;
 				}
-				// TODO: Esperar request estar "pronta" pra enviar resposta
-				monitoredSockets.modify(clientSocket, event.data, EPOLLOUT);
 				continue;
 			}
 
@@ -189,7 +195,7 @@ void Server::run()
 			if (event.events & EPOLLOUT)
 			{
 				Response response(*request);
-				response.sendTo(clientSocket);
+				response.sendHttpResponse();
 				disconnectClient(request);
 			}
 		}

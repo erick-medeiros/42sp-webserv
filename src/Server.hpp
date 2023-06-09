@@ -38,7 +38,7 @@ class Server
 	int          listenToPort(int port);
 	sockaddr_in  createServerAddress(int port);
 	int          acceptNewClient(void);
-	std::string  readFromSocket(int clientSocket);
+	std::string  readFromSocket(epoll_event *event);
 	int          disconnectClient(Request *request);
 };
 
