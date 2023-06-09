@@ -1,15 +1,19 @@
 #include "Request.hpp"
 
-Request::Request(std::string const req)
+Request::Request(int fd) : fd(fd){};
+
+Request::~Request(void){};
+
+void Request::parse(std::string const rawInput)
 {
-	std::istringstream iss(req);
+	std::istringstream iss(rawInput);
 
 	initStartLine(iss);
 	initHeaders(iss);
 	parseURL();
-};
-
-Request::~Request(void){};
+	// TODO: Ler o body caso tenha um content-length no header
+	// TODO: Depois de ler tudo que precisa, dizer que o request está finished
+}
 
 void Request::initStartLine(std::istringstream &iss)
 {
@@ -29,7 +33,7 @@ void Request::initStartLine(std::istringstream &iss)
 	{
 		throw std::runtime_error("missing HTTP request method");
 	}
-	if (isValidMethod(token))
+	if (!token.empty() && isValidMethod(token))
 	{
 		this->startLine["Method"] = trim(token);
 	}
@@ -139,6 +143,11 @@ void Request::parseURL(void)
 // debug
 
 // getters
+int Request::getFd(void) const
+{
+	return this->fd;
+}
+
 std::map<std::string, std::string> Request::getStartLine(void) const
 {
 	return this->startLine;
@@ -221,7 +230,7 @@ bool Request::isValidMethod(std::string const &requestMethod) const
 	std::string const methods[numberOfAvaibleMethods] = {"GET", "POST", "DELETE"};
 
 	int index = 0;
-	for (int i = 0; requestMethod != methods[i] && i < numberOfAvaibleMethods; ++i)
+	for (int i = 0; i < numberOfAvaibleMethods && requestMethod != methods[i]; ++i)
 	{
 		index++;
 	}
@@ -242,7 +251,7 @@ bool Request::isValidHttpVersion(std::string &requestVersion) const
 	std::string const protocols[2] = {"HTTP/1.0", "HTTP/1.1"};
 
 	int index = 0;
-	for (int i = 0; requestVersion != protocols[i] && i < 2; ++i)
+	for (int i = 0; i < 2 && requestVersion != protocols[i]; ++i)
 	{
 		index++;
 	}

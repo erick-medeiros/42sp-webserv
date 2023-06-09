@@ -1,15 +1,30 @@
 #include "Response.hpp"
 
+#include <dirent.h>     // opendir
 #include <fstream>      // ifstream
 #include <sstream>      // stringstream
 #include <sys/socket.h> // send
 
+#include "log_utils.hpp"
+
+// TODO: Move this
+int is_dir(const std::string &path)
+{
+	DIR *dir = opendir(path.c_str());
+	if (dir != NULL)
+	{
+		closedir(dir);
+		return 1;
+	}
+	return 0;
+}
+
 void Response::loadFile(const std::string &path)
 {
 	std::ifstream file(path.c_str());
-	if (!file.is_open())
+	logWarning("Loading file: " + path);
+	if (!file.is_open() || is_dir(path))
 	{
-		// Set status code to 404
 		setStatus(404);
 		return;
 	}
@@ -22,18 +37,34 @@ void Response::loadFile(const std::string &path)
 void Response::sendTo(int socket) const
 {
 	std::string response = buildResponse();
+	logWarning("Sending response:\n" + response);
 	if (send(socket, response.c_str(), response.size(), 0) < 0)
 	{
 		throw std::runtime_error("Error sending response");
 	}
 }
 
-Response::Response() : statusCode(200)
+Response::Response(const Request &request) : statusCode(200)
 {
 	// Initialize status messages
 	reasonPhrase[200] = "OK";
 	reasonPhrase[404] = "Not Found";
+
+	parse(request);
 }
+
+void Response::parse(const Request &request)
+{
+	if (request.getMethod() == "GET")
+	{
+		// TODO: Trocar esse files pelo que foi passado no conf
+		std::string filePath = "files" + request.getResourcePath();
+		loadFile(filePath);
+	}
+	// TODO: Implementar outros métodos além do GET
+}
+
+Response::Response() : statusCode(200) {}
 
 Response::~Response(){};
 
@@ -83,6 +114,9 @@ std::string Response::getBody() const
 std::string Response::buildResponse() const
 {
 	std::stringstream response;
+
+	logWarning("Status code", statusCode);
+
 	// Status line
 	response << HTTP_VERSION << " " << statusCode << " "
 	         << reasonPhrase.at(statusCode) << "\r\n";

@@ -1,9 +1,13 @@
 #include "Response.hpp"
 #include "doctest.h"
 
+#define TEST_FD 42
+
 TEST_CASE("Response class")
 {
-	Response response;
+	Request req(TEST_FD);
+	req.parse("GET / HTTP/1.1\r\n\r\n");
+	Response response(req);
 
 	SUBCASE("Setters and getters")
 	{

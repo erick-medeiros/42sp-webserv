@@ -21,6 +21,7 @@
 #include "signals.hpp"
 
 #define MAX_EVENTS 500
+#define BLOCK_IND -1
 
 class Server
 {
@@ -33,12 +34,12 @@ class Server
 
   private:
 	int          serverSocket;
-	EpollWrapper waiting_list;
+	EpollWrapper monitoredSockets;
 	int          listenToPort(int port);
 	sockaddr_in  createServerAddress(int port);
 	int          acceptNewClient(void);
-	std::string  getRawRequest(int clientSocket);
-	int          disconnectClient(int clientSocket);
+	std::string  readFromSocket(int clientSocket);
+	int          disconnectClient(Request *request);
 };
 
 #endif

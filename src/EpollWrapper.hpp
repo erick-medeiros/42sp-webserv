@@ -6,13 +6,15 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/05 19:57:46 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/08 12:10:39 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef EPOLLWRAPPER_HPP
 #define EPOLLWRAPPER_HPP
 
+#include "Request.hpp"
+#include "log_utils.hpp"
 #include <cstddef>
 #include <cstring>
 #include <errno.h>
@@ -26,16 +28,20 @@ using namespace std;
 class EpollWrapper
 {
   public:
-	EpollWrapper(void);
+	struct epoll_event *events;
+
+	EpollWrapper(size_t maxevents);
 	~EpollWrapper(void);
 
-	int add(int fd, uint32_t events);
-	int modify(int fd, uint32_t events);
+	int add(int fd, epoll_data_t data, uint32_t events);
+	int modify(int fd, epoll_data_t data, uint32_t new_events);
 	int remove(int fd);
-	int wait(struct epoll_event *events, int maxevents, int timeout);
+
+	int wait(int timeout);
 
   private:
-	int epoll_fd;
+	int    _epoll_fd;
+	size_t _maxevents;
 };
 
 bool setNonBlocking(int fd);
