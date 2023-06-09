@@ -1,27 +1,41 @@
 #include "Request.hpp"
 
-Request::Request(int fd) : fd(fd){};
+Request::Request(int fd)
+    : fd(fd), startLineParsed(false), headersParsed(false), bodyParsed(false){};
 
 Request::~Request(void){};
 
 void Request::parse(std::string const rawInput)
 {
-	std::istringstream iss(rawInput);
+	unparsed += rawInput;
+	std::istringstream stringStream(unparsed);
 
-	initStartLine(iss);
-	initHeaders(iss);
-	parseURL();
-	// TODO: Ler o body caso tenha um content-length no header
+	if (!startLineParsed)
+		parseStartLine(stringStream);
+	if (!headersParsed)
+		parseHeaders(stringStream);
+	if (!bodyParsed)
+		parseBody(stringStream);
+
 	// TODO: Depois de ler tudo que precisa, dizer que o request está finished
+	// TODO: Checar quais são os códigos de erro para cada throw e setar o errorCode
 }
 
-void Request::initStartLine(std::istringstream &iss)
+void Request::parseBody(std::istringstream &iss)
+{
+	(void) iss;
+	// TODO: Ler o body de acordo com o header Content-Length
+	return;
+}
+
+void Request::parseStartLine(std::istringstream &iss)
 {
 	std::string row;
 
 	std::getline(iss, row);
 	if (iss.fail() || row.empty())
 	{
+		errorCode = HttpStatus::BAD_REQUEST;
 		throw std::runtime_error("missing request start-line data");
 	}
 
@@ -33,13 +47,14 @@ void Request::initStartLine(std::istringstream &iss)
 	{
 		throw std::runtime_error("missing HTTP request method");
 	}
+
 	if (!token.empty() && isValidMethod(token))
-	{
 		this->startLine["Method"] = trim(token);
-	}
 	else
 	{
-		throw std::runtime_error("non supported HTTP method: " + token);
+		// https://www.rfc-editor.org/rfc/rfc9112#section-3-4
+		this->errorCode = HttpStatus::NOT_IMPLEMENTED;
+		throw std::runtime_error("invalid HTTP request method: " + token);
 	}
 
 	ss >> token;
@@ -60,11 +75,15 @@ void Request::initStartLine(std::istringstream &iss)
 	}
 	else
 	{
+		// https://www.rfc-editor.org/rfc/rfc9110#section-15.6.6
+		this->errorCode = HttpStatus::HTTP_VERSION_NOT_SUPPORTED;
 		throw std::runtime_error("invalid HTTP protocol version: " + token);
 	}
+
+	parseURI();
 }
 
-void Request::initHeaders(std::istringstream &iss)
+void Request::parseHeaders(std::istringstream &iss)
 {
 	std::string       row;
 	std::string       key;
@@ -116,7 +135,7 @@ void Request::initHeaders(std::istringstream &iss)
 	}
 }
 
-void Request::parseURL(void)
+void Request::parseURI(void)
 {
 	std::string resource = this->startLine["URL"];
 
