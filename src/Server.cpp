@@ -132,14 +132,20 @@ int Server::disconnectClient(Request *request)
 	return close(fd);
 }
 
+#ifndef FEATURE_FLAG_COOKIE
+#define FEATURE_FLAG_COOKIE 0
+#endif
+
 void Server::run()
 {
 	// --- Add server socket to waiting list, so it is managed by epoll ---
 	// TODO: remove request of socket
-	Request *    request_socket = new Request(serverSocket);
+	Request     *request_socket = new Request(serverSocket);
 	epoll_data_t data = {0};
 	data.ptr = request_socket;
 	monitoredSockets.add(serverSocket, data, EPOLLIN | EPOLLOUT);
+
+	Cookie cookies;
 
 	while (true)
 	{
@@ -197,6 +203,28 @@ void Server::run()
 			if (event.events & EPOLLOUT)
 			{
 				Response response(*request);
+
+				if (FEATURE_FLAG_COOKIE) // test
+				{
+					string username = Cookie::getUsername(*request);
+					if (username == "")
+					{
+						string value = Cookie::getValueCookie(*request, "session");
+						if (cookies.get(value) != "")
+						{
+							response.setStatus(200);
+							response.setBody("username " + cookies.get(value));
+						}
+					}
+					else
+					{
+						string session = cookies.generateSession();
+						cookies.set(session, username);
+						response.setHeader("Set-Cookie",
+						                   "session=" + session + ";path=/");
+					}
+				}
+
 				response.sendHttpResponse();
 				disconnectClient(request);
 			}

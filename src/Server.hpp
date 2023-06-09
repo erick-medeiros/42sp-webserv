@@ -14,6 +14,7 @@
 #include <unistd.h> // close
 #include <vector>
 
+#include "Cookie.hpp"
 #include "EpollWrapper.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
