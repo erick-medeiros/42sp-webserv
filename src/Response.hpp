@@ -29,6 +29,7 @@ class Response
 	int         getStatusCode() const;
 	std::string getHeader(const std::string &key) const;
 	std::string getBody() const;
+	std::string getMessage() const;
 
 	// Other methods
 	void        parse(const Request &request);

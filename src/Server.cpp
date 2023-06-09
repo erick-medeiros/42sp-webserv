@@ -109,11 +109,13 @@ std::string Server::readFromSocket(epoll_event *event)
 		close(clientSocket);
 		return "";
 	}
+	// TODO: Não funciona com o caso de um request maior que 1024 bytes, pois
+	//       não é feito um loop para ler o resto do request e não aciona outro
+	//       EPOLLIN
+	//		 ideia: Fazer o Request saber quando está completo e se não estiver fazer
+	// outra chamada
 	if (bytesRead < buffSize)
-	{
 		monitoredSockets.modify(clientSocket, event->data, EPOLLOUT);
-	}
-
 	buff[bytesRead] = 0;
 	logInfo("Request size", bytesRead);
 	return std::string(buff);

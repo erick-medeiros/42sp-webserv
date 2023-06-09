@@ -1,6 +1,7 @@
 #include "Request.hpp"
 
-Request::Request(int fd) : fd(fd){};
+Request::Request(int fd)
+    : fd(fd), startLineParsed(false), headersParsed(false), bodyParsed(false){};
 
 Request::~Request(void){};
 
@@ -15,30 +16,16 @@ void Request::parse(std::string const rawInput)
 		parseHeaders(stringStream);
 	if (!bodyParsed)
 		parseBody(stringStream);
-	// TODO: Ler o body caso tenha um content-length no header
+
 	// TODO: Depois de ler tudo que precisa, dizer que o request está finished
 	// TODO: Checar quais são os códigos de erro para cada throw e setar o errorCode
 }
 
 void Request::parseBody(std::istringstream &iss)
 {
+	(void) iss;
+	// TODO: Ler o body de acordo com o header Content-Length
 	return;
-
-	// If iss is empty, then the body is empty
-	if (iss.eof())
-	{
-		this->bodyParsed = true;
-		return;
-	}
-
-	std::string row;
-	std::getline(iss, row);
-	if (iss.fail())
-	{
-		throw std::runtime_error("parsing request body");
-	}
-	this->body = row;
-	this->bodyParsed = true;
 }
 
 void Request::parseStartLine(std::istringstream &iss)

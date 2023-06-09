@@ -95,6 +95,11 @@ std::string Response::getBody() const
 	return body;
 }
 
+std::string Response::getMessage(void) const
+{
+	return this->message;
+}
+
 // https://www.rfc-editor.org/rfc/rfc9112#section-2.1
 void Response::prepareMessage()
 {
