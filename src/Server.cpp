@@ -136,7 +136,7 @@ void Server::run()
 {
 	// --- Add server socket to waiting list, so it is managed by epoll ---
 	// TODO: remove request of socket
-	Request *    request_socket = new Request(serverSocket);
+	Request     *request_socket = new Request(serverSocket);
 	epoll_data_t data = {0};
 	data.ptr = request_socket;
 	monitoredSockets.add(serverSocket, data, EPOLLIN | EPOLLOUT);
