@@ -132,6 +132,10 @@ int Server::disconnectClient(Request *request)
 	return close(fd);
 }
 
+#ifndef FEATURE_FLAG_COOKIE
+#define FEATURE_FLAG_COOKIE 0
+#endif
+
 void Server::run()
 {
 	// --- Add server socket to waiting list, so it is managed by epoll ---
@@ -200,7 +204,7 @@ void Server::run()
 			{
 				Response response(*request);
 
-				if (true) // test
+				if (FEATURE_FLAG_COOKIE) // test
 				{
 					string username = Cookie::getUsername(*request);
 					if (username == "")
