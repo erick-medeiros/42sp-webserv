@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 17:54:12 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/10 18:13:25 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@ int Config::add(string label, string value)
 {
 	if (label == "port")
 		return _setPorts(value);
+	if (label == "server_name")
+		return _setServerName(value);
 	return 1;
 }
 
@@ -55,9 +57,40 @@ int Config::_setPorts(string &value)
 	return ss.fail();
 }
 
+int Config::_setServerName(string &value)
+{
+	if (_serverNames.size() > 0)
+	{
+		logError("server_name: exist");
+		return FAILURE;
+	}
+	if (value == "")
+	{
+		logError("server_name empty");
+		return FAILURE;
+	}
+
+	stringstream ss(value);
+	string       server_name;
+
+	while (!ss.eof())
+	{
+		ss >> server_name;
+		// TODO: Checar se a string contem caracteres validos para um server_name
+		_serverNames.push_back(server_name);
+	}
+
+	return 0;
+}
+
 vector<int> const &Config::getPorts(void) const
 {
 	return _ports;
+}
+
+vector<string> const &Config::getServerNames(void) const
+{
+	return _serverNames;
 }
 
 string Config::readFile(const string &filename)

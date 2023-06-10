@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 17:55:23 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/10 18:15:58 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,5 +69,52 @@ TEST_SUITE("ports")
 		CHECK_EQ(ports.size(), 0);
 		CHECK_EQ(config.add("port", "1024 49151"), 0);
 		CHECK_EQ(ports.size(), 2);
+	}
+}
+
+TEST_SUITE("server name")
+{
+	TEST_CASE("single")
+	{
+		Config config;
+		string server = "localhost";
+		CHECK_EQ(config.add("server_name", server), 0);
+		vector<string> const &serverNames = config.getServerNames();
+
+		CHECK_EQ(serverNames.size(), 1);
+		CHECK_EQ(serverNames[0], server);
+
+		SUBCASE("error")
+		{
+			freopen("/dev/null", "w", stderr);
+			CHECK_EQ(config.add("server_name", server), 1);
+			freopen("/dev/tty", "w", stderr);
+		}
+	}
+
+	TEST_CASE("multiples")
+	{
+		Config config;
+		string server1 = "localhost";
+		string server2 = "www.localhost";
+
+		CHECK_EQ(config.add("server_name", server1 + " " + server2), 0);
+
+		{ // error
+			freopen("/dev/null", "w", stderr);
+			CHECK_EQ(config.add("server_name", server2), 1);
+			freopen("/dev/tty", "w", stderr);
+		}
+
+		vector<string> const &serverNames = config.getServerNames();
+
+		CHECK_EQ(serverNames.size(), 2);
+		CHECK_EQ(serverNames[0], server1);
+		CHECK_EQ(serverNames[1], server2);
+	}
+
+	TEST_CASE("bad url")
+	{
+		// TODO: make
 	}
 }
