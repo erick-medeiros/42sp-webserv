@@ -224,6 +224,11 @@ void Server::run()
 					}
 				}
 
+				// TODO: add other errors
+				if (response.getStatusCode() == 404)
+				{
+					response.loadFile(_config.getErrorPage(404));
+				}
 				response.sendHttpResponse();
 				disconnectClient(request);
 			}

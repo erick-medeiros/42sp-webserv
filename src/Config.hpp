@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 18:13:22 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/10 19:00:21 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,15 +43,18 @@ class Config
 
 	vector<int> const    &getPorts(void) const;
 	vector<string> const &getServerNames(void) const;
+	string const         &getErrorPage(int error);
 
 	static string         readFile(const string &filename);
 	static vector<Config> parseConfig(string &filedata);
 
   private:
-	vector<int>    _ports;
-	vector<string> _serverNames;
-	int            _setPorts(string &);
-	int            _setServerName(string &);
+	vector<int>      _ports;
+	vector<string>   _serverNames;
+	map<int, string> _errorPage;
+	int              _setPorts(string &);
+	int              _setServerName(string &);
+	int              _setErrorPage(string &);
 };
 
 #endif /* CONFIG_HPP */

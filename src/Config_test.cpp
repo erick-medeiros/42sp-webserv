@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 18:15:58 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/10 19:18:53 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,6 +114,32 @@ TEST_SUITE("server name")
 	}
 
 	TEST_CASE("bad url")
+	{
+		// TODO: make
+	}
+}
+
+TEST_SUITE("error pages")
+{
+	TEST_CASE("add")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("error_page", "404 /404.html"), 0);
+		CHECK_EQ(config.add("error_page", "405 /405.html"), 0);
+
+		CHECK_EQ(config.getErrorPage(404), "/404.html");
+		CHECK_EQ(config.getErrorPage(405), "/405.html");
+		CHECK_EQ(config.getErrorPage(200), "");
+	}
+
+	TEST_CASE("error")
+	{
+		Config config;
+		CHECK_EQ(config.add("error_page", "404 /404.html err"), 1);
+	}
+
+	TEST_CASE("range error")
 	{
 		// TODO: make
 	}

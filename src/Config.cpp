@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 18:13:25 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/10 19:00:23 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,9 @@ int Config::add(string label, string value)
 		return _setPorts(value);
 	if (label == "server_name")
 		return _setServerName(value);
+	if (label == "error_page")
+		return _setErrorPage(value);
+	logError("config label not match: ", label);
 	return 1;
 }
 
@@ -83,6 +86,19 @@ int Config::_setServerName(string &value)
 	return 0;
 }
 
+int Config::_setErrorPage(string &value)
+{
+	stringstream ss(value);
+	int          error = 0;
+	string       page;
+	ss >> error;
+	ss >> page;
+	if (!ss.eof())
+		return FAILURE;
+	_errorPage[error] = page;
+	return 0;
+}
+
 vector<int> const &Config::getPorts(void) const
 {
 	return _ports;
@@ -91,6 +107,11 @@ vector<int> const &Config::getPorts(void) const
 vector<string> const &Config::getServerNames(void) const
 {
 	return _serverNames;
+}
+
+string const &Config::getErrorPage(int error)
+{
+	return _errorPage[error];
 }
 
 string Config::readFile(const string &filename)
@@ -241,8 +262,6 @@ vector<Config> Config::parseConfig(string &filedata)
 		for (labels_t::iterator label = server.begin(); label != server.end();
 		     label++)
 		{
-			cout << label->first << " : " << label->second << endl;
-
 			config.add(label->first, label->second);
 		}
 
