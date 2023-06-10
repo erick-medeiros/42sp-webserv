@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 19:18:53 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/10 19:35:08 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,5 +142,22 @@ TEST_SUITE("error pages")
 	TEST_CASE("range error")
 	{
 		// TODO: make
+	}
+}
+
+TEST_SUITE("client body size")
+{
+	TEST_CASE("size")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("client_body_size", "10"), 0);
+	}
+	TEST_CASE("errors")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("client_body_size", "0"), 1);
+		// TODO: make more case of errors
 	}
 }

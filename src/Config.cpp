@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 19:00:23 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/10 19:34:24 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ int Config::add(string label, string value)
 		return _setServerName(value);
 	if (label == "error_page")
 		return _setErrorPage(value);
+	if (label == "client_body_size")
+		return _setClientBodySize(value);
 	logError("config label not match: ", label);
 	return 1;
 }
@@ -99,6 +101,15 @@ int Config::_setErrorPage(string &value)
 	return 0;
 }
 
+int Config::_setClientBodySize(string &value)
+{
+	stringstream ss(value);
+	ss >> _clientBodySize;
+	if (_clientBodySize == 0)
+		return FAILURE;
+	return 0;
+}
+
 vector<int> const &Config::getPorts(void) const
 {
 	return _ports;
@@ -107,6 +118,11 @@ vector<int> const &Config::getPorts(void) const
 vector<string> const &Config::getServerNames(void) const
 {
 	return _serverNames;
+}
+
+size_t const &Config::getClientBodySize() const
+{
+	return _clientBodySize;
 }
 
 string const &Config::getErrorPage(int error)

@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 19:00:21 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/10 19:34:17 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "log_utils.hpp"
 #include "utils.hpp"
+#include <cstddef>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -44,6 +45,7 @@ class Config
 	vector<int> const    &getPorts(void) const;
 	vector<string> const &getServerNames(void) const;
 	string const         &getErrorPage(int error);
+	size_t const         &getClientBodySize() const;
 
 	static string         readFile(const string &filename);
 	static vector<Config> parseConfig(string &filedata);
@@ -52,9 +54,11 @@ class Config
 	vector<int>      _ports;
 	vector<string>   _serverNames;
 	map<int, string> _errorPage;
+	size_t           _clientBodySize;
 	int              _setPorts(string &);
 	int              _setServerName(string &);
 	int              _setErrorPage(string &);
+	int              _setClientBodySize(string &);
 };
 
 #endif /* CONFIG_HPP */
