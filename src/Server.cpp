@@ -2,16 +2,15 @@
 
 Server::Server(void) : monitoredSockets(MAX_EVENTS) {}
 
-void Server::init(int argc, char **argv)
+void Server::init(Config const &conf)
 {
-	(void) argc;
-	(void) argv;
+	_config = conf;
 
 	logSuccess("initializing new web server");
 
 	initSignal(this);
 
-	listenToPort(8080);
+	listenToPort(_config.getPorts()[0]);
 }
 
 Server::~Server()
