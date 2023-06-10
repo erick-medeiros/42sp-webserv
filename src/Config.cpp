@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 16:22:07 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/10 17:50:21 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,42 @@ Config::Config(void) {}
 
 Config::~Config(void) {}
 
-//
+int Config::add(string label, string value)
+{
+	if (label == "port")
+		return _setPorts(value);
+	return 1;
+}
+
+int Config::_setPorts(string &value)
+{
+	stringstream ss(value);
+	int          port;
+
+	if (_ports.size() > 0)
+	{
+		logError("port: exist");
+		return FAILURE;
+	}
+
+	while (!ss.eof())
+	{
+		ss >> port;
+		if (port < 1024 || port > 49151)
+		{
+			logError("port: range invalid");
+			return FAILURE;
+		}
+		_ports.push_back(port);
+	}
+
+	return ss.fail();
+}
+
+vector<int> const &Config::getPorts(void) const
+{
+	return _ports;
+}
 
 string Config::readFile(const string &filename)
 {
@@ -168,7 +203,7 @@ vector<Config> Config::parseConfig(string &filedata)
 		{
 			cout << label->first << " : " << label->second << endl;
 
-			// config
+			config.add(label->first, label->second);
 		}
 
 		data.push_back(config);
