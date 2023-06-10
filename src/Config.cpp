@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 17:50:21 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/10 17:54:12 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,13 @@ int Config::add(string label, string value)
 	if (label == "port")
 		return _setPorts(value);
 	return 1;
+}
+
+bool Config::isValid(void) const
+{
+	if (_ports.size() == 0)
+		return false;
+	return true;
 }
 
 int Config::_setPorts(string &value)

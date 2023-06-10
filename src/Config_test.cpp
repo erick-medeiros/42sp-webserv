@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 17:45:46 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/10 17:55:23 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,13 @@ TEST_SUITE("Class Config")
 		freopen("/dev/null", "w", stderr);
 		CHECK_EQ(config.add("ports", "8080"), 1);
 		freopen("/dev/tty", "w", stderr);
+	}
+	TEST_CASE("valid config")
+	{
+		Config config;
+		CHECK_FALSE(config.isValid());
+		CHECK_EQ(config.add("port", "8080"), 0);
+		CHECK(config.isValid());
 	}
 }
 
