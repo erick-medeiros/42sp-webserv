@@ -37,7 +37,18 @@ void Response::loadFile(const std::string &path)
 Response::Response(const Request &request) : statusCode(200)
 {
 	this->clientFd = request.getFd();
-	parse(request);
+	if (request.isCgiEnabled())
+	{
+		std::stringstream ss;
+		ss << this->clientFd;
+		std::string const tempFile(CGI_RESPONSE + ss.str());
+		loadFile(tempFile);
+		std::remove(tempFile.c_str());
+	}
+	else
+	{
+		parse(request);
+	}
 }
 
 void Response::parse(const Request &request)
@@ -119,8 +130,8 @@ void Response::prepareMessage()
 	message << CRLF;
 
 	// Optional message body
-	if (body.size() > 0)
-		message << body;
+	if (this->body.size() > 0)
+		message << this->body;
 
 	this->message = message.str();
 }

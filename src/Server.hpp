@@ -11,9 +11,11 @@
 #include <stdexcept>
 #include <stdlib.h> // exit
 #include <string>   // to_string
+#include <sys/wait.h>
 #include <unistd.h> // close
 #include <vector>
 
+#include "CGIRequest.hpp"
 #include "Config.hpp"
 #include "Cookie.hpp"
 #include "EpollWrapper.hpp"

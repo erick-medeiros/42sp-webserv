@@ -187,7 +187,32 @@ void Server::run()
 				{
 					std::string rawInput = readFromSocket(&event);
 					request->parse(rawInput);
+
 					std::cout << *request << std::endl;
+
+					// Handle CGI
+					std::string resource = request->getResourcePath();
+					resource = trim(resource);
+
+					if (resource.find_last_of(".php") != std::string::npos)
+					{
+						CGIRequest cgi(resource);
+						if (cgi.isValid())
+						{
+							request->setCgiAs(true);
+							int status;
+							int pid = fork();
+							if (pid == 0)
+							{
+								cgi.exec(*request);
+							}
+							waitpid(pid, &status, 0);
+						}
+					}
+					else
+					{
+						request->setCgiAs(false);
+					}
 				}
 				catch (std::exception const &e)
 				{

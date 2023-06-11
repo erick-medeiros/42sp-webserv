@@ -1,6 +1,7 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
+#include <bits/stdc++.h>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -11,6 +12,8 @@
 
 #include "HttpStatus.hpp"
 #include "utils.hpp"
+
+#define CGI_RESPONSE "/tmp/CGIResponse-"
 
 enum
 {
@@ -44,6 +47,7 @@ class Request
 	bool                               headersParsed;
 	bool                               URIParsed;
 	bool                               bodyParsed;
+	bool                               cgiState;
 
   public:
 	Request(int fd);
@@ -62,6 +66,8 @@ class Request
 	int                                getFd(void) const;
 	bool isValidMethod(std::string const &requestMethod) const;
 	bool isValidHttpVersion(std::string &requestVersion) const;
+	bool isCgiEnabled(void) const;
+	void setCgiAs(bool newState);
 };
 
 std::ostream &operator<<(std::ostream &os, Request const &req);
