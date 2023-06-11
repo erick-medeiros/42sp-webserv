@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 00:09:33 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/11 11:27:11 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ int Config::add(string label, string value)
 		return _setDirectoryListing(value);
 	if (label == "location_response_is_dir")
 		return _setResponseIsDir(value);
+	if (label == "location_cgi")
+		return _setCGI(value);
 	logError("config label not match: ", label);
 	return 1;
 }
@@ -200,6 +202,20 @@ int Config::_setResponseIsDir(string &value)
 	return 0;
 }
 
+int Config::_setCGI(string &value)
+{
+	stringstream ss(value);
+	string       str;
+
+	ss >> _cgi.extension;
+	ss >> _cgi.path;
+
+	if (!ss.eof())
+		return 1;
+
+	return 0;
+}
+
 vector<int> const &Config::getPorts(void) const
 {
 	return _ports;
@@ -223,6 +239,11 @@ string const &Config::getErrorPage(int error)
 vector<location_t> const &Config::getLocations() const
 {
 	return _locations;
+}
+
+cgi_t const &Config::getCGI(void) const
+{
+	return _cgi;
 }
 
 string Config::readFile(const string &filename)

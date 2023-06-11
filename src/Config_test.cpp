@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 00:08:14 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/11 11:33:55 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -262,5 +262,28 @@ TEST_SUITE("location")
 		location_t const &location = config.getLocations()[0];
 
 		CHECK_EQ(location.response_is_dir, "dir");
+	}
+
+	TEST_CASE("location_cgi")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("location", "value"), 0);
+
+		CHECK_EQ(config.add("location_cgi", ".php /bin"), 0);
+
+		cgi_t const &cgi = config.getCGI();
+
+		CHECK_EQ(cgi.extension, ".php");
+		CHECK_EQ(cgi.path, "/bin");
+
+		SUBCASE("error")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "value"), 0);
+
+			CHECK_EQ(config.add("location_cgi", ".php /bin extra"), 1);
+		}
 	}
 }

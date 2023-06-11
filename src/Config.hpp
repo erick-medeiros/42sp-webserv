@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 23:50:46 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/11 11:23:11 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,12 @@ typedef struct
 	string         response_is_dir;
 } location_t;
 
+typedef struct
+{
+	string path;
+	string extension;
+} cgi_t;
+
 #define FAILURE 1
 
 class Config
@@ -57,6 +63,7 @@ class Config
 	string const             &getErrorPage(int error);
 	size_t const             &getClientBodySize() const;
 	vector<location_t> const &getLocations() const;
+	cgi_t const              &getCGI(void) const;
 
 	static string         readFile(const string &filename);
 	static vector<Config> parseConfig(string &filedata);
@@ -67,6 +74,7 @@ class Config
 	map<int, string>   _errorPage;
 	size_t             _clientBodySize;
 	vector<location_t> _locations;
+	cgi_t              _cgi;
 
 	int _setPorts(string &);
 	int _setServerName(string &);
@@ -76,8 +84,9 @@ class Config
 	int _setHttpMethods(string &);
 	int _setHttpRedirection(string &);
 	int _setRoot(string &);
-	int _setDirectoryListing(string &value);
-	int _setResponseIsDir(string &value);
+	int _setDirectoryListing(string &);
+	int _setResponseIsDir(string &);
+	int _setCGI(string &);
 };
 
 #endif /* CONFIG_HPP */
