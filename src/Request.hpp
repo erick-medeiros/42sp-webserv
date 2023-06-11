@@ -1,6 +1,7 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
+#include <bits/stdc++.h>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -8,7 +9,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <vector>
-#include <bits/stdc++.h>
 
 #include "HttpStatus.hpp"
 #include "utils.hpp"
