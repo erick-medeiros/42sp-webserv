@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 19:35:08 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/11 00:08:14 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,5 +159,108 @@ TEST_SUITE("client body size")
 
 		CHECK_EQ(config.add("client_body_size", "0"), 1);
 		// TODO: make more case of errors
+	}
+}
+
+TEST_SUITE("location")
+{
+	TEST_CASE("location")
+	{
+		SUBCASE("single")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "value"), 0);
+
+			vector<location_t> locations = config.getLocations();
+
+			CHECK_EQ(locations[0].location, "value");
+		}
+	}
+
+	TEST_CASE("http_methods")
+	{
+		SUBCASE("GET")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "value"), 0);
+
+			CHECK_EQ(config.add("location_http_methods", "GET"), 0);
+
+			vector<location_t> locations = config.getLocations();
+			vector<string>    &methods = locations[0].http_methods;
+
+			CHECK_EQ(methods.size(), 1);
+			CHECK_EQ(methods[0], "GET");
+		}
+		SUBCASE("all")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "value"), 0);
+
+			CHECK_EQ(config.add("location_http_methods", "GET POST DELETE"), 0);
+
+			vector<location_t> locations = config.getLocations();
+			vector<string>    &methods = locations[0].http_methods;
+
+			CHECK_EQ(methods[0], "GET");
+			CHECK_EQ(methods[1], "POST");
+			CHECK_EQ(methods[2], "DELETE");
+			CHECK_EQ(methods.size(), 3);
+		}
+	}
+
+	TEST_CASE("http_redirection")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("location", "value"), 0);
+
+		CHECK_EQ(config.add("location_http_redirection", "redirect"), 0);
+
+		vector<location_t> locations = config.getLocations();
+
+		CHECK_EQ(locations[0].http_redirection, "redirect");
+	}
+
+	TEST_CASE("root")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("location", "value"), 0);
+
+		CHECK_EQ(config.add("location_root", "root"), 0);
+
+		location_t const &location = config.getLocations()[0];
+
+		CHECK_EQ(location.root, "root");
+	}
+
+	TEST_CASE("directory_listing")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("location", "value"), 0);
+
+		CHECK_EQ(config.add("location_directory_listing", "dir"), 0);
+
+		location_t const &location = config.getLocations()[0];
+
+		CHECK_EQ(location.directory_listing, "dir");
+	}
+
+	TEST_CASE("location_response_is_dir")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("location", "value"), 0);
+
+		CHECK_EQ(config.add("location_response_is_dir", "dir"), 0);
+
+		location_t const &location = config.getLocations()[0];
+
+		CHECK_EQ(location.response_is_dir, "dir");
 	}
 }

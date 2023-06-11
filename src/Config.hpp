@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 19:34:17 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/10 23:50:46 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,16 @@ using namespace std;
 typedef pair<string, string> pair_string_t;
 typedef list<pair_string_t>  labels_t;
 
+typedef struct
+{
+	string         location;
+	vector<string> http_methods;
+	string         http_redirection;
+	string         root;
+	string         directory_listing;
+	string         response_is_dir;
+} location_t;
+
 #define FAILURE 1
 
 class Config
@@ -42,23 +52,32 @@ class Config
 
 	int add(string label, string value);
 
-	vector<int> const    &getPorts(void) const;
-	vector<string> const &getServerNames(void) const;
-	string const         &getErrorPage(int error);
-	size_t const         &getClientBodySize() const;
+	vector<int> const        &getPorts(void) const;
+	vector<string> const     &getServerNames(void) const;
+	string const             &getErrorPage(int error);
+	size_t const             &getClientBodySize() const;
+	vector<location_t> const &getLocations() const;
 
 	static string         readFile(const string &filename);
 	static vector<Config> parseConfig(string &filedata);
 
   private:
-	vector<int>      _ports;
-	vector<string>   _serverNames;
-	map<int, string> _errorPage;
-	size_t           _clientBodySize;
-	int              _setPorts(string &);
-	int              _setServerName(string &);
-	int              _setErrorPage(string &);
-	int              _setClientBodySize(string &);
+	vector<int>        _ports;
+	vector<string>     _serverNames;
+	map<int, string>   _errorPage;
+	size_t             _clientBodySize;
+	vector<location_t> _locations;
+
+	int _setPorts(string &);
+	int _setServerName(string &);
+	int _setErrorPage(string &);
+	int _setClientBodySize(string &);
+	int _setLocation(string &);
+	int _setHttpMethods(string &);
+	int _setHttpRedirection(string &);
+	int _setRoot(string &);
+	int _setDirectoryListing(string &value);
+	int _setResponseIsDir(string &value);
 };
 
 #endif /* CONFIG_HPP */

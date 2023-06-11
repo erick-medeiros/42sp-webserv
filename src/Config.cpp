@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/10 19:34:24 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/11 00:09:33 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,18 @@ int Config::add(string label, string value)
 		return _setErrorPage(value);
 	if (label == "client_body_size")
 		return _setClientBodySize(value);
+	if (label == "location")
+		return _setLocation(value);
+	if (label == "location_http_methods")
+		return _setHttpMethods(value);
+	if (label == "location_http_redirection")
+		return _setHttpRedirection(value);
+	if (label == "location_root")
+		return _setRoot(value);
+	if (label == "location_directory_listing")
+		return _setDirectoryListing(value);
+	if (label == "location_response_is_dir")
+		return _setResponseIsDir(value);
 	logError("config label not match: ", label);
 	return 1;
 }
@@ -110,6 +122,84 @@ int Config::_setClientBodySize(string &value)
 	return 0;
 }
 
+int Config::_setLocation(string &value)
+{
+	location_t location;
+	location.location = value;
+	_locations.push_back(location);
+	return 0;
+}
+
+int Config::_setHttpMethods(string &value)
+{
+	if (_locations.size() == 0)
+		return 1;
+
+	stringstream                  ss(value);
+	vector<location_t>::reference location = _locations.back();
+
+	while (!ss.eof())
+	{
+		string str;
+		ss >> str;
+		str = trim(str);
+		if (str == "GET" || str == "POST" || str == "DELETE")
+			location.http_methods.push_back(str);
+		else
+			return 1;
+	}
+
+	return 0;
+}
+
+int Config::_setHttpRedirection(string &value)
+{
+	if (_locations.size() == 0)
+		return 1;
+	stringstream                  ss(value);
+	vector<location_t>::reference location = _locations.back();
+
+	location.http_redirection = value;
+
+	return 0;
+}
+
+int Config::_setRoot(string &value)
+{
+	if (_locations.size() == 0)
+		return 1;
+	stringstream                  ss(value);
+	vector<location_t>::reference location = _locations.back();
+
+	location.root = value;
+
+	return 0;
+}
+
+int Config::_setDirectoryListing(string &value)
+{
+	if (_locations.size() == 0)
+		return 1;
+	stringstream                  ss(value);
+	vector<location_t>::reference location = _locations.back();
+
+	location.directory_listing = value;
+
+	return 0;
+}
+
+int Config::_setResponseIsDir(string &value)
+{
+	if (_locations.size() == 0)
+		return 1;
+	stringstream                  ss(value);
+	vector<location_t>::reference location = _locations.back();
+
+	location.response_is_dir = value;
+
+	return 0;
+}
+
 vector<int> const &Config::getPorts(void) const
 {
 	return _ports;
@@ -128,6 +218,11 @@ size_t const &Config::getClientBodySize() const
 string const &Config::getErrorPage(int error)
 {
 	return _errorPage[error];
+}
+
+vector<location_t> const &Config::getLocations() const
+{
+	return _locations;
 }
 
 string Config::readFile(const string &filename)
