@@ -1,5 +1,18 @@
 #include "Server.hpp"
 
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+char **createEnvp(std::vector<std::string> const &envVariables);
+
+bool isValidCgiScript(std::string const &filename)
+{
+	struct stat buff;
+	return (stat(filename.c_str(), &buff) == 0);
+}
+
 Server::Server(void) : monitoredSockets(MAX_EVENTS) {}
 
 void Server::init(int argc, char **argv)
@@ -188,7 +201,95 @@ void Server::run()
 				{
 					std::string rawInput = readFromSocket(&event);
 					request->parse(rawInput);
+
 					std::cout << *request << std::endl;
+
+					// Handle CGI
+					std::string resource = request->getResourcePath();
+					resource = trim(resource);
+
+					if (resource.find_last_of(".php") != std::string::npos)
+					{
+						std::string const fileScript("public" + resource);
+						if (isValidCgiScript(fileScript))
+						{
+							request->setCgiAs(true);
+							int status;
+							int pid = fork();
+							if (pid == 0)
+							{
+								std::stringstream ss;
+								ss << request->getFd();
+								std::string const tempFile(".temp-" + ss.str());
+								int               fd = open(tempFile.c_str(),
+								                            O_CREAT | O_RDWR | O_TRUNC, 0644);
+
+								std::vector<std::string> args;
+								args.push_back("php");
+								args.push_back(fileScript);
+								args.push_back(request->getBody());
+								char **scriptArgs = createEnvp(args);
+
+								std::vector<std::string> env;
+								env.push_back("SERVER_PORT=8080");
+								env.push_back("SERVER_PROTOCOL=HTTP/1.1");
+								if (request->getBody().size() > 0)
+								{
+									std::string contentLength;
+									contentLength = request->getHeaderValue("Content"
+									                                        "-"
+									                                        "Lengt"
+									                                        "h");
+									if (contentLength.empty())
+									{
+										contentLength = request->getHeaderValue("con"
+										                                        "ten"
+										                                        "t"
+										                                        "-le"
+										                                        "ngt"
+										                                        "h");
+									}
+									env.push_back(std::string("CONTENT_LENGTH=") +
+									              contentLength);
+								}
+								else
+								{
+									env.push_back("CONTENT_LENGTH=0");
+								}
+								env.push_back(std::string("HTTP_HOST=") +
+								              request->getHeaderValue("Host"));
+								env.push_back(std::string("HTTP_ACCEPT=") +
+								              request->getHeaderValue("Accept"));
+								env.push_back(std::string("REQUEST_METHOD=") +
+								              request->getMethod());
+								env.push_back(std::string("PATH_INFO=") +
+								              request->getResourcePath());
+								env.push_back(std::string("SCRIPT_NAME=") +
+								              std::string(resource.begin() + 1,
+								                          resource.end()));
+
+								if (request->getAllParams().size() > 0)
+								{
+									env.push_back(std::string("QUERY_STRING=") +
+									              request->getResourceQuery());
+								}
+
+								char **envp = createEnvp(env);
+
+								if (dup2(fd, STDOUT_FILENO) == -1)
+								{
+									throw std::runtime_error("dup2");
+								}
+
+								execve("/bin/php", scriptArgs, envp);
+							}
+							waitpid(pid, &status, 0);
+						}
+					}
+					else
+					{
+						request->setCgiAs(false);
+					}
 				}
 				catch (std::exception const &e)
 				{
@@ -244,4 +345,27 @@ sockaddr_in Server::createServerAddress(int port)
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons(port);
 	return address;
+}
+
+char **createEnvp(std::vector<std::string> const &envVariables)
+{
+	char **envp = new char *[envVariables.size() + 1];
+
+	for (std::size_t i = 0; i < envVariables.size(); ++i)
+	{
+		envp[i] = new char[envVariables[i].size() + 1];
+		std::strcpy(envp[i], envVariables[i].c_str());
+	}
+	envp[envVariables.size()] = NULL;
+
+	return envp;
+}
+
+void destroyEnvp(char **envp)
+{
+	for (char **p = envp; *p; ++p)
+	{
+		delete[] * p;
+	}
+	delete[] envp;
 }

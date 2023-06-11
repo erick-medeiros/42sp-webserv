@@ -1,7 +1,8 @@
 #include "Request.hpp"
 
 Request::Request(int fd)
-    : fd(fd), startLineParsed(false), headersParsed(false), bodyParsed(false){};
+    : fd(fd), startLineParsed(false), headersParsed(false), bodyParsed(false),
+      cgiState(false){};
 
 Request::~Request(void){};
 
@@ -240,7 +241,7 @@ std::string Request::getHeaderValue(std::string const headerValue) const
 	{
 		return it->second;
 	}
-	throw std::runtime_error("request header not found");
+	return "";
 };
 
 bool Request::isValidMethod(std::string const &requestMethod) const
@@ -283,6 +284,16 @@ bool Request::isValidHttpVersion(std::string &requestVersion) const
 	default:
 		return false;
 	}
+}
+
+bool Request::isCgiEnabled(void) const
+{
+	return this->cgiState;
+}
+
+void Request::setCgiAs(bool newState)
+{
+	this->cgiState = newState;
 }
 
 std::ostream &operator<<(std::ostream &os, Request const &req)
