@@ -6,7 +6,7 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 16:46:22 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/11 17:47:30 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,6 @@ class Config
 	string const             &getErrorPage(int error);
 	size_t const             &getClientBodySize() const;
 	vector<location_t> const &getLocations() const;
-	cgi_t const              &getCGI(void) const;
 
 	static string         readFile(const string &filename);
 	static vector<Config> parseConfig(string &filedata);
@@ -77,7 +76,6 @@ class Config
 	map<int, string>   _errorPage;
 	size_t             _clientBodySize;
 	vector<location_t> _locations;
-	cgi_t              _cgi;
 
 	int _setPort(string &);
 	int _setServerName(string &);

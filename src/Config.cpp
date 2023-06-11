@@ -6,7 +6,7 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 17:26:01 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/11 17:47:25 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,12 +227,17 @@ int Config::_setCGI(string &value)
 {
 	stringstream ss(value);
 	string       str;
+	cgi_t        cgi;
 
-	ss >> _cgi.extension;
-	ss >> _cgi.path;
+	ss >> cgi.extension;
+	ss >> cgi.path;
 
 	if (!ss.eof())
 		return 1;
+
+	vector<location_t>::reference location = _locations.back();
+
+	location.cgi = cgi;
 
 	return 0;
 }
@@ -260,11 +265,6 @@ string const &Config::getErrorPage(int error)
 vector<location_t> const &Config::getLocations() const
 {
 	return _locations;
-}
-
-cgi_t const &Config::getCGI(void) const
-{
-	return _cgi;
 }
 
 string Config::readFile(const string &filename)

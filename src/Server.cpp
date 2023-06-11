@@ -250,9 +250,11 @@ void Server::run()
 				}
 
 				// TODO: add other errors
-				if (response.getStatusCode() >= 400 || response.getStatusCode() <= 599)
+				if (response.getStatusCode() >= 400 ||
+				    response.getStatusCode() <= 599)
 				{
-					string error_page = _config.getErrorPage(response.getStatusCode());
+					string error_page =
+					    _config.getErrorPage(response.getStatusCode());
 					if (error_page.size() > 0)
 						response.loadFile(error_page);
 				}
