@@ -6,7 +6,7 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 17:04:42 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/11 17:27:06 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,20 +162,31 @@ TEST_SUITE("error pages")
 	}
 }
 
-TEST_SUITE("client body size")
+TEST_SUITE("client_max_body_size")
 {
-	TEST_CASE("size")
+	TEST_CASE("mb")
 	{
 		Config config;
-
-		CHECK_EQ(config.add("client_body_size", "10"), 0);
+		CHECK_EQ(config.add("client_max_body_size", "1M"), 0);
+		CHECK_EQ(config.getClientBodySize(), 1024);
 	}
+
+	TEST_CASE("kb")
+	{
+		Config config;
+		CHECK_EQ(config.add("client_max_body_size", "100K"), 0);
+		CHECK_EQ(config.getClientBodySize(), 100);
+	}
+
 	TEST_CASE("errors")
 	{
 		Config config;
 
-		CHECK_EQ(config.add("client_body_size", "0"), 1);
-		// TODO: make more case of errors
+		CHECK_EQ(config.add("client_max_body_size", "0"), 1);
+		CHECK_EQ(config.add("client_max_body_size", "1"), 1);
+		CHECK_EQ(config.add("client_max_body_size", ""), 1);
+		CHECK_EQ(config.add("client_max_body_size", "1B"), 1);
+		CHECK_EQ(config.add("client_max_body_size", "1m"), 1);
 	}
 }
 

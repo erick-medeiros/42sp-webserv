@@ -6,7 +6,7 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 17:04:08 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/11 17:26:01 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ int Config::add(string label, string value)
 		return _setServerName(value);
 	if (label == "error_page")
 		return _setErrorPage(value);
-	if (label == "client_body_size")
+	if (label == "client_max_body_size")
 		return _setClientBodySize(value);
 	if (label == "location")
 		return _setLocation(value);
@@ -132,6 +132,16 @@ int Config::_setClientBodySize(string &value)
 	ss >> _clientBodySize;
 	if (_clientBodySize == 0)
 		return FAILURE;
+
+	if (value.size() == 0)
+		return FAILURE;
+
+	char last = value[value.size() - 1];
+	if (last == 'M')
+		_clientBodySize *= 1024;
+	else if (last != 'K')
+		return FAILURE;
+
 	return 0;
 }
 
