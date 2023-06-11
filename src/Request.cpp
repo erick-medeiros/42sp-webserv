@@ -50,7 +50,7 @@ void Request::parseStartLine(std::istringstream &iss)
 	}
 
 	if (!token.empty() && isValidMethod(token))
-		this->startLine["Method"] = trim(token);
+		this->startLine["method"] = trim(token);
 	else
 	{
 		// https://www.rfc-editor.org/rfc/rfc9112#section-3-4
@@ -63,7 +63,7 @@ void Request::parseStartLine(std::istringstream &iss)
 	{
 		throw std::runtime_error("missing request URL");
 	}
-	this->startLine["URL"] = trim(token);
+	this->startLine["url"] = trim(token);
 
 	ss >> token;
 	if (ss.fail())
@@ -72,7 +72,7 @@ void Request::parseStartLine(std::istringstream &iss)
 	}
 	if (isValidHttpVersion(token))
 	{
-		this->startLine["Version"] = trim(token);
+		this->startLine["version"] = trim(token);
 	}
 	else
 	{
@@ -112,6 +112,7 @@ void Request::parseHeaders(std::istringstream &iss)
 			break;
 		}
 		key = row.substr(0, offset);
+		std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 
 		value = std::string(row.begin() + offset + 1, row.end());
 		value = trim(value);
@@ -138,7 +139,7 @@ void Request::parseHeaders(std::istringstream &iss)
 
 void Request::parseURI(void)
 {
-	std::string resource = this->startLine["URL"];
+	std::string resource = this->startLine["url"];
 
 	int offset = resource.find("?");
 	if (offset != -1)
@@ -214,7 +215,7 @@ std::vector<std::string> Request::getAllParams(void) const
 std::string Request::getMethod(void) const
 {
 	std::map<std::string, std::string>::const_iterator it =
-	    this->startLine.find("Method");
+	    this->startLine.find("method");
 	if (it == this->startLine.end())
 	{
 		return "";
@@ -225,7 +226,7 @@ std::string Request::getMethod(void) const
 std::string Request::getUrl(void) const
 {
 	std::map<std::string, std::string>::const_iterator it =
-	    this->startLine.find("URL");
+	    this->startLine.find("url");
 	if (it == this->startLine.end())
 	{
 		return "";

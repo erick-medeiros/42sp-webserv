@@ -8,9 +8,12 @@
 #include <sstream>
 #include <stdexcept>
 #include <vector>
+#include <bits/stdc++.h>
 
 #include "HttpStatus.hpp"
 #include "utils.hpp"
+
+#define CGI_RESPONSE "/tmp/CGIResponse-"
 
 enum
 {
