@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "CGIRequest.hpp"
+#include "Config.hpp"
 #include "Cookie.hpp"
 #include "EpollWrapper.hpp"
 #include "Request.hpp"
@@ -31,11 +32,12 @@ class Server
   public:
 	Server(void);
 	~Server(void);
-	void init(int argc, char **argv);
+	void init(Config const &conf);
 	void run(void);
 	int  getPort(void);
 
   private:
+	Config       _config;
 	int          serverSocket;
 	EpollWrapper monitoredSockets;
 	int          listenToPort(int port);
