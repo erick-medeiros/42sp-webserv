@@ -1,0 +1,173 @@
+[
+	{
+	  "arguments": [
+		"/usr/bin/c++",
+		"-Wall",
+		"-Wextra",
+		"-Werror",
+		"-std=c++98",
+		"-g",
+		"-c",
+		"-o",
+		"build/main.o",
+		"src/main.cpp"
+	  ],
+	  "directory": "/home/erick/42sp/webserv",
+	  "file": "/home/erick/42sp/webserv/src/main.cpp",
+	  "output": "/home/erick/42sp/webserv/build/main.o"
+	},
+	{
+	  "arguments": [
+		"/usr/bin/c++",
+		"-Wall",
+		"-Wextra",
+		"-Werror",
+		"-std=c++98",
+		"-g",
+		"-c",
+		"-o",
+		"build/Server.o",
+		"src/Server.cpp"
+	  ],
+	  "directory": "/home/erick/42sp/webserv",
+	  "file": "/home/erick/42sp/webserv/src/Server.cpp",
+	  "output": "/home/erick/42sp/webserv/build/Server.o"
+	},
+	{
+	  "arguments": [
+		"/usr/bin/c++",
+		"-Wall",
+		"-Wextra",
+		"-Werror",
+		"-std=c++98",
+		"-g",
+		"-c",
+		"-o",
+		"build/Response.o",
+		"src/Response.cpp"
+	  ],
+	  "directory": "/home/erick/42sp/webserv",
+	  "file": "/home/erick/42sp/webserv/src/Response.cpp",
+	  "output": "/home/erick/42sp/webserv/build/Response.o"
+	},
+	{
+	  "arguments": [
+		"/usr/bin/c++",
+		"-Wall",
+		"-Wextra",
+		"-Werror",
+		"-std=c++98",
+		"-g",
+		"-c",
+		"-o",
+		"build/EpollWrapper.o",
+		"src/EpollWrapper.cpp"
+	  ],
+	  "directory": "/home/erick/42sp/webserv",
+	  "file": "/home/erick/42sp/webserv/src/EpollWrapper.cpp",
+	  "output": "/home/erick/42sp/webserv/build/EpollWrapper.o"
+	},
+	{
+	  "arguments": [
+		"/usr/bin/c++",
+		"-Wall",
+		"-Wextra",
+		"-Werror",
+		"-std=c++98",
+		"-g",
+		"-c",
+		"-o",
+		"build/Request.o",
+		"src/Request.cpp"
+	  ],
+	  "directory": "/home/erick/42sp/webserv",
+	  "file": "/home/erick/42sp/webserv/src/Request.cpp",
+	  "output": "/home/erick/42sp/webserv/build/Request.o"
+	},
+	{
+	  "arguments": [
+		"/usr/bin/c++",
+		"-Wall",
+		"-Wextra",
+		"-Werror",
+		"-std=c++98",
+		"-g",
+		"-c",
+		"-o",
+		"build/utils.o",
+		"src/utils.cpp"
+	  ],
+	  "directory": "/home/erick/42sp/webserv",
+	  "file": "/home/erick/42sp/webserv/src/utils.cpp",
+	  "output": "/home/erick/42sp/webserv/build/utils.o"
+	},
+	{
+	  "arguments": [
+		"/usr/bin/c++",
+		"-Wall",
+		"-Wextra",
+		"-Werror",
+		"-std=c++98",
+		"-g",
+		"-c",
+		"-o",
+		"build/signals.o",
+		"src/signals.cpp"
+	  ],
+	  "directory": "/home/erick/42sp/webserv",
+	  "file": "/home/erick/42sp/webserv/src/signals.cpp",
+	  "output": "/home/erick/42sp/webserv/build/signals.o"
+	},
+	{
+	  "arguments": [
+		"/usr/bin/c++",
+		"-Wall",
+		"-Wextra",
+		"-Werror",
+		"-std=c++98",
+		"-g",
+		"-c",
+		"-o",
+		"build/Cookie.o",
+		"src/Cookie.cpp"
+	  ],
+	  "directory": "/home/erick/42sp/webserv",
+	  "file": "/home/erick/42sp/webserv/src/Cookie.cpp",
+	  "output": "/home/erick/42sp/webserv/build/Cookie.o"
+	},
+	{
+	  "arguments": [
+		"/usr/bin/c++",
+		"-Wall",
+		"-Wextra",
+		"-Werror",
+		"-std=c++98",
+		"-g",
+		"-c",
+		"-o",
+		"build/CGIRequest.o",
+		"src/CGIRequest.cpp"
+	  ],
+	  "directory": "/home/erick/42sp/webserv",
+	  "file": "/home/erick/42sp/webserv/src/CGIRequest.cpp",
+	  "output": "/home/erick/42sp/webserv/build/CGIRequest.o"
+	},
+	{
+	  "arguments": [
+		"/usr/bin/c++",
+		"-Wall",
+		"-Wextra",
+		"-Werror",
+		"-std=c++98",
+		"-g",
+		"-c",
+		"-o",
+		"build/Config.o",
+		"src/Config.cpp"
+	  ],
+	  "directory": "/home/erick/42sp/webserv",
+	  "file": "/home/erick/42sp/webserv/src/Config.cpp",
+	  "output": "/home/erick/42sp/webserv/build/Config.o"
+	}
+  ]
+  

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config_test.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 11:33:55 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/11 16:48:55 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,21 +42,17 @@ TEST_SUITE("ports")
 	{
 		Config config;
 		CHECK_EQ(config.add("port", "8080"), 0);
-
-		vector<int> const &ports = config.getPorts();
-
-		CHECK_EQ(ports.size(), 1);
-		CHECK_EQ(ports[0], 8080);
+		uint_t const &port = config.getPort();
+		CHECK_EQ(port, 8080);
 	}
 	TEST_CASE("multiple ports")
 	{
 		Config config;
-		CHECK_EQ(config.add("port", "8080 8090 9000"), 0);
-		vector<int> const &ports = config.getPorts();
-		CHECK_EQ(ports.size(), 3);
-		CHECK_EQ(ports[0], 8080);
-		CHECK_EQ(ports[1], 8090);
-		CHECK_EQ(ports[2], 9000);
+		freopen("/dev/null", "w", stderr);
+		CHECK_EQ(config.add("port", "8080 8090 9000"), 1);
+		freopen("/dev/tty", "w", stderr);
+		uint_t const &port = config.getPort();
+		CHECK_EQ(port, 0);
 	}
 	TEST_CASE("limits")
 	{
@@ -65,10 +61,18 @@ TEST_SUITE("ports")
 		CHECK_EQ(config.add("port", "1023"), 1);
 		CHECK_EQ(config.add("port", "49152"), 1);
 		freopen("/dev/tty", "w", stderr);
-		vector<int> const &ports = config.getPorts();
-		CHECK_EQ(ports.size(), 0);
-		CHECK_EQ(config.add("port", "1024 49151"), 0);
-		CHECK_EQ(ports.size(), 2);
+		uint_t const &port = config.getPort();
+		CHECK_EQ(port, 0);
+		SUBCASE("min")
+		{
+			Config config;
+			CHECK_EQ(config.add("port", "1024"), 0);
+		}
+		SUBCASE("max")
+		{
+			Config config;
+			CHECK_EQ(config.add("port", "49151"), 0);
+		}
 	}
 }
 

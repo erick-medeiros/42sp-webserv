@@ -3,23 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 11:27:11 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/11 16:48:09 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 
-Config::Config(void) {}
+Config::Config(void) : _port(0) {}
 
 Config::~Config(void) {}
 
 int Config::add(string label, string value)
 {
 	if (label == "port")
-		return _setPorts(value);
+		return _setPort(value);
 	if (label == "server_name")
 		return _setServerName(value);
 	if (label == "error_page")
@@ -46,34 +46,39 @@ int Config::add(string label, string value)
 
 bool Config::isValid(void) const
 {
-	if (_ports.size() == 0)
+	if (_port == 0)
 		return false;
 	return true;
 }
 
-int Config::_setPorts(string &value)
+int Config::_setPort(string &value)
 {
 	stringstream ss(value);
 	int          port;
 
-	if (_ports.size() > 0)
+	if (_port != 0)
 	{
 		logError("port: exist");
 		return FAILURE;
 	}
 
-	while (!ss.eof())
+	ss >> port;
+
+	if (port < 1024 || port > 49151)
 	{
-		ss >> port;
-		if (port < 1024 || port > 49151)
-		{
-			logError("port: range invalid");
-			return FAILURE;
-		}
-		_ports.push_back(port);
+		logError("port: range invalid");
+		return FAILURE;
 	}
 
-	return ss.fail();
+	if (!ss.eof())
+	{
+		logError("port: error value");
+		return FAILURE;
+	}
+
+	_port = port;
+
+	return 0;
 }
 
 int Config::_setServerName(string &value)
@@ -216,9 +221,9 @@ int Config::_setCGI(string &value)
 	return 0;
 }
 
-vector<int> const &Config::getPorts(void) const
+uint_t const &Config::getPort(void) const
 {
-	return _ports;
+	return _port;
 }
 
 vector<string> const &Config::getServerNames(void) const
@@ -394,6 +399,8 @@ vector<Config> Config::parseConfig(string &filedata)
 		for (labels_t::iterator label = server.begin(); label != server.end();
 		     label++)
 		{
+			// cout << "label : " << label->first << " - value : " << label->second
+			//      << endl;
 			config.add(label->first, label->second);
 		}
 

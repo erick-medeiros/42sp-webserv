@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 11:23:11 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/11 16:46:22 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,19 +32,22 @@ typedef list<pair_string_t>  labels_t;
 
 typedef struct
 {
+	string path;
+	string extension;
+} cgi_t;
+
+typedef struct
+{
 	string         location;
 	vector<string> http_methods;
 	string         http_redirection;
 	string         root;
 	string         directory_listing;
 	string         response_is_dir;
+	cgi_t          cgi;
 } location_t;
 
-typedef struct
-{
-	string path;
-	string extension;
-} cgi_t;
+typedef unsigned int uint_t;
 
 #define FAILURE 1
 
@@ -58,7 +61,7 @@ class Config
 
 	int add(string label, string value);
 
-	vector<int> const        &getPorts(void) const;
+	uint_t const             &getPort(void) const;
 	vector<string> const     &getServerNames(void) const;
 	string const             &getErrorPage(int error);
 	size_t const             &getClientBodySize() const;
@@ -69,14 +72,14 @@ class Config
 	static vector<Config> parseConfig(string &filedata);
 
   private:
-	vector<int>        _ports;
+	uint_t             _port;
 	vector<string>     _serverNames;
 	map<int, string>   _errorPage;
 	size_t             _clientBodySize;
 	vector<location_t> _locations;
 	cgi_t              _cgi;
 
-	int _setPorts(string &);
+	int _setPort(string &);
 	int _setServerName(string &);
 	int _setErrorPage(string &);
 	int _setClientBodySize(string &);

@@ -10,7 +10,7 @@ void Server::init(Config const &conf)
 
 	initSignal(this);
 
-	listenToPort(_config.getPorts()[0]);
+	listenToPort(_config.getPort());
 }
 
 Server::~Server()
