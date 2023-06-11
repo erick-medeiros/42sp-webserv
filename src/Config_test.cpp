@@ -6,7 +6,7 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 16:48:55 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/11 17:04:42 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,20 @@ TEST_SUITE("error pages")
 
 	TEST_CASE("range error")
 	{
-		// TODO: make
+		Config config;
+		freopen("/dev/null", "w", stderr);
+		CHECK_EQ(config.add("error_page", "200 /200.html"), 1);
+		CHECK_EQ(config.add("error_page", "399 /399.html"), 1);
+		CHECK_EQ(config.add("error_page", "400 /400.html"), 0);
+		CHECK_EQ(config.add("error_page", "599 /599.html"), 0);
+		CHECK_EQ(config.add("error_page", "600 /600.html"), 1);
+		CHECK_EQ(config.add("error_page", "900 /900.html"), 1);
+		freopen("/dev/tty", "w", stderr);
+
+		CHECK_EQ(config.getErrorPage(200), "");
+		CHECK_EQ(config.getErrorPage(400), "/400.html");
+		CHECK_EQ(config.getErrorPage(599), "/599.html");
+		CHECK_EQ(config.getErrorPage(900), "");
 	}
 }
 

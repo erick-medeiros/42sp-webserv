@@ -6,7 +6,7 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 16:48:09 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/11 17:04:08 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,6 +116,12 @@ int Config::_setErrorPage(string &value)
 	ss >> page;
 	if (!ss.eof())
 		return FAILURE;
+
+	if (error < 400 || error > 599)
+	{
+		logError("error_page: range err: ", value);
+		return FAILURE;
+	}
 	_errorPage[error] = page;
 	return 0;
 }
