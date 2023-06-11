@@ -41,7 +41,7 @@ Response::Response(const Request &request) : statusCode(200)
 	{
 		std::stringstream ss;
 		ss << this->clientFd;
-		std::string const tempFile(".temp-" + ss.str());
+		std::string const tempFile(CGI_RESPONSE + ss.str());
 		loadFile(tempFile);
 		std::remove(tempFile.c_str());
 	}
