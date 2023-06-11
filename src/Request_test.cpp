@@ -286,8 +286,8 @@ TEST_CASE("getHeaderValue")
 	    {"GET / HTTP/1.1\r\nfoo: 1\r\nbar: 2\r\nbaz: 3\r\n\r\n", "baz", "3", false},
 	    {"GET / HTTP/1.1\r\nfoo:1\r\nbar:2\r\nbaz:3\r\n\r\n", "foo", "1", false},
 	    {"GET / HTTP/1.1\r\nfoo:1\r\nbar:2\r\nbaz:3\r\n\r\n", "baz", "3", false},
-	    {"GET / HTTP/1.1\r\nfoo:1\r\nbar:2\r\nbaz:3\r\n\r\n", "", "", true},
-	    {"GET / HTTP/1.1\r\nkey: value\r\n\r\n", "foo", "", true},
+	    {"GET / HTTP/1.1\r\nfoo:1\r\nbar:2\r\nbaz:3\r\n\r\n", "", "", false},
+	    {"GET / HTTP/1.1\r\nkey: value\r\n\r\n", "foo", "", false},
 	};
 
 	std::size_t n = sizeof(tt) / sizeof(*tt);
