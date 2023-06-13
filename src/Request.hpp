@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "HttpStatus.hpp"
+#include "log_utils.hpp"
 #include "utils.hpp"
 
 #define CGI_RESPONSE "/tmp/CGIResponse-"
@@ -33,16 +34,16 @@ class Request
   private:
 	int                                fd;
 	int                                errorCode;
+	int                                contentLength;
 	std::map<std::string, std::string> startLine;
 	std::map<std::string, std::string> header;
 	std::string                        body;
 	std::string                        resourcePath;
 	std::string                        resourceQuery;
 	std::string                        unparsed;
-	void                               parseStartLine(std::istringstream &iss);
-	void                               parseURI();
-	void                               parseHeaders(std::istringstream &iss);
-	void                               parseBody(std::istringstream &iss);
+	void                               parseStartLine();
+	void                               parseHeaders();
+	void                               parseBody();
 	bool                               startLineParsed;
 	bool                               headersParsed;
 	bool                               URIParsed;
@@ -67,6 +68,7 @@ class Request
 	bool isValidMethod(std::string const &requestMethod) const;
 	bool isValidHttpVersion(std::string &requestVersion) const;
 	bool isCgiEnabled(void) const;
+	bool isParsed(void) const;
 	void setCgiAs(bool newState);
 };
 

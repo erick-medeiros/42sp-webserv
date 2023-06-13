@@ -58,12 +58,12 @@ class Config
 
 	int add(string label, string value);
 
-	vector<int> const        &getPorts(void) const;
-	vector<string> const     &getServerNames(void) const;
-	string const             &getErrorPage(int error);
-	size_t const             &getClientBodySize() const;
+	vector<int> const &       getPorts(void) const;
+	vector<string> const &    getServerNames(void) const;
+	string const &            getErrorPage(int error);
+	size_t const &            getClientBodySize() const;
 	vector<location_t> const &getLocations() const;
-	cgi_t const              &getCGI(void) const;
+	cgi_t const &             getCGI(void) const;
 
 	static string         readFile(const string &filename);
 	static vector<Config> parseConfig(string &filedata);

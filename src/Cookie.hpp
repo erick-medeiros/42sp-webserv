@@ -31,7 +31,7 @@ class Cookie
 
 	std::string generateSession(void) const;
 
-	static std::string getValueCookie(Request const     &request,
+	static std::string getValueCookie(Request const &    request,
 	                                  std::string const &key);
 
 	static std::string getUsername(Request const &request);

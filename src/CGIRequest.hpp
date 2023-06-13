@@ -33,7 +33,7 @@ class CGIRequest
 	void        initScriptArguments(Request const &request);
 	void        initEnviromentVariables(Request const &request);
 	void        executeCGIScript(void);
-	char      **createArrayOfStrings(std::vector<std::string> const &envVars) const;
+	char **     createArrayOfStrings(std::vector<std::string> const &envVars) const;
 	void        destroyArrayOfStrings(char **envp) const;
 };
 

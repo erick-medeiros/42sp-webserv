@@ -22,7 +22,6 @@ int is_dir(const std::string &path)
 void Response::loadFile(const std::string &path)
 {
 	std::ifstream file(path.c_str());
-	logWarning("Loading file: " + path);
 	if (!file.is_open() || is_dir(path))
 	{
 		setStatus(404);
