@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Methods Example</title>
+    <link rel="stylesheet" href="../css/pico.css">
+</head>
+
+<body>
+    <main class="container">
+        <a href="index.html">
+            <h4>←</h4>
+        </a>
+        <h1>Methods 📬</h1>
+        <div class="grid">
+            <article>
+                <form action="https://httpbin.org/get" method="GET">
+                    <input type="text" name="text_field" value="Olá" required>
+                    <input type="submit" value="GET">
+                </form>
+            </article>
+            <article>
+                <form action="https://httpbin.org/post" method="POST">
+                    <input type="text" name="text_field" value="Hello" required>
+                    <input type="submit" value="POST">
+                </form>
+            </article>
+            <article>
+                <form action="https://httpbin.org/delete" method="DELETE">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <input type="text" name="text_field" value="Bonjour" required>
+                    <button type="submit">DELETE</button>
+                </form>
+            </article>
+        </div>
+
+        <h4>Request</h4>
+        <pre id="requestDisplay" aria-busy="false"> </pre>
+        <h4>Response</h4>
+        <pre id="responseDisplay" aria-busy="false"> </pre>
+    </main>
+
+    <script>
+        const requestDisplay = document.getElementById('requestDisplay');
+        const responseDisplay = document.getElementById('responseDisplay');
+
+        const forms = document.querySelectorAll('form');
+
+        forms.forEach(form => {
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+                const action = form.action;
+                const method = formData.get('_method') || form.method.toUpperCase();
+
+                requestDisplay.setAttribute('aria-busy', 'true');
+                responseDisplay.setAttribute('aria-busy', 'true');
+                requestDisplay.innerHTML = '\n\n';
+                responseDisplay.innerHTML = '\n\n';
+
+                let request;
+                if (method === 'GET') {
+                    request = new Request(action, {
+                        method: method
+                    });
+                } else {
+                    request = new Request(action, {
+                        method: method,
+                        body: formData
+                    });
+                }
+
+                let rawRequest = `${method} ${action} HTTP/1.1\r\n`;
+                for (const [key, value] of formData.entries()) {
+                    rawRequest += `${key}: ${value}\r\n`;
+                }
+
+                requestDisplay.innerHTML = rawRequest;
+                requestDisplay.setAttribute('aria-busy', 'false');
+
+                fetch(request)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('responseDisplay').innerHTML = JSON.stringify(data, null, 2);
+                        responseDisplay.setAttribute('aria-busy', 'false');
+                    })
+                    .catch((error) => {
+                        document.getElementById('responseDisplay').innerHTML = "An error occurred: " + error + " 😞";
+                    })
+            });
+        });
+    </script>
+</body>
+
+</html>
