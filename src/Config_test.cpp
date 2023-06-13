@@ -189,7 +189,7 @@ TEST_SUITE("location")
 			CHECK_EQ(config.add("location_http_methods", "GET"), 0);
 
 			vector<location_t> locations = config.getLocations();
-			vector<string> &   methods = locations[0].http_methods;
+			vector<string>    &methods = locations[0].http_methods;
 
 			CHECK_EQ(methods.size(), 1);
 			CHECK_EQ(methods[0], "GET");
@@ -203,7 +203,7 @@ TEST_SUITE("location")
 			CHECK_EQ(config.add("location_http_methods", "GET POST DELETE"), 0);
 
 			vector<location_t> locations = config.getLocations();
-			vector<string> &   methods = locations[0].http_methods;
+			vector<string>    &methods = locations[0].http_methods;
 
 			CHECK_EQ(methods[0], "GET");
 			CHECK_EQ(methods[1], "POST");
