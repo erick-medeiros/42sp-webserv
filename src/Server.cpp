@@ -109,7 +109,6 @@ std::string Server::getRequestData(Request *request)
 	}
 	buff[bytesRead] = 0;
 	logInfo("Request size", bytesRead);
-	logInfo("Request: " + std::string(buff));
 	return std::string(buff);
 }
 
