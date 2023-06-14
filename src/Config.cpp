@@ -3,28 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 11:27:11 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/11 17:47:25 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 
-Config::Config(void) {}
+Config::Config(void) : _port(0) {}
 
 Config::~Config(void) {}
 
 int Config::add(string label, string value)
 {
 	if (label == "port")
-		return _setPorts(value);
+		return _setPort(value);
 	if (label == "server_name")
 		return _setServerName(value);
 	if (label == "error_page")
 		return _setErrorPage(value);
-	if (label == "client_body_size")
+	if (label == "client_max_body_size")
 		return _setClientBodySize(value);
 	if (label == "location")
 		return _setLocation(value);
@@ -46,34 +46,39 @@ int Config::add(string label, string value)
 
 bool Config::isValid(void) const
 {
-	if (_ports.size() == 0)
+	if (_port == 0)
 		return false;
 	return true;
 }
 
-int Config::_setPorts(string &value)
+int Config::_setPort(string &value)
 {
 	stringstream ss(value);
 	int          port;
 
-	if (_ports.size() > 0)
+	if (_port != 0)
 	{
 		logError("port: exist");
 		return FAILURE;
 	}
 
-	while (!ss.eof())
+	ss >> port;
+
+	if (port < 1024 || port > 49151)
 	{
-		ss >> port;
-		if (port < 1024 || port > 49151)
-		{
-			logError("port: range invalid");
-			return FAILURE;
-		}
-		_ports.push_back(port);
+		logError("port: range invalid");
+		return FAILURE;
 	}
 
-	return ss.fail();
+	if (!ss.eof())
+	{
+		logError("port: error value");
+		return FAILURE;
+	}
+
+	_port = port;
+
+	return 0;
 }
 
 int Config::_setServerName(string &value)
@@ -111,6 +116,12 @@ int Config::_setErrorPage(string &value)
 	ss >> page;
 	if (!ss.eof())
 		return FAILURE;
+
+	if (error < 400 || error > 599)
+	{
+		logError("error_page: range err: ", value);
+		return FAILURE;
+	}
 	_errorPage[error] = page;
 	return 0;
 }
@@ -121,6 +132,16 @@ int Config::_setClientBodySize(string &value)
 	ss >> _clientBodySize;
 	if (_clientBodySize == 0)
 		return FAILURE;
+
+	if (value.size() == 0)
+		return FAILURE;
+
+	char last = value[value.size() - 1];
+	if (last == 'M')
+		_clientBodySize *= 1024;
+	else if (last != 'K')
+		return FAILURE;
+
 	return 0;
 }
 
@@ -206,19 +227,24 @@ int Config::_setCGI(string &value)
 {
 	stringstream ss(value);
 	string       str;
+	cgi_t        cgi;
 
-	ss >> _cgi.extension;
-	ss >> _cgi.path;
+	ss >> cgi.extension;
+	ss >> cgi.path;
 
 	if (!ss.eof())
 		return 1;
 
+	vector<location_t>::reference location = _locations.back();
+
+	location.cgi = cgi;
+
 	return 0;
 }
 
-vector<int> const &Config::getPorts(void) const
+uint_t const &Config::getPort(void) const
 {
-	return _ports;
+	return _port;
 }
 
 vector<string> const &Config::getServerNames(void) const
@@ -239,11 +265,6 @@ string const &Config::getErrorPage(int error)
 vector<location_t> const &Config::getLocations() const
 {
 	return _locations;
-}
-
-cgi_t const &Config::getCGI(void) const
-{
-	return _cgi;
 }
 
 string Config::readFile(const string &filename)
@@ -394,6 +415,8 @@ vector<Config> Config::parseConfig(string &filedata)
 		for (labels_t::iterator label = server.begin(); label != server.end();
 		     label++)
 		{
+			// cout << "label : " << label->first << " - value : " << label->second
+			//      << endl;
 			config.add(label->first, label->second);
 		}
 

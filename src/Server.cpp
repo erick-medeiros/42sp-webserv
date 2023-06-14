@@ -10,7 +10,7 @@ void Server::init(Config const &conf)
 
 	initSignal(this);
 
-	listenToPort(_config.getPorts()[0]);
+	listenToPort(_config.getPort());
 }
 
 Server::~Server()
@@ -246,9 +246,13 @@ void Server::run()
 				}
 
 				// TODO: add other errors
-				if (response.getStatusCode() == 404)
+				if (response.getStatusCode() >= 400 ||
+				    response.getStatusCode() <= 599)
 				{
-					response.loadFile(_config.getErrorPage(404));
+					string error_page =
+					    _config.getErrorPage(response.getStatusCode());
+					if (error_page.size() > 0)
+						response.loadFile(error_page);
 				}
 				response.sendHttpResponse();
 				disconnectClient(request);
