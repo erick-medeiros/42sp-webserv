@@ -1,6 +1,9 @@
 #include "Server.hpp"
 
-Server::Server(void) : monitoredSockets(MAX_EVENTS) {}
+Server::Server(void)
+    : _requestSocket(0), serverSocket(0), monitoredSockets(MAX_EVENTS)
+{
+}
 
 void Server::init(Config const &conf)
 {
@@ -49,7 +52,7 @@ int Server::listenToPort(int port)
 	// --- Set non-blocking ---
 	if (!setNonBlocking(serverSocket))
 	{
-		logError("--- Error: fcntl");
+		logError("--- Error: Set non-blocking");
 		exit(1);
 	}
 	// --- Set socket to listen for connections ---
@@ -83,7 +86,13 @@ int Server::acceptNewClient(void)
 	    accept(serverSocket, (struct sockaddr *) &clientAddr, &clilen);
 	if (clientSocket == -1)
 	{
-		logError("--- Error: accept");
+		logError("--- Error: accept", strerror(errno));
+		exit(1);
+	}
+	// --- Set non-blocking ---
+	if (!setNonBlocking(clientSocket))
+	{
+		logError("--- Error: Set non-blocking");
 		exit(1);
 	}
 	logSuccess("+++ New connection accepted on socket", clientSocket);
@@ -121,7 +130,6 @@ int Server::disconnectClient(Request *request)
 		return 0;
 	int fd = request->getFd();
 	logInfo("--- Client disconnected from socket", fd);
-	monitoredSockets.remove(fd);
 	delete request;
 	return close(fd);
 }
@@ -161,8 +169,7 @@ void Server::run()
 			// New connection on server
 			if (request->getFd() == serverSocket)
 			{
-				int newClient = acceptNewClient();
-				setNonBlocking(newClient);
+				int          newClient = acceptNewClient();
 				epoll_data_t data = {new Request(newClient)};
 				monitoredSockets.add(newClient, data, EPOLLIN);
 				continue;

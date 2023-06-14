@@ -39,6 +39,10 @@ class Server
 	int      getServerSocket();
 	Request *getRequestSocket(void);
 
+	int                acceptNewClient(void);
+	static int         disconnectClient(Request *request);
+	static std::string getRequestData(Request *request);
+
   private:
 	Request     *_requestSocket;
 	Config       _config;
@@ -46,9 +50,6 @@ class Server
 	EpollWrapper monitoredSockets;
 	int          listenToPort(int port);
 	sockaddr_in  createServerAddress(int port);
-	int          acceptNewClient(void);
-	std::string  getRequestData(Request *request);
-	int          disconnectClient(Request *request);
 };
 
 #endif
