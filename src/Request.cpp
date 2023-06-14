@@ -1,145 +1,85 @@
 #include "Request.hpp"
 
 Request::Request(int fd)
-    : fd(fd), startLineParsed(false), headersParsed(false), bodyParsed(false),
-      cgiState(false){};
+    : fd(fd), errorCode(0), contentLength(0), startLineParsed(false),
+      headersParsed(false), bodyParsed(false), cgiState(false)
+{
+}
 
 Request::~Request(void){};
 
 void Request::parse(std::string const rawInput)
 {
 	unparsed += rawInput;
-	std::istringstream stringStream(unparsed);
 
 	if (!startLineParsed)
-		parseStartLine(stringStream);
+		parseStartLine();
 	if (!headersParsed)
-		parseHeaders(stringStream);
+		parseHeaders();
 	if (!bodyParsed)
-		parseBody(stringStream);
-
-	// TODO: Depois de ler tudo que precisa, dizer que o request está finished
-	// TODO: Checar quais são os códigos de erro para cada throw e setar o errorCode
+		parseBody();
 }
 
-void Request::parseBody(std::istringstream &iss)
+void Request::parseBody()
 {
-	(void) iss;
-	// TODO: Ler o body de acordo com o header Content-Length
-	return;
-}
-
-void Request::parseStartLine(std::istringstream &iss)
-{
-	std::string row;
-
-	std::getline(iss, row);
-	if (iss.fail() || row.empty())
+	// https://www.rfc-editor.org/rfc/rfc9112.html#section-6-4
+	if (contentLength > 0)
 	{
-		errorCode = HttpStatus::BAD_REQUEST;
-		throw std::runtime_error("missing request start-line data");
+		// Wait until unparsed has enough data to parse the body
+		if (unparsed.size() < static_cast<size_t>(contentLength))
+			return;
+
+		body = unparsed.substr(0, contentLength);
+		unparsed.erase(0, contentLength);
 	}
+	bodyParsed = true;
+}
 
-	std::stringstream ss(row);
-	std::string       token;
+void Request::parseStartLine()
+{
+	// Only parse if we have received the full start-line, delimited by \r\n
+	std::size_t pos = unparsed.find("\r\n");
+	if (pos == std::string::npos)
+		return;
+	std::string startLine = unparsed.substr(0, pos);
+	unparsed = unparsed.substr(pos + 2); // Save the rest for parsing headers
 
-	ss >> token;
-	if (ss.fail())
-	{
+	std::istringstream iss(startLine);
+	std::string        method, uri, httpVersion;
+
+	iss >> method;
+	iss >> uri;
+	iss >> httpVersion;
+
+	// trim the strings
+	method = trim(method);
+	uri = trim(uri);
+	httpVersion = trim(httpVersion);
+
+	if (method.empty())
 		throw std::runtime_error("missing HTTP request method");
-	}
-
-	if (!token.empty() && isValidMethod(token))
-		this->startLine["method"] = trim(token);
-	else
-	{
-		// https://www.rfc-editor.org/rfc/rfc9112#section-3-4
-		this->errorCode = HttpStatus::NOT_IMPLEMENTED;
-		throw std::runtime_error("invalid HTTP request method: " + token);
-	}
-
-	ss >> token;
-	if (ss.fail())
-	{
+	if (uri.empty())
 		throw std::runtime_error("missing request URL");
-	}
-	this->startLine["url"] = trim(token);
-
-	ss >> token;
-	if (ss.fail())
-	{
+	if (httpVersion.empty())
 		throw std::runtime_error("missing HTTP protocol version");
-	}
-	if (isValidHttpVersion(token))
+	if (!isValidMethod(method))
 	{
-		this->startLine["version"] = trim(token);
+		this->errorCode = HttpStatus::
+		    NOT_IMPLEMENTED; // https://www.rfc-editor.org/rfc/rfc9112#section-3-4
+		throw std::runtime_error("invalid HTTP request method: " + method);
 	}
-	else
+	if (!isValidHttpVersion(httpVersion))
 	{
-		// https://www.rfc-editor.org/rfc/rfc9110#section-15.6.6
-		this->errorCode = HttpStatus::HTTP_VERSION_NOT_SUPPORTED;
-		throw std::runtime_error("invalid HTTP protocol version: " + token);
+		this->errorCode = HttpStatus::
+		    HTTP_VERSION_NOT_SUPPORTED; // https://www.rfc-editor.org/rfc/rfc9110#section-15.6.6
+		throw std::runtime_error("invalid HTTP protocol version: " + httpVersion);
 	}
 
-	parseURI();
-}
+	this->startLine["method"] = method;
+	this->startLine["url"] = uri;
+	this->startLine["version"] = httpVersion;
 
-void Request::parseHeaders(std::istringstream &iss)
-{
-	std::string       row;
-	std::string       key;
-	std::string       value;
-	std::stringstream ss;
-	bool              isInvalidHeader = false;
-
-	while (std::getline(iss, row))
-	{
-		if (iss.fail())
-		{
-			throw std::runtime_error("parsing request header");
-		}
-		row = trim(row);
-		if (row.size() == 0)
-		{
-			ss << iss.rdbuf();
-			break;
-		}
-
-		int offset = row.find(":");
-		if (offset < 0)
-		{
-			isInvalidHeader = true;
-			break;
-		}
-		key = row.substr(0, offset);
-		std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-
-		value = std::string(row.begin() + offset + 1, row.end());
-		value = trim(value);
-		if (value.empty())
-		{
-			throw std::runtime_error("invalid header value");
-		}
-		this->header[trim(key)] = value;
-	}
-	if (!iss.eof())
-	{
-		this->body = ss.str();
-	}
-	else
-	{
-		this->body = "";
-	}
-
-	if (isInvalidHeader)
-	{
-		throw std::runtime_error("invalid header syntax");
-	}
-}
-
-void Request::parseURI(void)
-{
-	std::string resource = this->startLine["url"];
+	std::string resource = uri;
 
 	int offset = resource.find("?");
 	if (offset != -1)
@@ -159,9 +99,64 @@ void Request::parseURI(void)
 		this->resourcePath = resource;
 		this->resourceQuery = "";
 	}
+
+	startLineParsed = true;
 }
 
-// debug
+void Request::parseHeaders()
+{
+	// Only parse if we have received the full headers section, delimited by \r\n\r\n
+	if (unparsed.find("\r\n\r\n") == std::string::npos)
+		return;
+
+	std::istringstream iss(unparsed);
+	std::string        row;
+
+	while (std::getline(iss, row))
+	{
+		row = trim(row);
+		if (row.empty())
+		{
+			// End of headers section
+			headersParsed = true;
+			break;
+		}
+
+		std::string::size_type pos = row.find(":");
+		if (pos == std::string::npos)
+		{
+			errorCode = HttpStatus::BAD_REQUEST;
+			throw std::runtime_error("invalid header syntax: " + row);
+		}
+
+		std::string key = row.substr(0, pos);
+		key = trim(key);
+		std::string value = row.substr(pos + 1);
+		value = trim(value);
+
+		if (value.empty())
+		{
+			errorCode = HttpStatus::BAD_REQUEST;
+			throw std::runtime_error("invalid header value: " + row);
+		}
+
+		header[key] = value;
+
+		// Handle Content-Length separately
+		if (key == "Content-Length")
+		{
+			std::istringstream iss(value);
+			iss >> contentLength;
+			if (iss.fail() || contentLength < 0)
+			{
+				errorCode = HttpStatus::BAD_REQUEST;
+				throw std::runtime_error("invalid Content-Length value: " + value);
+			}
+		}
+	}
+
+	unparsed = iss.str().substr(iss.tellg()); // Keep the remaining unparsed part
+}
 
 // getters
 int Request::getFd(void) const
@@ -290,6 +285,11 @@ bool Request::isValidHttpVersion(std::string &requestVersion) const
 bool Request::isCgiEnabled(void) const
 {
 	return this->cgiState;
+}
+
+bool Request::isParsed(void) const
+{
+	return this->startLineParsed && this->headersParsed && this->bodyParsed;
 }
 
 void Request::setCgiAs(bool newState)

@@ -87,10 +87,9 @@ int Server::acceptNewClient(void)
 	return clientSocket;
 }
 
-std::string Server::readFromSocket(epoll_event *event)
+std::string Server::getRequestData(Request *request)
 {
-	Request *request = reinterpret_cast<Request *>(event->data.ptr);
-	int      clientSocket = request->getFd();
+	int clientSocket = request->getFd();
 
 	int  buffSize = 1024;
 	char buff[buffSize];
@@ -108,13 +107,6 @@ std::string Server::readFromSocket(epoll_event *event)
 		close(clientSocket);
 		return "";
 	}
-	// TODO: Não funciona com o caso de um request maior que 1024 bytes, pois
-	//       não é feito um loop para ler o resto do request e não aciona outro
-	//       EPOLLIN
-	//		 ideia: Fazer o Request saber quando está completo e se não estiver fazer
-	// outra chamada
-	if (bytesRead < buffSize)
-		monitoredSockets.modify(clientSocket, event->data, EPOLLOUT);
 	buff[bytesRead] = 0;
 	logInfo("Request size", bytesRead);
 	return std::string(buff);
@@ -185,9 +177,13 @@ void Server::run()
 			{
 				try
 				{
-					std::string rawInput = readFromSocket(&event);
-					request->parse(rawInput);
-
+					std::string rawRequest = getRequestData(request);
+					request->parse(rawRequest);
+					if (request->isParsed())
+					{
+						monitoredSockets.modify(request->getFd(), event.data,
+						                        EPOLLOUT);
+					}
 					std::cout << *request << std::endl;
 
 					// Handle CGI
