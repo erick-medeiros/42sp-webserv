@@ -36,7 +36,10 @@ class Server
 	void run(void);
 	int  getPort(void);
 
+	Request *getRequestSocket(void);
+
   private:
+	Request     *_requestSocket;
 	Config       _config;
 	int          serverSocket;
 	EpollWrapper monitoredSockets;

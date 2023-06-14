@@ -11,10 +11,13 @@ void Server::init(Config const &conf)
 	initSignal(this);
 
 	listenToPort(_config.getPort());
+
+	_requestSocket = new Request(serverSocket);
 }
 
 Server::~Server()
 {
+	delete _requestSocket;
 	close(serverSocket);
 }
 
@@ -123,6 +126,11 @@ int Server::disconnectClient(Request *request)
 	return close(fd);
 }
 
+Request *Server::getRequestSocket(void)
+{
+	return _requestSocket;
+}
+
 #ifndef FEATURE_FLAG_COOKIE
 #define FEATURE_FLAG_COOKIE 0
 #endif
@@ -131,9 +139,8 @@ void Server::run()
 {
 	// --- Add server socket to waiting list, so it is managed by epoll ---
 	// TODO: remove request of socket
-	Request     *request_socket = new Request(serverSocket);
 	epoll_data_t data = {0};
-	data.ptr = request_socket;
+	data.ptr = _requestSocket;
 	monitoredSockets.add(serverSocket, data, EPOLLIN | EPOLLOUT);
 
 	Cookie cookies;
@@ -260,7 +267,6 @@ void Server::run()
 		}
 	}
 
-	delete request_socket;
 	monitoredSockets.remove(serverSocket);
 }
 
