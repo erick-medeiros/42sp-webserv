@@ -15,7 +15,7 @@
         <div class="grid">
             <article>
                 <form action="https://httpbin.org/get" method="GET">
-                    <input type="text" name="text_field" value="Olá" required>
+                    <input type="text" name="text_field" value="Oi" required>
                     <input type="submit" value="GET">
                 </form>
             </article>
@@ -59,35 +59,51 @@
                 requestDisplay.innerHTML = '\n\n';
                 responseDisplay.innerHTML = '\n\n';
 
-                let request;
+                let url;
+
                 if (method === 'GET') {
-                    request = new Request(action, {
-                        method: method
-                    });
+                    url = `${action}?${new URLSearchParams(formData).toString()}`;
+                    body = null;
                 } else {
-                    request = new Request(action, {
-                        method: method,
-                        body: formData
-                    });
+                    url = action;
+                    body = formData;
                 }
 
-                let rawRequest = `${method} ${action} HTTP/1.1\r\n`;
-                for (const [key, value] of formData.entries()) {
-                    rawRequest += `${key}: ${value}\r\n`;
-                }
+                const request = new Request(url, {
+                    method: method,
+                    body: body
+                });
 
-                requestDisplay.innerHTML = rawRequest;
+                requestDisplay.innerHTML = `
+                METHOD:  ${request.method}
+                URL:     ${request.url}
+                HEADERS: ${JSON.stringify(Object.fromEntries(request.headers.entries()), null, 2)}
+                BODY:    ${request.body ? JSON.stringify(Object.fromEntries(formData.entries()), null, 2) : ''}
+                `.replace(/^\s+/gm, '');
+
                 requestDisplay.setAttribute('aria-busy', 'false');
 
                 fetch(request)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById('responseDisplay').innerHTML = JSON.stringify(data, null, 2);
-                        responseDisplay.setAttribute('aria-busy', 'false');
+                    .then(response => {
+                        const headers = response.headers;
+                        const status = `${response.status} ${response.statusText}`;
+                        const contentType = headers.get('content-type');
+                        const headerEntries = Array.from(headers.entries());
+                        const headerString = headerEntries.map(([key, value]) => `${key}: ${value}`).join('\r\n');
+                        return response.text().then(body => {
+                            const rawResponse = `HTTP/1.1 ${status}\r\n${headerString}\r\n\r\n${body}`;
+                            return rawResponse;
+                        });
+                    })
+                    .then(rawResponse => {
+                        responseDisplay.innerHTML = rawResponse;
                     })
                     .catch((error) => {
-                        document.getElementById('responseDisplay').innerHTML = "An error occurred: " + error + " 😞";
+                        responseDisplay.innerHTML = error;
                     })
+                    .finally(() => {
+                        responseDisplay.setAttribute('aria-busy', 'false');
+                    });
             });
         });
     </script>
