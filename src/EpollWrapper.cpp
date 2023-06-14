@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/08 12:10:34 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/14 11:46:02 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ EpollWrapper::EpollWrapper(size_t maxevents) : _maxevents(maxevents)
 		logError("EpollWrapper: epoll_create: ", strerror(errno));
 	}
 	events = new epoll_event[_maxevents];
+	memset(events, 0, sizeof(epoll_event) * _maxevents);
 }
 
 int EpollWrapper::add(int fd, epoll_data_t data, uint32_t events)

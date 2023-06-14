@@ -49,7 +49,6 @@ class Server
 	Request     *_requestSocket;
 	Config       _config;
 	int          serverSocket;
-	EpollWrapper monitoredSockets;
 	int          listenToPort(int port);
 	sockaddr_in  createServerAddress(int port);
 };

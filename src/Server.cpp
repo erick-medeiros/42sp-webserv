@@ -1,7 +1,7 @@
 #include "Server.hpp"
 
 Server::Server(void)
-    : _requestSocket(0), serverSocket(0), monitoredSockets(MAX_EVENTS)
+    : _requestSocket(0), serverSocket(0)
 {
 }
 
