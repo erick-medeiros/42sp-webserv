@@ -33,7 +33,6 @@ class Server
 	Server(void);
 	~Server(void);
 	void init(Config const &conf);
-	void run(void);
 	int  getPort(void);
 
 	int      getServerSocket();
@@ -43,8 +42,8 @@ class Server
 	static int         disconnectClient(Request *request);
 	static std::string getRequestData(Request *request);
 	static int         requestClient(Request *request, EpollWrapper &epoll);
-	static int responseClient(Request *request, EpollWrapper &epoll, Cookie &cookies,
-	                          Config &config);
+	static int         responseClient(Request *request, EpollWrapper &epoll,
+	                                  Cookie &cookies);
 
   private:
 	Request     *_requestSocket;

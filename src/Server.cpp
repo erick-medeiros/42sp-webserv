@@ -194,8 +194,7 @@ int Server::requestClient(Request *request, EpollWrapper &epoll)
 #define FEATURE_FLAG_COOKIE 0
 #endif
 
-int Server::responseClient(Request *request, EpollWrapper &epoll, Cookie &cookies,
-                           Config &config)
+int Server::responseClient(Request *request, EpollWrapper &epoll, Cookie &cookies)
 {
 	Response response(*request);
 
@@ -220,76 +219,17 @@ int Server::responseClient(Request *request, EpollWrapper &epoll, Cookie &cookie
 	}
 
 	// TODO: add other errors
-	if (response.getStatusCode() >= 400 || response.getStatusCode() <= 599)
-	{
-		string error_page = config.getErrorPage(response.getStatusCode());
-		if (error_page.size() > 0)
-			response.loadFile(error_page);
-	}
+	// if (response.getStatusCode() >= 400 || response.getStatusCode() <= 599)
+	// {
+	// 	// Config &config
+	// 	string error_page = _config.getErrorPage(response.getStatusCode());
+	// 	if (error_page.size() > 0)
+	// 		response.loadFile(error_page);
+	// }
 	response.sendHttpResponse();
 	epoll.remove(request->getFd());
 	disconnectClient(request);
 	return 0;
-}
-
-void Server::run()
-{
-	// --- Add server socket to waiting list, so it is managed by epoll ---
-	// TODO: remove request of socket
-	epoll_data_t data = {_requestSocket};
-	monitoredSockets.add(serverSocket, data, EPOLLIN | EPOLLOUT);
-
-	Cookie cookies;
-
-	while (true)
-	{
-		int numEvents = monitoredSockets.wait(BLOCK_IND);
-
-		for (int i = 0; i < numEvents; ++i)
-		{
-			struct epoll_event &event = monitoredSockets.events[i];
-			Request *request = reinterpret_cast<Request *>(event.data.ptr);
-
-			// New connection on server
-			if (request->getFd() == serverSocket)
-			{
-				int          newClient = acceptNewClient();
-				epoll_data_t data = {new Request(newClient)};
-				monitoredSockets.add(newClient, data, EPOLLIN);
-				continue;
-			}
-
-			if (event.events & EPOLLERR)
-			{
-				logError("Epoll error on socket", request->getFd());
-				disconnectClient(request);
-				continue;
-			}
-
-			if (event.events & (EPOLLRDHUP | EPOLLHUP))
-			{
-				logError("Client disconnected from socket", request->getFd());
-				disconnectClient(request);
-				continue;
-			}
-
-			// Request
-			if (event.events & EPOLLIN)
-			{
-				Server::requestClient(request, monitoredSockets);
-				continue;
-			}
-
-			// Response
-			if (event.events & EPOLLOUT)
-			{
-				Server::responseClient(request, monitoredSockets, cookies, _config);
-				continue;
-			}
-		}
-	}
-
-	// monitoredSockets.remove(serverSocket);
 }
 
 // --- Helper functions ---
