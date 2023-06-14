@@ -126,6 +126,11 @@ int Server::disconnectClient(Request *request)
 	return close(fd);
 }
 
+int Server::getServerSocket()
+{
+	return serverSocket;
+}
+
 Request *Server::getRequestSocket(void)
 {
 	return _requestSocket;
@@ -139,8 +144,7 @@ void Server::run()
 {
 	// --- Add server socket to waiting list, so it is managed by epoll ---
 	// TODO: remove request of socket
-	epoll_data_t data = {0};
-	data.ptr = _requestSocket;
+	epoll_data_t data = {_requestSocket};
 	monitoredSockets.add(serverSocket, data, EPOLLIN | EPOLLOUT);
 
 	Cookie cookies;
@@ -159,8 +163,7 @@ void Server::run()
 			{
 				int newClient = acceptNewClient();
 				setNonBlocking(newClient);
-				epoll_data_t data;
-				data.ptr = new Request(newClient);
+				epoll_data_t data = {new Request(newClient)};
 				monitoredSockets.add(newClient, data, EPOLLIN);
 				continue;
 			}
@@ -267,7 +270,7 @@ void Server::run()
 		}
 	}
 
-	monitoredSockets.remove(serverSocket);
+	// monitoredSockets.remove(serverSocket);
 }
 
 // --- Helper functions ---

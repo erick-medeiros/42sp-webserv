@@ -36,6 +36,7 @@ class Server
 	void run(void);
 	int  getPort(void);
 
+	int      getServerSocket();
 	Request *getRequestSocket(void);
 
   private:
