@@ -144,9 +144,93 @@ Request *Server::getRequestSocket(void)
 	return _requestSocket;
 }
 
+int Server::requestClient(Request *request, EpollWrapper &epoll)
+{
+	try
+	{
+		std::string rawRequest = getRequestData(request);
+		request->parse(rawRequest);
+		if (request->isParsed())
+		{
+			epoll_data_t data = {request};
+			epoll.modify(request->getFd(), data, EPOLLOUT);
+		}
+		std::cout << *request << std::endl;
+
+		// Handle CGI
+		std::string resource = request->getResourcePath();
+		resource = trim(resource);
+
+		if (resource.find_last_of(".php") != std::string::npos)
+		{
+			CGIRequest cgi(resource);
+			if (cgi.isValid())
+			{
+				request->setCgiAs(true);
+				int status;
+				int pid = fork();
+				if (pid == 0)
+				{
+					cgi.exec(*request);
+				}
+				waitpid(pid, &status, 0);
+			}
+		}
+		else
+		{
+			request->setCgiAs(false);
+		}
+	}
+	catch (std::exception const &e)
+	{
+		// TODO: handle exception properly...
+		logError(e.what());
+		disconnectClient(request);
+	}
+	return 0;
+}
+
 #ifndef FEATURE_FLAG_COOKIE
 #define FEATURE_FLAG_COOKIE 0
 #endif
+
+int Server::responseClient(Request *request, EpollWrapper &epoll, Cookie &cookies,
+                           Config &config)
+{
+	Response response(*request);
+
+	if (FEATURE_FLAG_COOKIE) // test
+	{
+		string username = Cookie::getUsername(*request);
+		if (username == "")
+		{
+			string value = Cookie::getValueCookie(*request, "session");
+			if (cookies.get(value) != "")
+			{
+				response.setStatus(200);
+				response.setBody("username " + cookies.get(value));
+			}
+		}
+		else
+		{
+			string session = cookies.generateSession();
+			cookies.set(session, username);
+			response.setHeader("Set-Cookie", "session=" + session + ";path=/");
+		}
+	}
+
+	// TODO: add other errors
+	if (response.getStatusCode() >= 400 || response.getStatusCode() <= 599)
+	{
+		string error_page = config.getErrorPage(response.getStatusCode());
+		if (error_page.size() > 0)
+			response.loadFile(error_page);
+	}
+	response.sendHttpResponse();
+	epoll.remove(request->getFd());
+	disconnectClient(request);
+	return 0;
+}
 
 void Server::run()
 {
@@ -192,87 +276,15 @@ void Server::run()
 			// Request
 			if (event.events & EPOLLIN)
 			{
-				try
-				{
-					std::string rawRequest = getRequestData(request);
-					request->parse(rawRequest);
-					if (request->isParsed())
-					{
-						monitoredSockets.modify(request->getFd(), event.data,
-						                        EPOLLOUT);
-					}
-					std::cout << *request << std::endl;
-
-					// Handle CGI
-					std::string resource = request->getResourcePath();
-					resource = trim(resource);
-
-					if (resource.find_last_of(".php") != std::string::npos)
-					{
-						CGIRequest cgi(resource);
-						if (cgi.isValid())
-						{
-							request->setCgiAs(true);
-							int status;
-							int pid = fork();
-							if (pid == 0)
-							{
-								cgi.exec(*request);
-							}
-							waitpid(pid, &status, 0);
-						}
-					}
-					else
-					{
-						request->setCgiAs(false);
-					}
-				}
-				catch (std::exception const &e)
-				{
-					// TODO: handle exception properly...
-					logError(e.what());
-					disconnectClient(request);
-				}
+				Server::requestClient(request, monitoredSockets);
 				continue;
 			}
 
 			// Response
 			if (event.events & EPOLLOUT)
 			{
-				Response response(*request);
-
-				if (FEATURE_FLAG_COOKIE) // test
-				{
-					string username = Cookie::getUsername(*request);
-					if (username == "")
-					{
-						string value = Cookie::getValueCookie(*request, "session");
-						if (cookies.get(value) != "")
-						{
-							response.setStatus(200);
-							response.setBody("username " + cookies.get(value));
-						}
-					}
-					else
-					{
-						string session = cookies.generateSession();
-						cookies.set(session, username);
-						response.setHeader("Set-Cookie",
-						                   "session=" + session + ";path=/");
-					}
-				}
-
-				// TODO: add other errors
-				if (response.getStatusCode() >= 400 ||
-				    response.getStatusCode() <= 599)
-				{
-					string error_page =
-					    _config.getErrorPage(response.getStatusCode());
-					if (error_page.size() > 0)
-						response.loadFile(error_page);
-				}
-				response.sendHttpResponse();
-				disconnectClient(request);
+				Server::responseClient(request, monitoredSockets, cookies, _config);
+				continue;
 			}
 		}
 	}
