@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/22 16:04:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/14 21:50:05 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/15 11:23:18 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,25 @@
 
 #define DEFAULT_CONF "./config/default.conf"
 
+bool running(bool status)
+{
+	static bool mode = true;
+	if (!status)
+		mode = false;
+	return mode;
+}
+
+void shutdown(int sig)
+{
+	if (sig == SIGINT || sig == SIGQUIT)
+		running(false);
+}
+
 int main(int argc, char *argv[])
 {
+	std::signal(SIGINT, shutdown);
+	std::signal(SIGQUIT, shutdown);
+
 	if (argc > 1 &&
 	    std::string(argv[1]) == "NORUN") // TODO: Improve this, used by leaks test
 		return 0;
@@ -34,6 +51,7 @@ int main(int argc, char *argv[])
 	Server         servers[configs.size()];
 	EpollWrapper   epoll(MAX_EVENTS * configs.size());
 	Cookie         cookies;
+	channel_t      channelServers[configs.size()];
 
 	size_t i = 0;
 	while (i < configs.size())
@@ -44,7 +62,7 @@ int main(int argc, char *argv[])
 		server.init(config);
 
 		{ // socket
-			channel_t *channel = new channel_t;
+			channel_t *channel = &channelServers[i];
 			channel->fd = server.getServerSocket();
 			channel->type = CHANNEL_SOCKET;
 			channel->ptr = &servers[i];
@@ -55,9 +73,9 @@ int main(int argc, char *argv[])
 		i++;
 	}
 
-	while (true)
+	while (running(true))
 	{
-		int numEvents = epoll.wait(BLOCK_IND);
+		int numEvents = epoll.wait(0);
 		for (int i = 0; i < numEvents; ++i)
 		{
 			struct epoll_event &event = epoll.events[i];
@@ -85,6 +103,7 @@ int main(int argc, char *argv[])
 			{
 				logError("Epoll error on socket", channel->fd);
 				Server::disconnectClient(request);
+				delete channel;
 				continue;
 			}
 
@@ -92,6 +111,7 @@ int main(int argc, char *argv[])
 			{
 				logError("Client disconnected from socket", channel->fd);
 				Server::disconnectClient(request);
+				delete channel;
 				continue;
 			}
 
@@ -107,6 +127,7 @@ int main(int argc, char *argv[])
 			if (event.events & EPOLLOUT)
 			{
 				Server::responseClient(request, epoll, cookies);
+				delete channel;
 				continue;
 			}
 		}

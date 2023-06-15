@@ -8,8 +8,6 @@ void Server::init(Config const &conf)
 
 	logSuccess("initializing new web server");
 
-	initSignal(this);
-
 	listenToPort(_config.getPort());
 
 	_requestSocket = new Request(serverSocket);

@@ -1,6 +1,6 @@
 NAME = webserv
 
-FILES = main.cpp Server.cpp Response.cpp EpollWrapper.cpp Request.cpp utils.cpp signals.cpp
+FILES = main.cpp Server.cpp Response.cpp EpollWrapper.cpp Request.cpp utils.cpp
 FILES += Cookie.cpp CGIRequest.cpp Config.cpp
 
 CXX = c++
