@@ -52,6 +52,9 @@ re: fclean all
 leaks: $(NAME)
 	$(VALGRIND) ./$(NAME) NORUN
 
+leaks_run: $(NAME)
+	$(VALGRIND) ./$(NAME)
+
 $(TESTER): CXXFLAGS += -Ilib
 $(TESTER): $(NAME) $(OBJ_TEST)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJ_TEST) $(filter-out %main.o, $(OBJ))
