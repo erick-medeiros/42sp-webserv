@@ -41,16 +41,17 @@ class Server
 	int                acceptNewClient(void);
 	static int         disconnectClient(Request *request);
 	static std::string getRequestData(Request *request);
-	static int         requestClient(Request *request, EpollWrapper &epoll);
+	static int         requestClient(Request *request, EpollWrapper &epoll,
+	                                 epoll_data_t data);
 	static int         responseClient(Request *request, EpollWrapper &epoll,
 	                                  Cookie &cookies);
 
   private:
-	Request     *_requestSocket;
-	Config       _config;
-	int          serverSocket;
-	int          listenToPort(int port);
-	sockaddr_in  createServerAddress(int port);
+	Request    *_requestSocket;
+	Config      _config;
+	int         serverSocket;
+	int         listenToPort(int port);
+	sockaddr_in createServerAddress(int port);
 };
 
 #endif

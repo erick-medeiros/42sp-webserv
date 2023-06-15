@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/22 16:04:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/14 20:27:04 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/14 21:50:05 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,10 +40,17 @@ int main(int argc, char *argv[])
 	{
 		Server &server = servers[i];
 		Config &config = configs[i];
+
 		server.init(config);
 
-		epoll_data_t data = {server.getRequestSocket()};
-		epoll.add(server.getServerSocket(), data, EPOLLIN | EPOLLOUT);
+		{ // socket
+			channel_t *channel = new channel_t;
+			channel->fd = server.getServerSocket();
+			channel->type = CHANNEL_SOCKET;
+			channel->ptr = &servers[i];
+			epoll_data_t data = {channel};
+			epoll.add(server.getServerSocket(), data, EPOLLIN | EPOLLOUT);
+		}
 
 		i++;
 	}
@@ -53,38 +60,37 @@ int main(int argc, char *argv[])
 		int numEvents = epoll.wait(BLOCK_IND);
 		for (int i = 0; i < numEvents; ++i)
 		{
-			int                 connectionSocket = false;
 			struct epoll_event &event = epoll.events[i];
-			Request *request = reinterpret_cast<Request *>(event.data.ptr);
+			channel_t *channel = reinterpret_cast<channel_t *>(event.data.ptr);
 
-			size_t j = 0;
-			while (j < configs.size())
+			if (channel->type == CHANNEL_SOCKET)
 			{
-				Server &server = servers[j];
-				if (request->getFd() == server.getServerSocket())
-				{
-					int          newClient = server.acceptNewClient();
-					epoll_data_t data = {new Request(newClient)};
+				Server *server = reinterpret_cast<Server *>(channel->ptr);
+
+				int newClient = server->acceptNewClient();
+				{ // client
+					channel_t *connection = new channel_t;
+					connection->fd = newClient;
+					connection->type = CHANNEL_CONNECTION;
+					connection->ptr = new Request(newClient);
+					epoll_data_t data = {connection};
 					epoll.add(newClient, data, EPOLLIN);
-					connectionSocket = true;
-					break;
 				}
-				j++;
+				continue;
 			}
 
-			if (connectionSocket)
-				continue;
+			Request *request = reinterpret_cast<Request *>(channel->ptr);
 
 			if (event.events & EPOLLERR)
 			{
-				logError("Epoll error on socket", request->getFd());
+				logError("Epoll error on socket", channel->fd);
 				Server::disconnectClient(request);
 				continue;
 			}
 
 			if (event.events & (EPOLLRDHUP | EPOLLHUP))
 			{
-				logError("Client disconnected from socket", request->getFd());
+				logError("Client disconnected from socket", channel->fd);
 				Server::disconnectClient(request);
 				continue;
 			}
@@ -92,7 +98,8 @@ int main(int argc, char *argv[])
 			// Request
 			if (event.events & EPOLLIN)
 			{
-				Server::requestClient(request, epoll);
+				epoll_data_t data = {channel};
+				Server::requestClient(request, epoll, data);
 				continue;
 			}
 
@@ -100,6 +107,7 @@ int main(int argc, char *argv[])
 			if (event.events & EPOLLOUT)
 			{
 				Server::responseClient(request, epoll, cookies);
+				continue;
 			}
 		}
 	}

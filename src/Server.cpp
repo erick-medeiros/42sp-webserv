@@ -1,9 +1,6 @@
 #include "Server.hpp"
 
-Server::Server(void)
-    : _requestSocket(0), serverSocket(0)
-{
-}
+Server::Server(void) : _requestSocket(0), serverSocket(0) {}
 
 void Server::init(Config const &conf)
 {
@@ -144,7 +141,7 @@ Request *Server::getRequestSocket(void)
 	return _requestSocket;
 }
 
-int Server::requestClient(Request *request, EpollWrapper &epoll)
+int Server::requestClient(Request *request, EpollWrapper &epoll, epoll_data_t data)
 {
 	try
 	{
@@ -152,7 +149,7 @@ int Server::requestClient(Request *request, EpollWrapper &epoll)
 		request->parse(rawRequest);
 		if (request->isParsed())
 		{
-			epoll_data_t data = {request};
+			// epoll_data_t data = {request};
 			epoll.modify(request->getFd(), data, EPOLLOUT);
 		}
 		std::cout << *request << std::endl;
