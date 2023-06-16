@@ -1,7 +1,7 @@
 NAME = webserv
 
 FILES = main.cpp Server.cpp Response.cpp EpollWrapper.cpp Request.cpp utils.cpp
-FILES += Cookie.cpp CGIRequest.cpp Config.cpp Connection.cpp
+FILES += Cookie.cpp CGIRequest.cpp Config.cpp Connection.cpp loop.cpp
 
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
