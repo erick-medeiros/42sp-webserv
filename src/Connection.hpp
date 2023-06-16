@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 09:26:18 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/16 11:40:44 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/16 11:56:19 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,17 +21,18 @@
 class Connection
 {
   public:
+	int      fd;
 	Config  &config;
 	Request  request;
 	Response response;
-	int      fd;
 
-	Connection(Config &config, int fd);
+	Connection(Server &server);
 	~Connection(void);
 
 	int disconnect();
 
   private:
+	static int acceptNewClient(int serverSocket);
 };
 
 #endif /* CONNECTION_HPP */

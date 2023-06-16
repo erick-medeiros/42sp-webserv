@@ -69,28 +69,6 @@ int Server::getPort()
 	return ntohs(address.sin_port);
 }
 
-int Server::acceptNewClient(int serverSocket)
-{
-	sockaddr_in clientAddr;
-	socklen_t   clilen = sizeof(clientAddr);
-
-	int clientSocket =
-	    accept(serverSocket, (struct sockaddr *) &clientAddr, &clilen);
-	if (clientSocket == -1)
-	{
-		logError("--- Error: accept", strerror(errno));
-		exit(1);
-	}
-	// --- Set non-blocking ---
-	if (!setNonBlocking(clientSocket))
-	{
-		logError("--- Error: Set non-blocking");
-		exit(1);
-	}
-	logSuccess("+++ New connection accepted on socket", clientSocket);
-	return clientSocket;
-}
-
 std::string Server::getRequestData(Request *request)
 {
 	int clientSocket = request->getFd();

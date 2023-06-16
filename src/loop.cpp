@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/16 11:38:38 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/16 11:58:50 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,14 +83,13 @@ int loop(std::string path_config)
 			if (channel->type == channel_t::CHANNEL_SOCKET)
 			{
 				Server *server = reinterpret_cast<Server *>(channel->ptr);
-				int newClient = Server::acceptNewClient(server->getServerSocket());
 				{ // client
-					channel_t *channelConnection = new channel_t;
+					Connection *cnn = new Connection(*server);
+					channel_t  *channelConnection = new channel_t;
 					channelConnection->type = channel_t::CHANNEL_CONNECTION;
-					channelConnection->ptr =
-					    new Connection(server->getConfig(), newClient);
+					channelConnection->ptr = cnn;
 					epoll_data_t data = {channelConnection};
-					epoll.add(newClient, data, EPOLLIN);
+					epoll.add(cnn->fd, data, EPOLLIN);
 				}
 				continue;
 			}
