@@ -8,105 +8,49 @@
 
 <body>
     <main class="container">
-        <a href="index.html">
-            <h4>←</h4>
-        </a>
-        <h1>Methods 📬</h1>
+        <script>
+            function send(method) {
+                fetch('https://httpbin.org/anything', { method: method })
+                    .then(response => {
+                        document.getElementById('responseStatus').innerHTML = response.status;
+                        return response.text();
+                    })
+                    .then(text => {
+                        document.getElementById('responseDisplay').innerHTML = text;
+                    });
+            }
+        </script>
+
+        <h2>
+            <nav>
+                <ul>
+                    <li><a href="index.html" class="secondary">←</a></li>
+                </ul>
+                <ul>
+                    <li>
+                        Methods 📬
+                    </li>
+                </ul>
+                <ul>
+                    <li>&nbsp;</li>
+                </ul>
+            </nav>
+        </h2>
+
         <div class="grid">
-            <article>
-                <form action="https://httpbin.org/get" method="GET">
-                    <input type="text" name="text_field" value="Oi" required>
-                    <input type="submit" value="GET">
-                </form>
-            </article>
-            <article>
-                <form action="https://httpbin.org/post" method="POST">
-                    <input type="text" name="text_field" value="Hello" required>
-                    <input type="submit" value="POST">
-                </form>
-            </article>
-            <article>
-                <form action="https://httpbin.org/delete" method="DELETE">
-                    <input type="hidden" name="_method" value="DELETE">
-                    <input type="text" name="text_field" value="Bonjour" required>
-                    <button type="submit">DELETE</button>
-                </form>
-            </article>
+            <button onclick="send('GET')">GET</button>
+            <button onclick="send('POST')">POST</button>
+            <button onclick="send('DELETE')">DELETE</button>
+            <button onclick="send('PUT')">PUT</button>
         </div>
 
-        <h4>Request</h4>
-        <pre id="requestDisplay" aria-busy="false"> </pre>
-        <h4>Response</h4>
+        <h4>
+            Response
+            <span id="responseStatus"></span>
+        </h4>
         <pre id="responseDisplay" aria-busy="false"> </pre>
+
     </main>
-
-    <script>
-        const requestDisplay = document.getElementById('requestDisplay');
-        const responseDisplay = document.getElementById('responseDisplay');
-
-        const forms = document.querySelectorAll('form');
-
-        forms.forEach(form => {
-            form.addEventListener('submit', (event) => {
-                event.preventDefault();
-
-                const formData = new FormData(form);
-                const action = form.action;
-                const method = formData.get('_method') || form.method.toUpperCase();
-
-                requestDisplay.setAttribute('aria-busy', 'true');
-                responseDisplay.setAttribute('aria-busy', 'true');
-                requestDisplay.innerHTML = '\n\n';
-                responseDisplay.innerHTML = '\n\n';
-
-                let url;
-
-                if (method === 'GET') {
-                    url = `${action}?${new URLSearchParams(formData).toString()}`;
-                    body = null;
-                } else {
-                    url = action;
-                    body = formData;
-                }
-
-                const request = new Request(url, {
-                    method: method,
-                    body: body
-                });
-
-                requestDisplay.innerHTML = `
-                METHOD:  ${request.method}
-                URL:     ${request.url}
-                HEADERS: ${JSON.stringify(Object.fromEntries(request.headers.entries()), null, 2)}
-                BODY:    ${request.body ? JSON.stringify(Object.fromEntries(formData.entries()), null, 2) : ''}
-                `.replace(/^\s+/gm, '');
-
-                requestDisplay.setAttribute('aria-busy', 'false');
-
-                fetch(request)
-                    .then(response => {
-                        const headers = response.headers;
-                        const status = `${response.status} ${response.statusText}`;
-                        const contentType = headers.get('content-type');
-                        const headerEntries = Array.from(headers.entries());
-                        const headerString = headerEntries.map(([key, value]) => `${key}: ${value}`).join('\r\n');
-                        return response.text().then(body => {
-                            const rawResponse = `HTTP/1.1 ${status}\r\n${headerString}\r\n\r\n${body}`;
-                            return rawResponse;
-                        });
-                    })
-                    .then(rawResponse => {
-                        responseDisplay.innerHTML = rawResponse;
-                    })
-                    .catch((error) => {
-                        responseDisplay.innerHTML = error;
-                    })
-                    .finally(() => {
-                        responseDisplay.setAttribute('aria-busy', 'false');
-                    });
-            });
-        });
-    </script>
 </body>
 
 </html>
