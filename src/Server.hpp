@@ -34,9 +34,8 @@ class Server
 	void init(Config const &conf);
 	int  getPort(void);
 
-	int      getServerSocket();
-	Request *getRequestSocket(void);
-	Config  &getConfig(void);
+	int     getServerSocket();
+	Config &getConfig(void);
 
 	int                acceptNewClient(void);
 	static std::string getRequestData(Request *request);
@@ -44,7 +43,6 @@ class Server
 	static int responseClient(Request *request, Config &config, Cookie &cookies);
 
   private:
-	Request    *_requestSocket;
 	Config      _config;
 	int         serverSocket;
 	int         listenToPort(int port);

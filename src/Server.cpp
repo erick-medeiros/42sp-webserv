@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-Server::Server(void) : _requestSocket(0), serverSocket(0) {}
+Server::Server(void) : serverSocket(0) {}
 
 void Server::init(Config const &conf)
 {
@@ -9,13 +9,10 @@ void Server::init(Config const &conf)
 	logSuccess("initializing new web server");
 
 	listenToPort(_config.getPort());
-
-	_requestSocket = new Request(serverSocket);
 }
 
 Server::~Server()
 {
-	delete _requestSocket;
 	close(serverSocket);
 }
 
@@ -127,11 +124,6 @@ int Server::getServerSocket()
 Config &Server::getConfig(void)
 {
 	return _config;
-}
-
-Request *Server::getRequestSocket(void)
-{
-	return _requestSocket;
 }
 
 int Server::requestClient(Request *request)
