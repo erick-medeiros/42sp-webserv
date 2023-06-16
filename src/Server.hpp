@@ -22,7 +22,6 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "log_utils.hpp"
-#include "signals.hpp"
 
 #define MAX_EVENTS 500
 #define BLOCK_IND -1
@@ -33,18 +32,21 @@ class Server
 	Server(void);
 	~Server(void);
 	void init(Config const &conf);
-	void run(void);
 	int  getPort(void);
 
+	int     getServerSocket();
+	Config &getConfig(void);
+
+	static int         acceptNewClient(int serverSocket);
+	static std::string getRequestData(Request *request);
+	static int         requestClient(Request *request);
+	static int responseClient(Request *request, Config &config, Cookie &cookies);
+
   private:
-	Config       _config;
-	int          serverSocket;
-	EpollWrapper monitoredSockets;
-	int          listenToPort(int port);
-	sockaddr_in  createServerAddress(int port);
-	int          acceptNewClient(void);
-	std::string  getRequestData(Request *request);
-	int          disconnectClient(Request *request);
+	Config      _config;
+	int         serverSocket;
+	int         listenToPort(int port);
+	sockaddr_in createServerAddress(int port);
 };
 
 #endif
