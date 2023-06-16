@@ -36,11 +36,12 @@ class Server
 
 	int      getServerSocket();
 	Request *getRequestSocket(void);
+	Config  &getConfig(void);
 
 	int                acceptNewClient(void);
 	static std::string getRequestData(Request *request);
 	static int         requestClient(Request *request);
-	static int         responseClient(Request *request, Cookie &cookies);
+	static int responseClient(Request *request, Config &config, Cookie &cookies);
 
   private:
 	Request    *_requestSocket;

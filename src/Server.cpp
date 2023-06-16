@@ -124,6 +124,11 @@ int Server::getServerSocket()
 	return serverSocket;
 }
 
+Config &Server::getConfig(void)
+{
+	return _config;
+}
+
 Request *Server::getRequestSocket(void)
 {
 	return _requestSocket;
@@ -166,7 +171,7 @@ int Server::requestClient(Request *request)
 #define FEATURE_FLAG_COOKIE 0
 #endif
 
-int Server::responseClient(Request *request, Cookie &cookies)
+int Server::responseClient(Request *request, Config &config, Cookie &cookies)
 {
 	Response response(*request);
 
@@ -191,13 +196,13 @@ int Server::responseClient(Request *request, Cookie &cookies)
 	}
 
 	// TODO: add other errors
-	// if (response.getStatusCode() >= 400 || response.getStatusCode() <= 599)
-	// {
-	// 	// Config &config
-	// 	string error_page = config.getErrorPage(response.getStatusCode());
-	// 	if (error_page.size() > 0)
-	// 		response.loadFile(error_page);
-	// }
+	if (response.getStatusCode() >= 400 || response.getStatusCode() <= 599)
+	{
+		// Config &config
+		string error_page = config.getErrorPage(response.getStatusCode());
+		if (error_page.size() > 0)
+			response.loadFile(error_page);
+	}
 	response.sendHttpResponse();
 
 	return 0;

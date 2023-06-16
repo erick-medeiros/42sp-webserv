@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/22 16:04:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/16 09:56:51 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/16 10:02:08 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,8 @@ int main(int argc, char *argv[])
 			// Response
 			if (event.events & EPOLLOUT)
 			{
-				Server::responseClient(request, cookies);
+				Config &config = connection->server.getConfig();
+				Server::responseClient(request, config, cookies);
 				removeConnection(channel, epoll);
 				continue;
 			}
