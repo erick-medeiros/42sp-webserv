@@ -38,7 +38,6 @@ class Server
 	Request *getRequestSocket(void);
 
 	int                acceptNewClient(void);
-	static int         disconnectClient(Request *request);
 	static std::string getRequestData(Request *request);
 	static int         requestClient(Request *request);
 	static int         responseClient(Request *request, Cookie &cookies);

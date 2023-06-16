@@ -6,12 +6,14 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/22 16:04:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/16 08:53:13 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/16 09:56:51 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
+#include "Connection.hpp"
 #include "EpollWrapper.hpp"
+#include "Request.hpp"
 #include "Server.hpp"
 
 #define DEFAULT_CONF "./config/default.conf"
@@ -28,6 +30,17 @@ void shutdown(int sig)
 {
 	if (sig == SIGINT || sig == SIGQUIT)
 		running(false);
+}
+
+void removeConnection(channel_t *channel, EpollWrapper &epoll)
+{
+	if (!channel)
+		return;
+	Connection *connection = reinterpret_cast<Connection *>(channel->ptr);
+	epoll.remove(connection->fd);
+	connection->disconnect();
+	delete connection;
+	delete channel;
 }
 
 int main(int argc, char *argv[])
@@ -90,28 +103,26 @@ int main(int argc, char *argv[])
 					channel_t *connection = new channel_t;
 					connection->fd = newClient;
 					connection->type = CHANNEL_CONNECTION;
-					connection->ptr = new Request(newClient);
+					connection->ptr = new Connection(*server, newClient);
 					epoll_data_t data = {connection};
 					epoll.add(newClient, data, EPOLLIN);
 				}
 				continue;
 			}
 
-			Request *request = reinterpret_cast<Request *>(channel->ptr);
+			Connection *connection = reinterpret_cast<Connection *>(channel->ptr);
+			Request    *request = reinterpret_cast<Request *>(&connection->request);
 
 			if (event.events & EPOLLERR)
 			{
-				logError("Epoll error on socket", channel->fd);
-				Server::disconnectClient(request);
-				delete channel;
+				logError("Epoll error on socket", connection->fd);
+				removeConnection(channel, epoll);
 				continue;
 			}
 
 			if (event.events & (EPOLLRDHUP | EPOLLHUP))
 			{
-				logError("Client disconnected from socket", channel->fd);
-				Server::disconnectClient(request);
-				delete channel;
+				removeConnection(channel, epoll);
 				continue;
 			}
 
@@ -120,16 +131,18 @@ int main(int argc, char *argv[])
 			{
 				try
 				{
-					epoll_data_t data = {channel};
 					Server::requestClient(request);
 					if (request->isParsed())
-						epoll.modify(request->getFd(), data, EPOLLOUT);
+					{
+						epoll_data_t data = {channel};
+						epoll.modify(connection->fd, data, EPOLLOUT);
+					}
 				}
 				catch (std::exception const &e)
 				{
 					// TODO: handle exception properly...
 					logError(e.what());
-					Server::disconnectClient(request);
+					removeConnection(channel, epoll);
 				}
 				continue;
 			}
@@ -138,9 +151,7 @@ int main(int argc, char *argv[])
 			if (event.events & EPOLLOUT)
 			{
 				Server::responseClient(request, cookies);
-				epoll.remove(request->getFd());
-				Server::disconnectClient(request);
-				delete channel;
+				removeConnection(channel, epoll);
 				continue;
 			}
 		}

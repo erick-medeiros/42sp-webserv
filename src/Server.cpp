@@ -119,16 +119,6 @@ std::string Server::getRequestData(Request *request)
 	return std::string(buff);
 }
 
-int Server::disconnectClient(Request *request)
-{
-	if (!request)
-		return 0;
-	int fd = request->getFd();
-	logInfo("--- Client disconnected from socket", fd);
-	delete request;
-	return close(fd);
-}
-
 int Server::getServerSocket()
 {
 	return serverSocket;
@@ -204,7 +194,7 @@ int Server::responseClient(Request *request, Cookie &cookies)
 	// if (response.getStatusCode() >= 400 || response.getStatusCode() <= 599)
 	// {
 	// 	// Config &config
-	// 	string error_page = _config.getErrorPage(response.getStatusCode());
+	// 	string error_page = config.getErrorPage(response.getStatusCode());
 	// 	if (error_page.size() > 0)
 	// 		response.loadFile(error_page);
 	// }
