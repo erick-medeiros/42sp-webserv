@@ -69,7 +69,7 @@ int Server::getPort()
 	return ntohs(address.sin_port);
 }
 
-int Server::acceptNewClient(void)
+int Server::acceptNewClient(int serverSocket)
 {
 	sockaddr_in clientAddr;
 	socklen_t   clilen = sizeof(clientAddr);

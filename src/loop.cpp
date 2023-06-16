@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/16 10:58:34 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/16 11:38:38 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,7 @@ int loop(std::string path_config)
 
 		{ // socket
 			channel_t *channel = &channelServers[i];
-			channel->fd = server.getServerSocket();
-			channel->type = CHANNEL_SOCKET;
+			channel->type = channel_t::CHANNEL_SOCKET;
 			channel->ptr = &servers[i];
 			epoll_data_t data = {channel};
 			epoll.add(server.getServerSocket(), data, EPOLLIN | EPOLLOUT);
@@ -81,17 +80,16 @@ int loop(std::string path_config)
 			struct epoll_event &event = epoll.events[i];
 			channel_t *channel = reinterpret_cast<channel_t *>(event.data.ptr);
 
-			if (channel->type == CHANNEL_SOCKET)
+			if (channel->type == channel_t::CHANNEL_SOCKET)
 			{
 				Server *server = reinterpret_cast<Server *>(channel->ptr);
-
-				int newClient = server->acceptNewClient();
+				int newClient = Server::acceptNewClient(server->getServerSocket());
 				{ // client
-					channel_t *connection = new channel_t;
-					connection->fd = newClient;
-					connection->type = CHANNEL_CONNECTION;
-					connection->ptr = new Connection(*server, newClient);
-					epoll_data_t data = {connection};
+					channel_t *channelConnection = new channel_t;
+					channelConnection->type = channel_t::CHANNEL_CONNECTION;
+					channelConnection->ptr =
+					    new Connection(server->getConfig(), newClient);
+					epoll_data_t data = {channelConnection};
 					epoll.add(newClient, data, EPOLLIN);
 				}
 				continue;
@@ -137,8 +135,7 @@ int loop(std::string path_config)
 			// Response
 			if (event.events & EPOLLOUT)
 			{
-				Config &config = connection->server.getConfig();
-				Server::responseClient(request, config, cookies);
+				Server::responseClient(request, connection->config, cookies);
 				removeConnection(channel, epoll);
 				continue;
 			}

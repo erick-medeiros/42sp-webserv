@@ -37,7 +37,7 @@ class Server
 	int     getServerSocket();
 	Config &getConfig(void);
 
-	int                acceptNewClient(void);
+	static int         acceptNewClient(int serverSocket);
 	static std::string getRequestData(Request *request);
 	static int         requestClient(Request *request);
 	static int responseClient(Request *request, Config &config, Cookie &cookies);
