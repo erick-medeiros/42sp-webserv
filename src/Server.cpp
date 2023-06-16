@@ -139,49 +139,36 @@ Request *Server::getRequestSocket(void)
 	return _requestSocket;
 }
 
-int Server::requestClient(Request *request, EpollWrapper &epoll, epoll_data_t data)
+int Server::requestClient(Request *request)
 {
-	try
+	std::string rawRequest = getRequestData(request);
+	request->parse(rawRequest);
+	std::cout << *request << std::endl;
+
+	// Handle CGI
+	std::string resource = request->getResourcePath();
+	resource = trim(resource);
+
+	if (resource.find_last_of(".php") != std::string::npos)
 	{
-		std::string rawRequest = getRequestData(request);
-		request->parse(rawRequest);
-		if (request->isParsed())
+		CGIRequest cgi(resource);
+		if (cgi.isValid())
 		{
-			// epoll_data_t data = {request};
-			epoll.modify(request->getFd(), data, EPOLLOUT);
-		}
-		std::cout << *request << std::endl;
-
-		// Handle CGI
-		std::string resource = request->getResourcePath();
-		resource = trim(resource);
-
-		if (resource.find_last_of(".php") != std::string::npos)
-		{
-			CGIRequest cgi(resource);
-			if (cgi.isValid())
+			request->setCgiAs(true);
+			int status;
+			int pid = fork();
+			if (pid == 0)
 			{
-				request->setCgiAs(true);
-				int status;
-				int pid = fork();
-				if (pid == 0)
-				{
-					cgi.exec(*request);
-				}
-				waitpid(pid, &status, 0);
+				cgi.exec(*request);
 			}
-		}
-		else
-		{
-			request->setCgiAs(false);
+			waitpid(pid, &status, 0);
 		}
 	}
-	catch (std::exception const &e)
+	else
 	{
-		// TODO: handle exception properly...
-		logError(e.what());
-		disconnectClient(request);
+		request->setCgiAs(false);
 	}
+
 	return 0;
 }
 
@@ -189,7 +176,7 @@ int Server::requestClient(Request *request, EpollWrapper &epoll, epoll_data_t da
 #define FEATURE_FLAG_COOKIE 0
 #endif
 
-int Server::responseClient(Request *request, EpollWrapper &epoll, Cookie &cookies)
+int Server::responseClient(Request *request, Cookie &cookies)
 {
 	Response response(*request);
 
@@ -222,8 +209,7 @@ int Server::responseClient(Request *request, EpollWrapper &epoll, Cookie &cookie
 	// 		response.loadFile(error_page);
 	// }
 	response.sendHttpResponse();
-	epoll.remove(request->getFd());
-	disconnectClient(request);
+
 	return 0;
 }
 

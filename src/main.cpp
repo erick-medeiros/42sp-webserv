@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/22 16:04:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/15 11:23:18 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/16 08:53:13 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,15 +118,28 @@ int main(int argc, char *argv[])
 			// Request
 			if (event.events & EPOLLIN)
 			{
-				epoll_data_t data = {channel};
-				Server::requestClient(request, epoll, data);
+				try
+				{
+					epoll_data_t data = {channel};
+					Server::requestClient(request);
+					if (request->isParsed())
+						epoll.modify(request->getFd(), data, EPOLLOUT);
+				}
+				catch (std::exception const &e)
+				{
+					// TODO: handle exception properly...
+					logError(e.what());
+					Server::disconnectClient(request);
+				}
 				continue;
 			}
 
 			// Response
 			if (event.events & EPOLLOUT)
 			{
-				Server::responseClient(request, epoll, cookies);
+				Server::responseClient(request, cookies);
+				epoll.remove(request->getFd());
+				Server::disconnectClient(request);
 				delete channel;
 				continue;
 			}

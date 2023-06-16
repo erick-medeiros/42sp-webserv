@@ -40,10 +40,8 @@ class Server
 	int                acceptNewClient(void);
 	static int         disconnectClient(Request *request);
 	static std::string getRequestData(Request *request);
-	static int         requestClient(Request *request, EpollWrapper &epoll,
-	                                 epoll_data_t data);
-	static int         responseClient(Request *request, EpollWrapper &epoll,
-	                                  Cookie &cookies);
+	static int         requestClient(Request *request);
+	static int         responseClient(Request *request, Cookie &cookies);
 
   private:
 	Request    *_requestSocket;
