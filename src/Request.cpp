@@ -130,6 +130,7 @@ void Request::parseHeaders()
 		}
 
 		std::string key = row.substr(0, pos);
+		std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 		key = trim(key);
 		std::string value = row.substr(pos + 1);
 		value = trim(value);
@@ -143,7 +144,7 @@ void Request::parseHeaders()
 		header[key] = value;
 
 		// Handle Content-Length separately
-		if (key == "Content-Length")
+		if (key == "content-length")
 		{
 			std::istringstream iss(value);
 			iss >> contentLength;
@@ -295,6 +296,11 @@ bool Request::isParsed(void) const
 void Request::setCgiAs(bool newState)
 {
 	this->cgiState = newState;
+}
+
+void Request::setErrorCode(int errorCode)
+{
+	this->errorCode = errorCode;
 }
 
 std::ostream &operator<<(std::ostream &os, Request const &req)
