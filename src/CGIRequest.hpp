@@ -24,6 +24,7 @@ class CGIRequest
 	~CGIRequest(void);
 
 	std::string fileScript;
+	std::string script;
 
 	bool        isValid(void) const;
 	void        exec(Request const &request);
@@ -35,6 +36,7 @@ class CGIRequest
 	void        executeCGIScript(void);
 	char      **createArrayOfStrings(std::vector<std::string> const &envVars) const;
 	void        destroyArrayOfStrings(char **envp) const;
+	static bool isValidScript(std::string const &resource);
 };
 
 #endif

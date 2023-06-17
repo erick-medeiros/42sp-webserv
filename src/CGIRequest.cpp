@@ -5,8 +5,8 @@ CGIRequest::CGIRequest(void) {}
 CGIRequest::~CGIRequest(void) {}
 
 CGIRequest::CGIRequest(std::string const &resource)
+    : fileScript("public" + resource), script("")
 {
-	this->fileScript = "public" + resource;
 }
 
 bool CGIRequest::isValid(void) const
@@ -39,7 +39,16 @@ void CGIRequest::initTemporaryDescriptor(Request const &r)
 void CGIRequest::initScriptArguments(Request const &r)
 {
 	std::vector<std::string> args;
-	args.push_back("php");
+
+	int         i = this->fileScript.find_first_of(".");
+	std::string ext = std::string(fileScript.begin() + i + 1, fileScript.end());
+
+	if (ext == "php")
+		this->script = "php";
+	else if (ext == "py")
+		this->script = "python3";
+
+	args.push_back(this->script);
 	args.push_back(this->fileScript);
 	args.push_back(r.getBody());
 	this->scriptArgs = createArrayOfStrings(args);
@@ -48,6 +57,7 @@ void CGIRequest::initScriptArguments(Request const &r)
 void CGIRequest::initEnviromentVariables(Request const &request)
 {
 	std::vector<std::string> env;
+
 	env.push_back("SERVER_PORT=8080");
 	env.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	env.push_back(getContentLength(request));
@@ -65,6 +75,10 @@ void CGIRequest::initEnviromentVariables(Request const &request)
 	{
 		env.push_back("QUERY_STRING=" + request.getResourceQuery());
 	}
+	else
+	{
+		env.push_back("QUERY_STRING=");
+	}
 
 	this->envp = createArrayOfStrings(env);
 }
@@ -76,7 +90,8 @@ void CGIRequest::executeCGIScript(void)
 		throw std::runtime_error("dup2");
 	}
 
-	if (execve("/bin/php", this->scriptArgs, this->envp) == -1)
+	std::string const bin = "/usr/bin/" + this->script;
+	if (execve(bin.c_str(), this->scriptArgs, this->envp) == -1)
 	{
 		throw std::runtime_error("execve");
 	}
@@ -114,4 +129,13 @@ void CGIRequest::destroyArrayOfStrings(char **envp) const
 		delete[] * p;
 	}
 	delete[] envp;
+}
+
+bool CGIRequest::isValidScript(std::string const &resource)
+{
+	if (resource.find_last_of(".php") != std::string::npos)
+		return true;
+	if (resource.find_last_of(".py") != std::string::npos)
+		return true;
+	return false;
 }
