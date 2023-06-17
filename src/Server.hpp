@@ -19,10 +19,10 @@
 #include "Config.hpp"
 #include "Cookie.hpp"
 #include "EpollWrapper.hpp"
+#include "HttpStatus.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 #include "log_utils.hpp"
-#include "HttpStatus.hpp"
 
 #define MAX_EVENTS 500
 #define BLOCK_IND -1
@@ -40,7 +40,7 @@ class Server
 
 	static int         acceptNewClient(int serverSocket);
 	static std::string getRequestData(Request *request);
-	static int         requestClient(Request *request);
+	static int requestClient(Request *request, int const connectionPortNumber);
 	static int responseClient(Request *request, Config &config, Cookie &cookies);
 
   private:

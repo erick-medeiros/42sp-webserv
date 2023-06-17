@@ -5,7 +5,7 @@ CGIRequest::CGIRequest(void) {}
 CGIRequest::~CGIRequest(void) {}
 
 CGIRequest::CGIRequest(std::string const &resource)
-    : fileScript("public" + resource), script("")
+    : fileScript("public" + resource), script(""), portNumber("")
 {
 }
 
@@ -15,8 +15,12 @@ bool CGIRequest::isValid(void) const
 	return (stat(this->fileScript.c_str(), &buff) == 0);
 }
 
-void CGIRequest::exec(Request const &request)
+void CGIRequest::exec(Request const &request, int const connectionPortNumber)
 {
+	std::stringstream ss;
+	ss << connectionPortNumber;
+	this->portNumber = ss.str();
+
 	prepareCGIRequest(request);
 	executeCGIScript();
 }
@@ -57,9 +61,12 @@ void CGIRequest::initScriptArguments(Request const &r)
 void CGIRequest::initEnviromentVariables(Request const &request)
 {
 	std::vector<std::string> env;
+	std::string              httpVersion;
 
-	env.push_back("SERVER_PORT=8080");
-	env.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	httpVersion = request.getStartLine()["version"];
+	env.push_back("SERVER_PROTOCOL=" + httpVersion);
+
+	env.push_back("SERVER_PORT=" + this->portNumber);
 	env.push_back(getContentLength(request));
 
 	env.push_back("HTTP_HOST=" + request.getHeaderValue("host"));

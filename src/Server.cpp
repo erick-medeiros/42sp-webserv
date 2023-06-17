@@ -104,7 +104,7 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-int Server::requestClient(Request *request)
+int Server::requestClient(Request *request, int const connectionPortNumber)
 {
 	std::string rawRequest = getRequestData(request);
 	request->parse(rawRequest);
@@ -124,7 +124,7 @@ int Server::requestClient(Request *request)
 			int pid = fork();
 			if (pid == 0)
 			{
-				cgi.exec(*request);
+				cgi.exec(*request, connectionPortNumber);
 			}
 			waitpid(pid, &status, 0);
 		}
