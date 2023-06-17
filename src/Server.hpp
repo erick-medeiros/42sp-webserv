@@ -22,6 +22,7 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "log_utils.hpp"
+#include "HttpStatus.hpp"
 
 #define MAX_EVENTS 500
 #define BLOCK_IND -1

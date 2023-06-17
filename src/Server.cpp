@@ -114,7 +114,7 @@ int Server::requestClient(Request *request)
 	std::string resource = request->getResourcePath();
 	resource = trim(resource);
 
-	if (resource.find_last_of(".php") != std::string::npos)
+	if (CGIRequest::isValidScript(resource))
 	{
 		CGIRequest cgi(resource);
 		if (cgi.isValid())
@@ -127,6 +127,11 @@ int Server::requestClient(Request *request)
 				cgi.exec(*request);
 			}
 			waitpid(pid, &status, 0);
+		}
+		else
+		{
+			request->setErrorCode(HttpStatus::NOT_FOUND);
+			request->setCgiAs(false);
 		}
 	}
 	else
