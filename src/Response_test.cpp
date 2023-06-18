@@ -6,7 +6,7 @@
 TEST_CASE("Response class")
 {
 	Request req(TEST_FD);
-	req.parse("GET / HTTP/1.1\r\n\r\n");
+	req.parse("GET /404 HTTP/1.1\r\n\r\n");
 	Response response(req);
 
 	SUBCASE("Setters and getters")
