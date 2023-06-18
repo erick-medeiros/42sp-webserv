@@ -6,7 +6,7 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 17:50:17 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/18 16:53:42 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -292,17 +292,16 @@ TEST_SUITE("location")
 		CHECK_EQ(location.response_is_dir, "dir");
 	}
 
-	TEST_CASE("location_cgi")
+	TEST_CASE("location_cgi_pass")
 	{
 		Config config;
 
 		CHECK_EQ(config.add("location", "value"), 0);
 
-		CHECK_EQ(config.add("location_cgi", ".php /bin"), 0);
+		CHECK_EQ(config.add("location_cgi_pass", "/bin"), 0);
 
 		location_t const &location = config.getLocations()[0];
 
-		CHECK_EQ(location.cgi.extension, ".php");
 		CHECK_EQ(location.cgi.path, "/bin");
 
 		SUBCASE("error")
@@ -311,7 +310,7 @@ TEST_SUITE("location")
 
 			CHECK_EQ(config.add("location", "value"), 0);
 
-			CHECK_EQ(config.add("location_cgi", ".php /bin extra"), 1);
+			CHECK_EQ(config.add("location_cgi_pass", "/bin extra"), 1);
 		}
 
 		SUBCASE("multiples")
@@ -319,20 +318,17 @@ TEST_SUITE("location")
 			Config config;
 
 			CHECK_EQ(config.add("location", "first"), 0);
-			CHECK_EQ(config.add("location_cgi", ".php /php"), 0);
+			CHECK_EQ(config.add("location_cgi_pass", "/php"), 0);
 
 			CHECK_EQ(config.add("location", "second"), 0);
-			CHECK_EQ(config.add("location_cgi", ".python /python"), 0);
+			CHECK_EQ(config.add("location_cgi_pass", "/python"), 0);
 
 			CHECK_EQ(config.getLocations().size(), 2);
 
 			location_t const &location_first = config.getLocations()[0];
 			location_t const &location_second = config.getLocations()[1];
 
-			CHECK_EQ(location_first.cgi.extension, ".php");
 			CHECK_EQ(location_first.cgi.path, "/php");
-
-			CHECK_EQ(location_second.cgi.extension, ".python");
 			CHECK_EQ(location_second.cgi.path, "/python");
 		}
 	}

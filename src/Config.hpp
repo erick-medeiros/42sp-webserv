@@ -6,7 +6,7 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 17:47:30 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/18 16:15:12 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,6 @@ typedef list<pair_string_t>  labels_t;
 typedef struct
 {
 	string path;
-	string extension;
 } cgi_t;
 
 typedef struct
