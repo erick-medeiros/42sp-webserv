@@ -1,28 +1,81 @@
 #include "Response.hpp"
 
+#include <ctime>        // time
 #include <dirent.h>     // opendir
 #include <fstream>      // ifstream
 #include <sstream>      // stringstream
 #include <sys/socket.h> // send
+#include <sys/stat.h>   // stat
 
 #include "log_utils.hpp"
+#include "utils.hpp"
 
-// TODO: Move this
-int is_dir(const std::string &path)
+#define HTML_ROOT "html" // TODO: Trocar pelo root_path passado na conf
+
+void Response::listDir(const std::string &path)
 {
-	DIR *dir = opendir(path.c_str());
-	if (dir != NULL)
+	DIR              *dir;
+	struct dirent    *ent;
+	struct stat       filestat;
+	std::string       fullFilePath, modifiedTime;
+	std::stringstream ss;
+
+	// Build HTML
+	ss << "<html>"
+	   << "<head>"
+	   << "<title>Index of " << path << "</title>"
+	   << "<link rel=\"stylesheet\" "
+	      "href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css\">"
+	   << "</head>"
+	   << "<body class=\"container\">"
+	   << "<h1>Index of " << path << "</h1>"
+	   << "<table>"
+	   << "<tr><th>Name</th><th>Size</th><th>Date Modified</th></tr>";
+
+	// List files
+	std::string dirPath = HTML_ROOT + path;
+	dir = opendir(dirPath.c_str());
+	while ((ent = readdir(dir)) != NULL)
 	{
-		closedir(dir);
-		return 1;
+		if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
+			continue;
+		fullFilePath = dirPath + "/" + ent->d_name;
+		if (stat(fullFilePath.c_str(), &filestat) == -1)
+		{
+			perror(ent->d_name);
+			continue;
+		}
+		modifiedTime = ctime(&filestat.st_mtime);
+		ss << "<tr>";
+		if (utils::isDir(fullFilePath))
+		{
+			ss << "<td><a href=\"" << path << ent->d_name << "\">" << ent->d_name
+			   << "/</a></td>";
+			ss << "<td>-</td>";
+		}
+		else
+		{
+			ss << "<td><a href=\"" << path << ent->d_name << "\">" << ent->d_name
+			   << "</a></td>";
+			ss << "<td>" << utils::formatSize(filestat.st_size) << "</td>";
+		}
+		ss << "<td>" << modifiedTime;
+		ss << "</td></tr>";
 	}
-	return 0;
+	closedir(dir);
+
+	// Finish HTML
+	ss << "</table>"
+	   << "</body>"
+	   << "</html>";
+	setBody(ss.str());
 }
 
 void Response::loadFile(const std::string &path)
 {
-	std::ifstream file(path.c_str());
-	if (!file.is_open() || is_dir(path))
+	std::string   fullPath = HTML_ROOT + path;
+	std::ifstream file(fullPath.c_str());
+	if (!file.is_open())
 	{
 		setStatus(404);
 		return;
@@ -54,9 +107,16 @@ void Response::parse(const Request &request)
 {
 	if (request.getMethod() == "GET")
 	{
-		// TODO: Trocar esse files pelo root_path passado na conf
-		std::string filePath = "files" + request.getResourcePath();
-		loadFile(filePath);
+		std::string path = request.getResourcePath();
+		if (utils::isDir(HTML_ROOT + path))
+		{
+			// Add trailing slash if not present in path
+			if (path[path.size() - 1] != '/')
+				path = path + "/";
+			listDir(path);
+		}
+		else
+			loadFile(path);
 	}
 	// TODO: Implementar outros métodos além do GET
 }

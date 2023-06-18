@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Methods Example</title>
+    <link rel="stylesheet" href="../css/pico.css">
+</head>
+
+<body>
+    <main class="container">
+        <nav>
+            <ul>
+                <h2>
+                    <li><a href="index.html" class="secondary">←</a></li>
+                    <li>Forms 📝</li>
+                </h2>
+            </ul>
+        </nav>
+
+        <div class="grid">
+            <article>
+                <hgroup>
+                    <h3>Url Encoded</h3>
+                    <h4>Default content type</h4>
+                  </hgroup>
+                <form method="POST" action="https://httpbin.org/anything">
+                    <input name="my_field" value="Hello World">
+                    <input type="submit" value="Send">
+                </form>
+            </article>
+            <article>
+                <hgroup>
+                    <h3>Multipart</h3>
+                    <h4>Useful for files, non-ASCII data, and binary data <a href="https://www.w3.org/TR/html401/interact/forms.html"><small>[1]</small></a></h4>
+                </hgroup>
+                <form method="POST" action="https://httpbin.org/anything" enctype="multipart/form-data">
+                    <input name="my_field" value="Hello World">
+                    <input type="submit" value="Send">
+                </form>
+            </article>
+        </div>
+    </main>
+
+    <script>
+        function sendFormData(e, form) {
+            fetch(form.action, { method: 'POST', body: new FormData(form) });
+            console.log('We send post asynchronously (AJAX)');
+            e.preventDefault();
+        }
+        function sendUrlEncoded(e, form) {
+            fetch(form.action, { method: 'POST', body: new URLSearchParams(new FormData(form)) });
+            console.log('We send post asynchronously (AJAX)');
+            e.preventDefault();
+        }
+    </script>
+</body>
+</html>

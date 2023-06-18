@@ -34,6 +34,7 @@ class Response
 	// Other methods
 	void        parse(const Request &request);
 	void        loadFile(const std::string &path);
+	void        listDir(const std::string &path);
 	void        prepareMessage(void);
 	void        sendHttpResponse(void);
 	std::string getReasonPhrase(void) const;
