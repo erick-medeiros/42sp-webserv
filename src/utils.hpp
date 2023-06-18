@@ -10,8 +10,17 @@
 #define GREEN "\x1b[38;5;40m"
 #define RES "\x1b[0m"
 
+#include <dirent.h>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 std::string &trim(std::string &s);
+
+namespace utils
+{
+int         isDir(const std::string &path);
+std::string formatSize(size_t size);
+} // namespace utils
 
 #endif

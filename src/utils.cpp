@@ -17,3 +17,29 @@ std::string &trim(std::string &s)
 	const char *ws = " \t\n\r\f\v";
 	return ltrim(rtrim(s, ws), ws);
 }
+
+int utils::isDir(const std::string &path)
+{
+	DIR *dir = opendir(path.c_str());
+	if (dir != NULL)
+	{
+		closedir(dir);
+		return 1;
+	}
+	return 0;
+}
+
+std::string utils::formatSize(size_t size)
+{
+	std::stringstream ss;
+
+	const char *units[] = {"B", "KB", "MB", "GB"};
+	int         unit = 0;
+	while (size > 1024 && unit < 3)
+	{
+		size /= 1024;
+		++unit;
+	}
+	ss << size << units[unit];
+	return ss.str();
+}
