@@ -24,9 +24,11 @@ class CGIRequest
 	~CGIRequest(void);
 
 	std::string fileScript;
+	std::string script;
+	std::string portNumber;
 
 	bool        isValid(void) const;
-	void        exec(Request const &request);
+	void        exec(Request const &request, int const connectionPortNumber);
 	std::string getContentLength(Request const &request) const;
 	void        prepareCGIRequest(Request const &request);
 	void        initTemporaryDescriptor(Request const &request);
@@ -35,6 +37,7 @@ class CGIRequest
 	void        executeCGIScript(void);
 	char      **createArrayOfStrings(std::vector<std::string> const &envVars) const;
 	void        destroyArrayOfStrings(char **envp) const;
+	static bool isValidScript(std::string const &resource);
 };
 
 #endif

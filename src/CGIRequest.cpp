@@ -5,8 +5,8 @@ CGIRequest::CGIRequest(void) {}
 CGIRequest::~CGIRequest(void) {}
 
 CGIRequest::CGIRequest(std::string const &resource)
+    : fileScript("cgi-bin" + resource), script(""), portNumber("")
 {
-	this->fileScript = "public" + resource;
 }
 
 bool CGIRequest::isValid(void) const
@@ -15,8 +15,12 @@ bool CGIRequest::isValid(void) const
 	return (stat(this->fileScript.c_str(), &buff) == 0);
 }
 
-void CGIRequest::exec(Request const &request)
+void CGIRequest::exec(Request const &request, int const connectionPortNumber)
 {
+	std::stringstream ss;
+	ss << connectionPortNumber;
+	this->portNumber = ss.str();
+
 	prepareCGIRequest(request);
 	executeCGIScript();
 }
@@ -39,7 +43,16 @@ void CGIRequest::initTemporaryDescriptor(Request const &r)
 void CGIRequest::initScriptArguments(Request const &r)
 {
 	std::vector<std::string> args;
-	args.push_back("php");
+
+	int         i = this->fileScript.find_first_of(".");
+	std::string ext = std::string(fileScript.begin() + i + 1, fileScript.end());
+
+	if (ext == "php")
+		this->script = "php";
+	else if (ext == "py")
+		this->script = "python3";
+
+	args.push_back(this->script);
 	args.push_back(this->fileScript);
 	args.push_back(r.getBody());
 	this->scriptArgs = createArrayOfStrings(args);
@@ -48,8 +61,12 @@ void CGIRequest::initScriptArguments(Request const &r)
 void CGIRequest::initEnviromentVariables(Request const &request)
 {
 	std::vector<std::string> env;
-	env.push_back("SERVER_PORT=8080");
-	env.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	std::string              httpVersion;
+
+	httpVersion = request.getStartLine()["version"];
+	env.push_back("SERVER_PROTOCOL=" + httpVersion);
+
+	env.push_back("SERVER_PORT=" + this->portNumber);
 	env.push_back(getContentLength(request));
 
 	env.push_back("HTTP_HOST=" + request.getHeaderValue("host"));
@@ -65,6 +82,10 @@ void CGIRequest::initEnviromentVariables(Request const &request)
 	{
 		env.push_back("QUERY_STRING=" + request.getResourceQuery());
 	}
+	else
+	{
+		env.push_back("QUERY_STRING=");
+	}
 
 	this->envp = createArrayOfStrings(env);
 }
@@ -76,7 +97,8 @@ void CGIRequest::executeCGIScript(void)
 		throw std::runtime_error("dup2");
 	}
 
-	if (execve("/bin/php", this->scriptArgs, this->envp) == -1)
+	std::string const bin = "/usr/bin/" + this->script;
+	if (execve(bin.c_str(), this->scriptArgs, this->envp) == -1)
 	{
 		throw std::runtime_error("execve");
 	}
@@ -114,4 +136,13 @@ void CGIRequest::destroyArrayOfStrings(char **envp) const
 		delete[] * p;
 	}
 	delete[] envp;
+}
+
+bool CGIRequest::isValidScript(std::string const &resource)
+{
+	if (resource.find_last_of(".php") != std::string::npos)
+		return true;
+	if (resource.find_last_of(".py") != std::string::npos)
+		return true;
+	return false;
 }

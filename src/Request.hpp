@@ -70,6 +70,7 @@ class Request
 	bool isCgiEnabled(void) const;
 	bool isParsed(void) const;
 	void setCgiAs(bool newState);
+	void setErrorCode(int errorCode);
 };
 
 std::ostream &operator<<(std::ostream &os, Request const &req);

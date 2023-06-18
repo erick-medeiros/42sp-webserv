@@ -104,7 +104,7 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-int Server::requestClient(Request *request)
+int Server::requestClient(Request *request, int const connectionPortNumber)
 {
 	std::string rawRequest = getRequestData(request);
 	request->parse(rawRequest);
@@ -114,7 +114,7 @@ int Server::requestClient(Request *request)
 	std::string resource = request->getResourcePath();
 	resource = trim(resource);
 
-	if (resource.find_last_of(".php") != std::string::npos)
+	if (CGIRequest::isValidScript(resource))
 	{
 		CGIRequest cgi(resource);
 		if (cgi.isValid())
@@ -124,9 +124,14 @@ int Server::requestClient(Request *request)
 			int pid = fork();
 			if (pid == 0)
 			{
-				cgi.exec(*request);
+				cgi.exec(*request, connectionPortNumber);
 			}
 			waitpid(pid, &status, 0);
+		}
+		else
+		{
+			request->setErrorCode(HttpStatus::NOT_FOUND);
+			request->setCgiAs(false);
 		}
 	}
 	else
