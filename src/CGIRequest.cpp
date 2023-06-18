@@ -111,7 +111,7 @@ void CGIRequest::destroyArrayOfStrings(char **envp) const
 {
 	for (char **p = envp; *p; ++p)
 	{
-		delete[] *p;
+		delete[] * p;
 	}
 	delete[] envp;
 }
