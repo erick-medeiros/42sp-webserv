@@ -9,7 +9,10 @@
 #include <unistd.h>
 #include <vector>
 
+#include "Connection.hpp"
 #include "Request.hpp"
+
+class Connection;
 
 class CGIRequest
 {
@@ -18,14 +21,17 @@ class CGIRequest
 	char **envp;
 	int    fd;
 
+	void initLocation(std::string const &resource, Connection &connection);
+
   public:
 	CGIRequest(void);
-	CGIRequest(std::string const &resource);
+	CGIRequest(std::string const &resource, Connection &connection);
 	~CGIRequest(void);
 
 	std::string fileScript;
 	std::string script;
 	std::string portNumber;
+	std::string location;
 
 	bool        isValid(void) const;
 	void        exec(Request const &request, int const connectionPortNumber);
@@ -37,7 +43,8 @@ class CGIRequest
 	void        executeCGIScript(void);
 	char      **createArrayOfStrings(std::vector<std::string> const &envVars) const;
 	void        destroyArrayOfStrings(char **envp) const;
-	static bool isValidScript(std::string const &resource);
+	static bool isValidScriptLocation(std::string const &resource,
+	                                  Connection        &connection);
 };
 
 #endif

@@ -4,9 +4,10 @@ CGIRequest::CGIRequest(void) {}
 
 CGIRequest::~CGIRequest(void) {}
 
-CGIRequest::CGIRequest(std::string const &resource)
-    : fileScript("cgi-bin" + resource), script(""), portNumber("")
+CGIRequest::CGIRequest(std::string const &resource, Connection &connection)
+    : script(""), portNumber("")
 {
+	this->initLocation(resource, connection);
 }
 
 bool CGIRequest::isValid(void) const
@@ -74,8 +75,10 @@ void CGIRequest::initEnviromentVariables(Request const &request)
 	env.push_back("REQUEST_METHOD=" + request.getMethod());
 
 	std::string const resource = request.getResourcePath();
-	std::string const scriptName = std::string(resource.begin() + 1, resource.end());
 	env.push_back("PATH_INFO=" + resource);
+
+	std::string const path = this->fileScript;
+	std::string const scriptName = path.substr(path.find_last_of("/") + 1);
 	env.push_back("SCRIPT_NAME=" + scriptName);
 
 	if (request.getAllParams().size() > 0)
@@ -138,11 +141,30 @@ void CGIRequest::destroyArrayOfStrings(char **envp) const
 	delete[] envp;
 }
 
-bool CGIRequest::isValidScript(std::string const &resource)
+bool CGIRequest::isValidScriptLocation(std::string const &resource,
+                                       Connection        &connection)
 {
-	if (resource.find_last_of(".php") != std::string::npos)
-		return true;
-	if (resource.find_last_of(".py") != std::string::npos)
-		return true;
+	std::vector<location_t> arr = connection.config.getLocations();
+	for (size_t i = 0; i < arr.size(); i++)
+	{
+		if (arr[i].location == resource)
+		{
+			return true;
+		}
+	}
 	return false;
+}
+
+void CGIRequest::initLocation(std::string const &resource, Connection &connection)
+{
+	std::vector<location_t> arr = connection.config.getLocations();
+
+	for (size_t i = 0; i < arr.size(); i++)
+	{
+		if (arr[i].location == resource)
+		{
+			this->location = arr[i].location;
+			this->fileScript = arr[i].cgi.path;
+		}
+	}
 }

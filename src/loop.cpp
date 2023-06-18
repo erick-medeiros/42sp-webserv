@@ -6,7 +6,7 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/17 19:29:37 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/18 15:34:32 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,7 @@ int loop(std::string path_config)
 			{
 				try
 				{
-					Server::requestClient(request, connection->config.getPort());
+					Server::requestClient(request, *connection);
 					if (request->isParsed())
 					{
 						epoll_data_t data = {channel};
