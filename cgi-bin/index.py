@@ -25,5 +25,5 @@ print()
 
 body = sys.argv[1]
 print(body)
-print("\n--------------------------------------")
+print("--------------------------------------")
 print("Request body payload size: " + str(len(body)))
