@@ -20,6 +20,8 @@ class Response
 	Response();
 	~Response();
 
+	bool cgiState;
+
 	// Setters
 	void setStatus(int code);
 	void setHeader(const std::string &key, const std::string &value);

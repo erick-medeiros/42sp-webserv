@@ -14,7 +14,7 @@
 
 void Response::listDir(const std::string &path)
 {
-	DIR              *dir;
+	DIR	          *dir;
 	struct dirent    *ent;
 	struct stat       filestat;
 	std::string       fullFilePath, modifiedTime;
@@ -73,8 +73,20 @@ void Response::listDir(const std::string &path)
 
 void Response::loadFile(const std::string &path)
 {
-	std::string   fullPath = HTML_ROOT + path;
-	std::ifstream file(fullPath.c_str());
+	std::string   fullPath;
+	std::ifstream file;
+
+	if (this->cgiState)
+	{
+		fullPath = path;
+		file.open(fullPath.c_str());
+	}
+	else
+	{
+		fullPath = HTML_ROOT + path;
+		file.open(fullPath.c_str());
+	}
+
 	if (!file.is_open())
 	{
 		setStatus(404);
@@ -89,7 +101,9 @@ void Response::loadFile(const std::string &path)
 Response::Response(const Request &request) : statusCode(200)
 {
 	this->clientFd = request.getFd();
-	if (request.isCgiEnabled())
+	this->cgiState = request.isCgiEnabled();
+
+	if (this->cgiState == true)
 	{
 		std::stringstream ss;
 		ss << this->clientFd;
