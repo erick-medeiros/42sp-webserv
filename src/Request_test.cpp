@@ -106,12 +106,12 @@ TEST_CASE("Client request body")
 		int         expected;
 	} tt[] = {
 	    {"GET / HTTP/1.1\r\n", "\r\n", "", 0},
-	    {"GET / HTTP/1.1\r\n", "\r\n", "\n", 1},
-	    {"GET / HTTP/1.1\r\n", "\r\n", "foo", 3},
-	    {"GET / HTTP/1.1\r\n", "\r\n", "foo bar baz", 11},
-	    {"GET / HTTP/1.1\r\n", "\r\n", "{\"k\": \"v\"}", 10},
-	    {"GET / HTTP/1.1\r\n", "h1: foo\r\n\r\n", "{\"k1\": \"v1\", \"k2\": \"v2\"}",
-	     24},
+	    {"GET / HTTP/1.1\r\n", "Content-Length: 1\r\n\r\n", "\n", 1},
+	    {"GET / HTTP/1.1\r\n", "Content-Length: 3\r\n\r\n", "foo", 3},
+	    {"GET / HTTP/1.1\r\n", "Content-Length: 11\r\n\r\n", "foo bar baz", 11},
+	    {"GET / HTTP/1.1\r\n", "Content-Length: 10\r\n\r\n", "{\"k\": \"v\"}", 10},
+	    {"GET / HTTP/1.1\r\n", "h1: foo\r\nContent-Length: 24\r\n\r\n",
+	     "{\"k1\": \"v1\", \"k2\": \"v2\"}", 24},
 	};
 
 	std::size_t n = sizeof(tt) / sizeof(*tt);

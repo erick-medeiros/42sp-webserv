@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-Server::Server(void) : monitoredSockets(MAX_EVENTS) {}
+Server::Server(void) : serverSocket(0) {}
 
 void Server::init(Config const &conf)
 {
@@ -8,9 +8,7 @@ void Server::init(Config const &conf)
 
 	logSuccess("initializing new web server");
 
-	initSignal(this);
-
-	listenToPort(_config.getPorts()[0]);
+	listenToPort(_config.getPort());
 }
 
 Server::~Server()
@@ -46,7 +44,7 @@ int Server::listenToPort(int port)
 	// --- Set non-blocking ---
 	if (!setNonBlocking(serverSocket))
 	{
-		logError("--- Error: fcntl");
+		logError("--- Error: Set non-blocking");
 		exit(1);
 	}
 	// --- Set socket to listen for connections ---
@@ -71,26 +69,9 @@ int Server::getPort()
 	return ntohs(address.sin_port);
 }
 
-int Server::acceptNewClient(void)
+std::string Server::getRequestData(Request *request)
 {
-	sockaddr_in clientAddr;
-	socklen_t   clilen = sizeof(clientAddr);
-
-	int clientSocket =
-	    accept(serverSocket, (struct sockaddr *) &clientAddr, &clilen);
-	if (clientSocket == -1)
-	{
-		logError("--- Error: accept");
-		exit(1);
-	}
-	logSuccess("+++ New connection accepted on socket", clientSocket);
-	return clientSocket;
-}
-
-std::string Server::readFromSocket(epoll_event *event)
-{
-	Request *request = reinterpret_cast<Request *>(event->data.ptr);
-	int      clientSocket = request->getFd();
+	int clientSocket = request->getFd();
 
 	int  buffSize = 1024;
 	char buff[buffSize];
@@ -108,160 +89,93 @@ std::string Server::readFromSocket(epoll_event *event)
 		close(clientSocket);
 		return "";
 	}
-	// TODO: Não funciona com o caso de um request maior que 1024 bytes, pois
-	//       não é feito um loop para ler o resto do request e não aciona outro
-	//       EPOLLIN
-	//		 ideia: Fazer o Request saber quando está completo e se não estiver fazer
-	// outra chamada
-	if (bytesRead < buffSize)
-		monitoredSockets.modify(clientSocket, event->data, EPOLLOUT);
 	buff[bytesRead] = 0;
 	logInfo("Request size", bytesRead);
 	return std::string(buff);
 }
 
-int Server::disconnectClient(Request *request)
+int Server::getServerSocket()
 {
-	if (!request)
-		return 0;
-	int fd = request->getFd();
-	logInfo("--- Client disconnected from socket", fd);
-	monitoredSockets.remove(fd);
-	delete request;
-	return close(fd);
+	return serverSocket;
+}
+
+Config &Server::getConfig(void)
+{
+	return _config;
+}
+
+int Server::requestClient(Request *request)
+{
+	std::string rawRequest = getRequestData(request);
+	request->parse(rawRequest);
+	std::cout << *request << std::endl;
+
+	// Handle CGI
+	std::string resource = request->getResourcePath();
+	resource = trim(resource);
+
+	if (resource.find_last_of(".php") != std::string::npos)
+	{
+		CGIRequest cgi(resource);
+		if (cgi.isValid())
+		{
+			request->setCgiAs(true);
+			int status;
+			int pid = fork();
+			if (pid == 0)
+			{
+				cgi.exec(*request);
+			}
+			waitpid(pid, &status, 0);
+		}
+	}
+	else
+	{
+		request->setCgiAs(false);
+	}
+
+	return 0;
 }
 
 #ifndef FEATURE_FLAG_COOKIE
 #define FEATURE_FLAG_COOKIE 0
 #endif
 
-void Server::run()
+int Server::responseClient(Request *request, Config &config, Cookie &cookies)
 {
-	// --- Add server socket to waiting list, so it is managed by epoll ---
-	// TODO: remove request of socket
-	Request     *request_socket = new Request(serverSocket);
-	epoll_data_t data = {0};
-	data.ptr = request_socket;
-	monitoredSockets.add(serverSocket, data, EPOLLIN | EPOLLOUT);
+	Response response(*request);
 
-	Cookie cookies;
-
-	while (true)
+	if (FEATURE_FLAG_COOKIE) // test
 	{
-		int numEvents = monitoredSockets.wait(BLOCK_IND);
-
-		for (int i = 0; i < numEvents; ++i)
+		string username = Cookie::getUsername(*request);
+		if (username == "")
 		{
-			struct epoll_event &event = monitoredSockets.events[i];
-			Request *request = reinterpret_cast<Request *>(event.data.ptr);
-
-			// New connection on server
-			if (request->getFd() == serverSocket)
+			string value = Cookie::getValueCookie(*request, "session");
+			if (cookies.get(value) != "")
 			{
-				int newClient = acceptNewClient();
-				setNonBlocking(newClient);
-				epoll_data_t data;
-				data.ptr = new Request(newClient);
-				monitoredSockets.add(newClient, data, EPOLLIN);
-				continue;
+				response.setStatus(200);
+				response.setBody("username " + cookies.get(value));
 			}
-
-			if (event.events & EPOLLERR)
-			{
-				logError("Epoll error on socket", request->getFd());
-				disconnectClient(request);
-				continue;
-			}
-
-			if (event.events & (EPOLLRDHUP | EPOLLHUP))
-			{
-				logError("Client disconnected from socket", request->getFd());
-				disconnectClient(request);
-				continue;
-			}
-
-			// Request
-			if (event.events & EPOLLIN)
-			{
-				try
-				{
-					std::string rawInput = readFromSocket(&event);
-					request->parse(rawInput);
-
-					std::cout << *request << std::endl;
-
-					// Handle CGI
-					std::string resource = request->getResourcePath();
-					resource = trim(resource);
-
-					if (resource.find_last_of(".php") != std::string::npos)
-					{
-						CGIRequest cgi(resource);
-						if (cgi.isValid())
-						{
-							request->setCgiAs(true);
-							int status;
-							int pid = fork();
-							if (pid == 0)
-							{
-								cgi.exec(*request);
-							}
-							waitpid(pid, &status, 0);
-						}
-					}
-					else
-					{
-						request->setCgiAs(false);
-					}
-				}
-				catch (std::exception const &e)
-				{
-					// TODO: handle exception properly...
-					logError(e.what());
-					disconnectClient(request);
-				}
-				continue;
-			}
-
-			// Response
-			if (event.events & EPOLLOUT)
-			{
-				Response response(*request);
-
-				if (FEATURE_FLAG_COOKIE) // test
-				{
-					string username = Cookie::getUsername(*request);
-					if (username == "")
-					{
-						string value = Cookie::getValueCookie(*request, "session");
-						if (cookies.get(value) != "")
-						{
-							response.setStatus(200);
-							response.setBody("username " + cookies.get(value));
-						}
-					}
-					else
-					{
-						string session = cookies.generateSession();
-						cookies.set(session, username);
-						response.setHeader("Set-Cookie",
-						                   "session=" + session + ";path=/");
-					}
-				}
-
-				// TODO: add other errors
-				if (response.getStatusCode() == 404)
-				{
-					response.loadFile(_config.getErrorPage(404));
-				}
-				response.sendHttpResponse();
-				disconnectClient(request);
-			}
+		}
+		else
+		{
+			string session = cookies.generateSession();
+			cookies.set(session, username);
+			response.setHeader("Set-Cookie", "session=" + session + ";path=/");
 		}
 	}
 
-	delete request_socket;
-	monitoredSockets.remove(serverSocket);
+	// TODO: add other errors
+	if (response.getStatusCode() >= 400 || response.getStatusCode() <= 599)
+	{
+		// Config &config
+		string error_page = config.getErrorPage(response.getStatusCode());
+		if (error_page.size() > 0)
+			response.loadFile(error_page);
+	}
+	response.sendHttpResponse();
+
+	return 0;
 }
 
 // --- Helper functions ---

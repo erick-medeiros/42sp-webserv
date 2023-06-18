@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config_test.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 11:33:55 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/11 17:50:17 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,21 +42,17 @@ TEST_SUITE("ports")
 	{
 		Config config;
 		CHECK_EQ(config.add("port", "8080"), 0);
-
-		vector<int> const &ports = config.getPorts();
-
-		CHECK_EQ(ports.size(), 1);
-		CHECK_EQ(ports[0], 8080);
+		uint_t const &port = config.getPort();
+		CHECK_EQ(port, 8080);
 	}
 	TEST_CASE("multiple ports")
 	{
 		Config config;
-		CHECK_EQ(config.add("port", "8080 8090 9000"), 0);
-		vector<int> const &ports = config.getPorts();
-		CHECK_EQ(ports.size(), 3);
-		CHECK_EQ(ports[0], 8080);
-		CHECK_EQ(ports[1], 8090);
-		CHECK_EQ(ports[2], 9000);
+		freopen("/dev/null", "w", stderr);
+		CHECK_EQ(config.add("port", "8080 8090 9000"), 1);
+		freopen("/dev/tty", "w", stderr);
+		uint_t const &port = config.getPort();
+		CHECK_EQ(port, 0);
 	}
 	TEST_CASE("limits")
 	{
@@ -65,10 +61,18 @@ TEST_SUITE("ports")
 		CHECK_EQ(config.add("port", "1023"), 1);
 		CHECK_EQ(config.add("port", "49152"), 1);
 		freopen("/dev/tty", "w", stderr);
-		vector<int> const &ports = config.getPorts();
-		CHECK_EQ(ports.size(), 0);
-		CHECK_EQ(config.add("port", "1024 49151"), 0);
-		CHECK_EQ(ports.size(), 2);
+		uint_t const &port = config.getPort();
+		CHECK_EQ(port, 0);
+		SUBCASE("min")
+		{
+			Config config;
+			CHECK_EQ(config.add("port", "1024"), 0);
+		}
+		SUBCASE("max")
+		{
+			Config config;
+			CHECK_EQ(config.add("port", "49151"), 0);
+		}
 	}
 }
 
@@ -141,24 +145,48 @@ TEST_SUITE("error pages")
 
 	TEST_CASE("range error")
 	{
-		// TODO: make
+		Config config;
+		freopen("/dev/null", "w", stderr);
+		CHECK_EQ(config.add("error_page", "200 /200.html"), 1);
+		CHECK_EQ(config.add("error_page", "399 /399.html"), 1);
+		CHECK_EQ(config.add("error_page", "400 /400.html"), 0);
+		CHECK_EQ(config.add("error_page", "599 /599.html"), 0);
+		CHECK_EQ(config.add("error_page", "600 /600.html"), 1);
+		CHECK_EQ(config.add("error_page", "900 /900.html"), 1);
+		freopen("/dev/tty", "w", stderr);
+
+		CHECK_EQ(config.getErrorPage(200), "");
+		CHECK_EQ(config.getErrorPage(400), "/400.html");
+		CHECK_EQ(config.getErrorPage(599), "/599.html");
+		CHECK_EQ(config.getErrorPage(900), "");
 	}
 }
 
-TEST_SUITE("client body size")
+TEST_SUITE("client_max_body_size")
 {
-	TEST_CASE("size")
+	TEST_CASE("mb")
 	{
 		Config config;
-
-		CHECK_EQ(config.add("client_body_size", "10"), 0);
+		CHECK_EQ(config.add("client_max_body_size", "1M"), 0);
+		CHECK_EQ(config.getClientBodySize(), 1024);
 	}
+
+	TEST_CASE("kb")
+	{
+		Config config;
+		CHECK_EQ(config.add("client_max_body_size", "100K"), 0);
+		CHECK_EQ(config.getClientBodySize(), 100);
+	}
+
 	TEST_CASE("errors")
 	{
 		Config config;
 
-		CHECK_EQ(config.add("client_body_size", "0"), 1);
-		// TODO: make more case of errors
+		CHECK_EQ(config.add("client_max_body_size", "0"), 1);
+		CHECK_EQ(config.add("client_max_body_size", "1"), 1);
+		CHECK_EQ(config.add("client_max_body_size", ""), 1);
+		CHECK_EQ(config.add("client_max_body_size", "1B"), 1);
+		CHECK_EQ(config.add("client_max_body_size", "1m"), 1);
 	}
 }
 
@@ -272,10 +300,10 @@ TEST_SUITE("location")
 
 		CHECK_EQ(config.add("location_cgi", ".php /bin"), 0);
 
-		cgi_t const &cgi = config.getCGI();
+		location_t const &location = config.getLocations()[0];
 
-		CHECK_EQ(cgi.extension, ".php");
-		CHECK_EQ(cgi.path, "/bin");
+		CHECK_EQ(location.cgi.extension, ".php");
+		CHECK_EQ(location.cgi.path, "/bin");
 
 		SUBCASE("error")
 		{
@@ -284,6 +312,28 @@ TEST_SUITE("location")
 			CHECK_EQ(config.add("location", "value"), 0);
 
 			CHECK_EQ(config.add("location_cgi", ".php /bin extra"), 1);
+		}
+
+		SUBCASE("multiples")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "first"), 0);
+			CHECK_EQ(config.add("location_cgi", ".php /php"), 0);
+
+			CHECK_EQ(config.add("location", "second"), 0);
+			CHECK_EQ(config.add("location_cgi", ".python /python"), 0);
+
+			CHECK_EQ(config.getLocations().size(), 2);
+
+			location_t const &location_first = config.getLocations()[0];
+			location_t const &location_second = config.getLocations()[1];
+
+			CHECK_EQ(location_first.cgi.extension, ".php");
+			CHECK_EQ(location_first.cgi.path, "/php");
+
+			CHECK_EQ(location_second.cgi.extension, ".python");
+			CHECK_EQ(location_second.cgi.path, "/python");
 		}
 	}
 }

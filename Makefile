@@ -1,7 +1,7 @@
 NAME = webserv
 
-FILES = main.cpp Server.cpp Response.cpp EpollWrapper.cpp Request.cpp utils.cpp signals.cpp
-FILES += Cookie.cpp CGIRequest.cpp Config.cpp
+FILES = main.cpp Server.cpp Response.cpp EpollWrapper.cpp Request.cpp utils.cpp
+FILES += Cookie.cpp CGIRequest.cpp Config.cpp Connection.cpp loop.cpp
 
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
@@ -51,6 +51,9 @@ re: fclean all
 
 leaks: $(NAME)
 	$(VALGRIND) ./$(NAME) NORUN
+
+leaks_run: $(NAME)
+	$(VALGRIND) ./$(NAME)
 
 $(TESTER): CXXFLAGS += -Ilib
 $(TESTER): $(NAME) $(OBJ_TEST)

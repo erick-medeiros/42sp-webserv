@@ -1,33 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/22 16:04:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/16 11:04:20 by eandre-f         ###   ########.fr       */
+/*   Created: 2023/06/16 09:26:18 by eandre-f          #+#    #+#             */
+/*   Updated: 2023/06/16 11:56:19 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <string>
+#ifndef CONNECTION_HPP
+#define CONNECTION_HPP
 
-#define DEFAULT_CONF "./config/default.conf"
+#include "Request.hpp"
+#include "Response.hpp"
+#include "Server.hpp"
+#include <iostream>
 
-int loop(std::string path_config);
-
-int main(int argc, char *argv[])
+class Connection
 {
-	if (argc > 1 &&
-	    std::string(argv[1]) == "NORUN") // TODO: Improve this, used by leaks test
-		return 0;
+  public:
+	int      fd;
+	Config  &config;
+	Request  request;
+	Response response;
 
-	std::string path_config;
+	Connection(Server &server);
+	~Connection(void);
 
-	if (argc > 1)
-		path_config = argv[1];
-	else
-		path_config = DEFAULT_CONF;
+	int disconnect();
 
-	return loop(path_config);
-}
+  private:
+	static int acceptNewClient(int serverSocket);
+};
+
+#endif /* CONNECTION_HPP */

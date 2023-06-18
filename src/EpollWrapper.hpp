@@ -6,13 +6,14 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/08 12:10:39 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/16 11:33:15 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef EPOLLWRAPPER_HPP
 #define EPOLLWRAPPER_HPP
 
+#include "Config.hpp"
 #include "Request.hpp"
 #include "log_utils.hpp"
 #include <cstddef>
@@ -24,6 +25,16 @@
 #include <unistd.h>
 
 using namespace std;
+
+typedef struct
+{
+	enum channel_type_t
+	{
+		CHANNEL_SOCKET,
+		CHANNEL_CONNECTION
+	} type;
+	void *ptr;
+} channel_t;
 
 class EpollWrapper
 {
