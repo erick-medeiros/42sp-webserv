@@ -5,7 +5,7 @@ CGIRequest::CGIRequest(void) {}
 CGIRequest::~CGIRequest(void) {}
 
 CGIRequest::CGIRequest(std::string const &resource)
-    : fileScript("public" + resource), script(""), portNumber("")
+    : fileScript("cgi-bin" + resource), script(""), portNumber("")
 {
 }
 
