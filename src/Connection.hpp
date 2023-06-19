@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 09:26:18 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/16 11:56:19 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/18 15:51:19 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,9 @@
 #include "Response.hpp"
 #include "Server.hpp"
 #include <iostream>
+
+class Server;
+class Config;
 
 class Connection
 {

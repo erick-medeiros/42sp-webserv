@@ -6,7 +6,7 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/11 17:47:25 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/18 16:15:07 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ int Config::add(string label, string value)
 		return _setDirectoryListing(value);
 	if (label == "location_response_is_dir")
 		return _setResponseIsDir(value);
-	if (label == "location_cgi")
+	if (label == "location_cgi_pass")
 		return _setCGI(value);
 	logError("config label not match: ", label);
 	return 1;
@@ -226,10 +226,8 @@ int Config::_setResponseIsDir(string &value)
 int Config::_setCGI(string &value)
 {
 	stringstream ss(value);
-	string       str;
 	cgi_t        cgi;
 
-	ss >> cgi.extension;
 	ss >> cgi.path;
 
 	if (!ss.eof())

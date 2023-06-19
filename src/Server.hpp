@@ -17,6 +17,7 @@
 
 #include "CGIRequest.hpp"
 #include "Config.hpp"
+#include "Connection.hpp"
 #include "Cookie.hpp"
 #include "EpollWrapper.hpp"
 #include "HttpStatus.hpp"
@@ -26,6 +27,8 @@
 
 #define MAX_EVENTS 500
 #define BLOCK_IND -1
+
+class Connection;
 
 class Server
 {
@@ -40,7 +43,7 @@ class Server
 
 	static int         acceptNewClient(int serverSocket);
 	static std::string getRequestData(Request *request);
-	static int requestClient(Request *request, int const connectionPortNumber);
+	static int         requestClient(Request *request, Connection &connection);
 	static int responseClient(Request *request, Config &config, Cookie &cookies);
 
   private:

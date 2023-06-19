@@ -104,7 +104,7 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-int Server::requestClient(Request *request, int const connectionPortNumber)
+int Server::requestClient(Request *request, Connection &connection)
 {
 	std::string rawRequest = getRequestData(request);
 	request->parse(rawRequest);
@@ -114,9 +114,10 @@ int Server::requestClient(Request *request, int const connectionPortNumber)
 	std::string resource = request->getResourcePath();
 	resource = trim(resource);
 
-	if (CGIRequest::isValidScript(resource))
+	if (CGIRequest::isValidScriptLocation(resource, connection))
 	{
-		CGIRequest cgi(resource);
+		CGIRequest cgi(resource, connection);
+
 		if (cgi.isValid())
 		{
 			request->setCgiAs(true);
@@ -124,7 +125,7 @@ int Server::requestClient(Request *request, int const connectionPortNumber)
 			int pid = fork();
 			if (pid == 0)
 			{
-				cgi.exec(*request, connectionPortNumber);
+				cgi.exec(*request, connection.config.getPort());
 			}
 			waitpid(pid, &status, 0);
 		}
