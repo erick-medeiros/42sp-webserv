@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   loop.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
+/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/18 15:34:32 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/19 09:24:12 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,10 @@ int loop(std::string path_config)
 	while (running(true))
 	{
 		int numEvents = epoll.wait(0);
+
+		if (numEvents == -1)
+			running(false);
+
 		for (int i = 0; i < numEvents; ++i)
 		{
 			struct epoll_event &event = epoll.events[i];
