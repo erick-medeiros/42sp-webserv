@@ -4,14 +4,17 @@
 
 BIN=webserv
 TEST_FOLDER=tests/integration/
-CONFIG_FOLDER=tests/integration/configs/
 
 run_server ()
 {
-	echo "TEST:" $1 $2
-	./$BIN ./"$CONFIG_FOLDER"$2 1>/dev/null 2>/dev/null &
+	TEST=$1
+	PY="$TEST_FOLDER""$TEST"/test.py
+	CONF="$TEST_FOLDER""$TEST"/config.conf
+	echo "TEST:" $TEST
+	./$BIN ./$CONF 1>/dev/null 2>/dev/null &
 	PID=$!
-	python3 "$TEST_FOLDER"$1
+	export PYTHONPATH=$PYTHONPATH:$(pwd)/$TEST_FOLDER
+	python3 $PY
 	EXITCODE=$?
 	kill $PID
 	return $EXITCODE
@@ -19,6 +22,6 @@ run_server ()
 
 # end setup
 
-run_server status_code.py status_code.conf
+run_server status_code
 
-run_server multiple.py multiple.conf
+run_server multiple_servers
