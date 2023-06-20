@@ -8,6 +8,7 @@ CONFIG_FOLDER=tests/integration/configs/
 
 run_server ()
 {
+	echo "TEST:" $1 $2
 	./$BIN ./"$CONFIG_FOLDER"$2 1>/dev/null 2>/dev/null &
 	PID=$!
 	python3 "$TEST_FOLDER"$1
