@@ -30,7 +30,7 @@ jobs:
         run: |
           make
           mkdir -p ~/build
-          sudo cp -fruv webserv *.out ./build/* ~/build/
+          sudo cp -fruv webserv ./build/* ~/build/
   leaks:
     needs: compilation
     timeout-minutes: 5
