@@ -18,14 +18,18 @@ jobs:
         with:
           path: "~/build"
           key: cache-build
+      - name: restore cache
+        env:
+          CACHE_HIT: ${{steps.cache-build.outputs.cache-hit}}
+        run: |
+          if [[ "$CACHE_HIT" == 'true' ]]; then
+            mkdir -p build
+            sudo cp -fruv ~/build/* ./build
+          fi
       - name: Compilation
         run: |
-          mkdir -p ~/build
-          mkdir -p build
-          sudo cp --verbose --force --recursive ~/build/* ./build/
           make
-          sudo cp --verbose --force --recursive ./build/* ~/build/
-          sudo cp --verbose --force --recursive webserv ~/build/
+          sudo cp -fruv webserv *.out ./build/* ~/build/
   leaks:
     needs: compilation
     timeout-minutes: 5
@@ -38,16 +42,20 @@ jobs:
         with:
           path: "~/build"
           key: cache-build
+      - name: restore cache
+        env:
+          CACHE_HIT: ${{steps.cache-build.outputs.cache-hit}}
+        run: |
+          if [[ "$CACHE_HIT" == 'true' ]]; then
+            mkdir -p build
+            sudo cp -fruv ~/build/* ./build
+          fi
       - name: install valgrind
         run: |
           sudo apt-get update -qq -y
           sudo apt-get install -qq valgrind
       - name: run valgrind
-        run: |
-          mkdir -p build
-          sudo cp --verbose --force --recursive ~/build/* ./build/
-          sudo cp --verbose --force --recursive ~/build/webserv webserv
-          make leaks
+        run: make leaks
   tests:
     needs: compilation
     timeout-minutes: 5
@@ -60,20 +68,22 @@ jobs:
         with:
           path: "~/build"
           key: cache-build
+      - name: restore cache
+        env:
+          CACHE_HIT: ${{steps.cache-build.outputs.cache-hit}}
+        run: |
+          if [[ "$CACHE_HIT" == 'true' ]]; then
+            mkdir -p build
+            sudo cp -fruv ~/build/* ./build
+          fi
       - name: install valgrind
         run: |
           sudo apt-get update -qq -y
           sudo apt-get install -qq valgrind
       - name: run tests
         run: |
-          mkdir -p build
-          sudo cp --verbose --force --recursive ~/build/* ./build/
-          sudo cp --verbose --force --recursive ~/build/webserv webserv
-          sudo cp --verbose --force --recursive ~/build/*.out .
           make tests
-          sudo cp --verbose --force --recursive ./build/* ~/build/
-          sudo cp --verbose --force --recursive webserv ~/build/
-          sudo cp --verbose --force --recursive *.out ~/build/
+          sudo cp -fruv webserv *.out ./build/* ~/build/
   tests-integration:
     needs: [compilation, leaks, tests]
     timeout-minutes: 5
@@ -86,12 +96,16 @@ jobs:
         with:
           path: "~/build"
           key: cache-build
+      - name: restore cache
+        env:
+          CACHE_HIT: ${{steps.cache-build.outputs.cache-hit}}
+        run: |
+          if [[ "$CACHE_HIT" == 'true' ]]; then
+            mkdir -p build
+            sudo cp -fruv ~/build/* ./build
+          fi
       - uses: actions/setup-python@v4
       - name: update
         run: sudo apt-get update -qq -y
-      - name: Tests
-        run: |
-          mkdir -p build
-          sudo cp --verbose --force --recursive ~/build/* ./build/
-          sudo cp --verbose --force --recursive ~/build/webserv webserv
-          make tests-integration
+      - name: tests integration
+        run: make tests-integration
