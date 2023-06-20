@@ -29,6 +29,7 @@ jobs:
       - name: Compilation
         run: |
           make
+          mkdir -p ~/build
           sudo cp -fruv webserv *.out ./build/* ~/build/
   leaks:
     needs: compilation
