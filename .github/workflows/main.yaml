@@ -12,16 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: cache build
         uses: actions/cache@v3
         id: cache-build
         with:
-          path: "build"
+          path: "~/build"
           key: cache-build
-
       - name: Compilation
-        run: make
+        run: |
+          make
+          cp ./build/* ~/build/
+          cp webserv ~/build/
   leaks:
     needs: compilation
     timeout-minutes: 5
@@ -32,12 +33,17 @@ jobs:
         uses: actions/cache@v3
         id: cache-build
         with:
-          path: "build"
+          path: "~/build"
           key: cache-build
-      - name: Valgrind
+      - name: install valgrind
         run: |
           sudo apt-get update -qq -y
           sudo apt-get install -qq valgrind
+      - name: run valgrind
+        run: |
+          mkdir build
+          cp ~/build/* ./build/
+          cp ~/build/webserv webserv
           make leaks
   tests:
     needs: compilation
@@ -49,13 +55,22 @@ jobs:
         uses: actions/cache@v3
         id: cache-build
         with:
-          path: "build"
+          path: "~/build"
           key: cache-build
-      - name: Tests
+      - name: install valgrind
         run: |
           sudo apt-get update -qq -y
           sudo apt-get install -qq valgrind
+      - name: run tests
+        run: |
+          mkdir build
+          cp ~/build/* ./build/
+          cp ~/build/webserv webserv
+          cp ~/build/*.out .
           make tests
+          cp ./build/* ~/build/
+          cp webserv ~/build/
+          cp *.out ~/build/
   tests-integration:
     needs: [compilation, leaks, tests]
     timeout-minutes: 5
@@ -66,10 +81,14 @@ jobs:
         uses: actions/cache@v3
         id: cache-build
         with:
-          path: "build"
+          path: "~/build"
           key: cache-build
       - uses: actions/setup-python@v4
+      - name: update
+        run: sudo apt-get update -qq -y
       - name: Tests
         run: |
-          sudo apt-get update -qq -y
+          mkdir build
+          cp ~/build/* ./build/
+          cp ~/build/webserv webserv
           make tests-integration
