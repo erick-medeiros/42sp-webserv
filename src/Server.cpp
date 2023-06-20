@@ -1,10 +1,11 @@
 #include "Server.hpp"
 
-Server::Server(void) : serverSocket(0) {}
+Server::Server(void) : _serverSocket(0) {}
 
 void Server::init(Config const &conf)
 {
 	_config = conf;
+	_requestHandler = RequestHandler(_config);
 
 	logSuccess("initializing new web server");
 
@@ -13,60 +14,65 @@ void Server::init(Config const &conf)
 
 Server::~Server()
 {
-	close(serverSocket);
+	close(_serverSocket);
 }
 
 int Server::listenToPort(int port)
 {
-	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (serverSocket < 0)
+	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (_serverSocket < 0)
 	{
 		logError("--- Error: socket");
 		exit(1);
 	}
-	logInfo("Server socket created", serverSocket);
+	logInfo("Server socket created", _serverSocket);
 	// --- Configure socket options ---
 	int yes = 1;
-	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+	if (setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
 	{
 		logError("--- Error: setsockopt");
 		exit(1);
 	}
 	// --- Bind socket with port ---
 	sockaddr_in server_address = createServerAddress(port);
-	if (bind(serverSocket, (struct sockaddr *) &server_address,
+	if (bind(_serverSocket, (struct sockaddr *) &server_address,
 	         sizeof(server_address)) < 0)
 	{
 		logError("--- Error: binding");
-		close(serverSocket);
+		close(_serverSocket);
 		exit(1);
 	}
 	// --- Set non-blocking ---
-	if (!setNonBlocking(serverSocket))
+	if (!setNonBlocking(_serverSocket))
 	{
 		logError("--- Error: Set non-blocking");
 		exit(1);
 	}
 	// --- Set socket to listen for connections ---
-	if (listen(serverSocket, 5) < 0)
+	if (listen(_serverSocket, 5) < 0)
 	{
 		logError("--- Error: listen");
 		exit(1);
 	}
 	logInfo("Server listening on port", port);
-	return serverSocket;
+	return _serverSocket;
 }
 
 int Server::getPort()
 {
 	sockaddr_in address;
 	socklen_t   len = sizeof(address);
-	if (getsockname(serverSocket, (struct sockaddr *) &address, &len) < 0)
+	if (getsockname(_serverSocket, (struct sockaddr *) &address, &len) < 0)
 	{
 		logError("--- Error: getsockname");
 		exit(1);
 	}
 	return ntohs(address.sin_port);
+}
+
+RequestHandler &Server::getRequestHandler(void)
+{
+	return _requestHandler;
 }
 
 std::string Server::getRequestData(Request *request)
@@ -96,7 +102,7 @@ std::string Server::getRequestData(Request *request)
 
 int Server::getServerSocket()
 {
-	return serverSocket;
+	return _serverSocket;
 }
 
 Config &Server::getConfig(void)
@@ -139,47 +145,6 @@ int Server::requestClient(Request *request, Connection &connection)
 	{
 		request->setCgiAs(false);
 	}
-
-	return 0;
-}
-
-#ifndef FEATURE_FLAG_COOKIE
-#define FEATURE_FLAG_COOKIE 0
-#endif
-
-int Server::responseClient(Request *request, Config &config, Cookie &cookies)
-{
-	Response response(*request);
-
-	if (FEATURE_FLAG_COOKIE) // test
-	{
-		string username = Cookie::getUsername(*request);
-		if (username == "")
-		{
-			string value = Cookie::getValueCookie(*request, "session");
-			if (cookies.get(value) != "")
-			{
-				response.setStatus(200);
-				response.setBody("username " + cookies.get(value));
-			}
-		}
-		else
-		{
-			string session = cookies.generateSession();
-			cookies.set(session, username);
-			response.setHeader("Set-Cookie", "session=" + session + ";path=/");
-		}
-	}
-
-	// TODO: add other errors
-	if (response.getStatusCode() >= 400 || response.getStatusCode() <= 599)
-	{
-		// Config &config
-		string error_page = config.getErrorPage(response.getStatusCode());
-		if (error_page.size() > 0)
-			response.loadFile(error_page);
-	}
-	response.sendHttpResponse();
 
 	return 0;
 }

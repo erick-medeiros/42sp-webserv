@@ -48,7 +48,9 @@ int loop(std::string path_config)
 
 	string         file = Config::readFile(path_config);
 	vector<Config> configs = Config::parseConfig(file);
-	Server         servers[configs.size()];
+	// TODO: Que tal inicializar os servers no loop e não aqui?
+	// Seria tudo no construtor e não precisaria o init
+	Server         servers[configs.size()]; 
 	EpollWrapper   epoll(MAX_EVENTS * configs.size());
 	Cookie         cookies;
 	channel_t      channelServers[configs.size()];
@@ -134,7 +136,9 @@ int loop(std::string path_config)
 			// Response
 			if (event.events & EPOLLOUT)
 			{
-				Server::responseClient(request, connection->config, cookies);
+				RequestHandler requestHandler = connection->requestHandler;
+				Response response = requestHandler.handle(connection->request);
+				response.sendHttpResponse();
 				removeConnection(channel, epoll);
 				continue;
 			}
@@ -142,3 +146,34 @@ int loop(std::string path_config)
 	}
 	return 0;
 }
+
+// TODO:
+// Acho que podia ter um SessionManager que gerencia as sessões e cookies
+// ex: Usuario faz login, o SessionManager cria uma session relacionada com
+// o usuario, e cria um cookie com o id da sessão, guarda no map de cookies, e
+// envia de volta pro usuario. Quando o usuario faz uma nova requisição, o
+// SessionManager verifica se aquela request tem um cookie, se tiver, ele verifica
+// se o cookie é valido, se for, ele retorna o usuario relacionado com aquele cookie
+// Aí não precisa passar o Cookie nas funções, esse SessionManager checa a request e
+// só isso
+
+// // Cookie test
+// if (FEATURE_FLAG_COOKIE)
+// {
+// 	string username = Cookie::getUsername(request);
+// 	if (username == "")
+// 	{
+// 		string value = Cookie::getValueCookie(request, "session");
+// 		if (cookies.get(value) != "")
+// 		{
+// 			response.setStatus(200);
+// 			response.setBody("username " + cookies.get(value));
+// 		}
+// 	}
+// 	else
+// 	{
+// 		string session = cookies.generateSession();
+// 		cookies.set(session, username);
+// 		response.setHeader("Set-Cookie", "session=" + session + ";path=/");
+// 	}
+// }

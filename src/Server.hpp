@@ -22,6 +22,7 @@
 #include "EpollWrapper.hpp"
 #include "HttpStatus.hpp"
 #include "Request.hpp"
+#include "RequestHandler.hpp"
 #include "Response.hpp"
 #include "log_utils.hpp"
 
@@ -38,17 +39,19 @@ class Server
 	void init(Config const &conf);
 	int  getPort(void);
 
-	int     getServerSocket();
-	Config &getConfig(void);
+	int             getServerSocket();
+	Config         &getConfig(void);
+	RequestHandler &getRequestHandler(void);
 
 	static int         acceptNewClient(int serverSocket);
 	static std::string getRequestData(Request *request);
 	static int         requestClient(Request *request, Connection &connection);
-	static int responseClient(Request *request, Config &config, Cookie &cookies);
 
   private:
-	Config      _config;
-	int         serverSocket;
+	Config         _config;
+	RequestHandler _requestHandler;
+	int            _serverSocket;
+
 	int         listenToPort(int port);
 	sockaddr_in createServerAddress(int port);
 };

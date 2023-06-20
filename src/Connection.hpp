@@ -14,6 +14,7 @@
 #define CONNECTION_HPP
 
 #include "Request.hpp"
+#include "RequestHandler.hpp"
 #include "Response.hpp"
 #include "Server.hpp"
 #include <iostream>
@@ -24,10 +25,11 @@ class Config;
 class Connection
 {
   public:
-	int      fd;
-	Config  &config;
-	Request  request;
-	Response response;
+	int             fd;
+	Config         &config;
+	RequestHandler &requestHandler;
+	Request         request;
+	Response        response;
 
 	Connection(Server &server);
 	~Connection(void);
