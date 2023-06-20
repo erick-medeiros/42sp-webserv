@@ -1,12 +1,9 @@
 #!/bin/sh
 
-# setup
-
 BIN=webserv
 TEST_FOLDER=tests/integration/
 
-run_server ()
-{
+run() {
 	TEST=$1
 	PY="$TEST_FOLDER""$TEST"/test.py
 	CONF="$TEST_FOLDER""$TEST"/config.conf
@@ -17,11 +14,10 @@ run_server ()
 	python3 $PY
 	EXITCODE=$?
 	kill $PID
+	if [ $EXITCODE != 0 ]; then exit $EXITCODE; fi
 	return $EXITCODE
 }
 
-# end setup
+run status_code
 
-run_server status_code
-
-run_server multiple_servers
+run multiple_servers
