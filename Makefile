@@ -19,6 +19,8 @@ FILE_TEST = $(wildcard $(SRC:.cpp=_test.cpp))
 SRC_TEST = $(addprefix $(SRC_DIR)/, $(FILE_TEST))
 OBJ_TEST = $(addprefix $(BUILD_DIR)/, $(notdir $(FILE_TEST:.cpp=.o)))
 
+TESTER_INTEGRATION=tests/integration.sh
+
 VALGRIND = valgrind -q --error-exitcode=1 \
 --leak-check=full --show-leak-kinds=all \
 --trace-children=yes --track-origins=yes --track-fds=yes
@@ -61,6 +63,9 @@ $(TESTER): $(NAME) $(OBJ_TEST)
 
 tests: $(TESTER)
 	@$(VALGRIND) ./$(TESTER)
+
+tests-integration: $(NAME)
+	@sh $(TESTER_INTEGRATION)
 
 retests: fclean tests
 
