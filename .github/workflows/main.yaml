@@ -22,10 +22,10 @@ jobs:
         run: |
           mkdir -p ~/build
           mkdir -p build
-          cp ~/build/* ./build/
+          cp --verbose --force --recursive ~/build/* ./build/
           make
-          cp ./build/* ~/build/
-          cp webserv ~/build/
+          cp --verbose --force --recursive ./build/* ~/build/
+          cp --verbose --force --recursive webserv ~/build/
   leaks:
     needs: compilation
     timeout-minutes: 5
@@ -45,8 +45,8 @@ jobs:
       - name: run valgrind
         run: |
           mkdir -p build
-          cp ~/build/* ./build/
-          cp ~/build/webserv webserv
+          cp --verbose --force --recursive ~/build/* ./build/
+          cp --verbose --force --recursive ~/build/webserv webserv
           make leaks
   tests:
     needs: compilation
@@ -67,13 +67,13 @@ jobs:
       - name: run tests
         run: |
           mkdir -p build
-          cp ~/build/* ./build/
-          cp ~/build/webserv webserv
-          cp ~/build/*.out .
+          cp --verbose --force --recursive ~/build/* ./build/
+          cp --verbose --force --recursive ~/build/webserv webserv
+          cp --verbose --force --recursive ~/build/*.out .
           make tests
-          cp ./build/* ~/build/
-          cp webserv ~/build/
-          cp *.out ~/build/
+          cp --verbose --force --recursive ./build/* ~/build/
+          cp --verbose --force --recursive webserv ~/build/
+          cp --verbose --force --recursive *.out ~/build/
   tests-integration:
     needs: [compilation, leaks, tests]
     timeout-minutes: 5
@@ -92,6 +92,6 @@ jobs:
       - name: Tests
         run: |
           mkdir -p build
-          cp ~/build/* ./build/
-          cp ~/build/webserv webserv
+          cp --verbose --force --recursive ~/build/* ./build/
+          cp --verbose --force --recursive ~/build/webserv webserv
           make tests-integration
