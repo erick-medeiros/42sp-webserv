@@ -106,7 +106,5 @@ jobs:
             sudo cp -fruv ~/build/* ./build
           fi
       - uses: actions/setup-python@v4
-      - name: update
-        run: sudo apt-get update -qq -y
       - name: tests integration
         run: make tests-integration
