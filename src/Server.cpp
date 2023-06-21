@@ -5,8 +5,6 @@ Server::Server(void) : _serverSocket(0) {}
 void Server::init(Config const &conf)
 {
 	_config = conf;
-	_requestHandler = RequestHandler(_config);
-
 	logSuccess("initializing new web server");
 
 	listenToPort(_config.getPort());
@@ -70,11 +68,6 @@ int Server::getPort()
 	return ntohs(address.sin_port);
 }
 
-RequestHandler &Server::getRequestHandler(void)
-{
-	return _requestHandler;
-}
-
 std::string Server::getRequestData(Request *request)
 {
 	int clientSocket = request->getFd();
@@ -110,23 +103,79 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-int Server::requestClient(Request *request, Connection &connection)
+Response Server::handleRequest(const Request &request, Connection &connection)
 {
-	std::string rawRequest = getRequestData(request);
-	request->parse(rawRequest);
-	std::cout << *request << std::endl;
+	Response    response;
+	std::string serverRoot = _config.getRoot();
+	std::string requestMethod = request.getMethod();
+	std::string requestPath = request.getResourcePath();
+	std::string filePath = serverRoot + requestPath;
 
-	// Handle CGI
-	std::string resource = request->getResourcePath();
-	resource = trim(resource);
-
-	if (CGIRequest::isValidScriptLocation(resource, connection))
+	// Overwrite default error pages with config error pages
+	if (_config.hasErrorPages(requestPath))
 	{
-		CGIRequest cgi(resource, connection);
-
-		if (cgi.isValid())
+		std::map<int, std::string> errorPages = _config.getErrorPages(requestPath);
+		std::map<int, std::string>::iterator it;
+		for (it = errorPages.begin(); it != errorPages.end(); it++)
 		{
-			request->setCgiAs(true);
+			response.setErrorPage(it->first, it->second); // EX: 404, custom404.html
+		}
+	}
+
+	// -- SITUATIONS WITH EARLY RETURN --
+	
+	// Config defined a specific return code
+	if (_config.hasReturn(requestPath))
+	{
+		response.setStatus(_config.getReturnCode(requestPath));
+		response.setHeader("Location", _config.getReturnLocation(requestPath));
+		return response;
+	}
+
+	// Request host is not in the config server names
+	if (!_config.hasServerName(request.getHost()))
+	{
+		response.setStatus(HttpStatus::BAD_REQUEST);
+		return response;
+	}
+
+	// Requested method is not accepted for that route
+	std::vector<std::string> methods = _config.getMethods(requestPath);
+	if (std::find(methods.begin(), methods.end(), requestMethod) == methods.end())
+	{
+		response.setStatus(HttpStatus::METHOD_NOT_ALLOWED);
+		return response;
+	}
+
+	// Request asked for a file that does not exist
+	if (!utils::fileExists(filePath))
+	{
+		response.setStatus(HttpStatus::NOT_FOUND);
+		return response;
+	}
+
+	// --- SITUATIONS WITH LATE RETURN ---
+
+
+
+	// TODO: Tem como simplificar um pouco a chamad do CGI?
+	// Acho que o primeiro if já podia checar se é valido aí não precisaria o if/else
+	// Pensei algo nesse formato: 
+	// if (_config.isCGI(requestPath) && CGIRequest::isValid(requestPath))
+	// {
+	// 	std::string scriptOutput = CGIRequest::executeScript(requestPath);
+	// 	response.setBody(scriptOutput);
+	// }
+
+	// Request is a CGI script
+	if (CGIRequest::isValidScriptLocation(requestPath, connection))
+	{
+		CGIRequest cgi(requestPath, connection);
+
+		// TODO: O if em cima já podeia checar isso, aí não precisa desse if/else
+		if (cgi.isValid()) 
+		{
+			request.setCgiAs(true);
 			int status;
 			int pid = fork();
 			if (pid == 0)
@@ -137,16 +186,47 @@ int Server::requestClient(Request *request, Connection &connection)
 		}
 		else
 		{
-			request->setErrorCode(HttpStatus::NOT_FOUND);
-			request->setCgiAs(false);
+			request.setErrorCode(HttpStatus::NOT_FOUND);
+			request.setCgiAs(false);
 		}
-	}
-	else
-	{
-		request->setCgiAs(false);
+		return response;
 	}
 
-	return 0;
+	// Request is a directory - try to load an index file
+	if (utils::isDir(filePath))
+	{
+		std::vector<std::string> indexFiles = _config.getIndexFiles();
+
+		std::vector<std::string>::iterator it;
+		for (it = indexFiles.begin(); it != indexFiles.end(); it++)
+		{
+			if (utils::fileExists(filePath + "/" + *it))
+			{
+				response.loadFile(filePath + "/" + *it);
+				break;
+			}
+		}
+	}
+
+	// Request is a directory and autoindex is enabled
+	if (_config.hasAutoIndex(requestPath) && utils::isDir(filePath))
+	{
+		response.listDir(filePath);
+	}
+
+	// Request is a regular file
+	if (utils::isFile(filePath))
+	{
+		response.loadFile(filePath);
+	}
+
+	// Rquest body is too large, return 413
+	if (request.getBody().size() > _config.getClientBodySize())
+	{
+		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
+	}
+
+	return response;
 }
 
 // --- Helper functions ---

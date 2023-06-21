@@ -121,7 +121,9 @@ int loop(std::string path_config)
 			{
 				try
 				{
-					Server::requestClient(request, *connection);
+					std::string rawRequest = Server::getRequestData(request);
+					request->parse(rawRequest);
+					std::cout << *request << std::endl;
 					if (request->isParsed())
 					{
 						epoll_data_t data = {channel};
@@ -140,8 +142,8 @@ int loop(std::string path_config)
 			// Response
 			if (event.events & EPOLLOUT)
 			{
-				RequestHandler requestHandler = connection->requestHandler;
-				Response response = requestHandler.handle(connection->request);
+				Server server = connection->server;
+				Response response = server.handleRequest(*request, *connection);
 				response.sendHttpResponse();
 				removeConnection(channel, epoll);
 				continue;

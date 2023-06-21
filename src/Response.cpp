@@ -98,6 +98,8 @@ void Response::loadFile(const std::string &path)
 	file.close();
 }
 
+// TODO: Não vamos mais criar uma response a partir de um request, 
+// o requestHandler do server confere a config e cria a response 
 Response::Response(const Request &request) : statusCode(200)
 {
 	this->clientFd = request.getFd();
@@ -115,24 +117,6 @@ Response::Response(const Request &request) : statusCode(200)
 	{
 		parse(request);
 	}
-}
-
-void Response::parse(const Request &request)
-{
-	if (request.getMethod() == "GET")
-	{
-		std::string path = request.getResourcePath();
-		if (utils::isDir(HTML_ROOT + path))
-		{
-			// Add trailing slash if not present in path
-			if (path[path.size() - 1] != '/')
-				path = path + "/";
-			listDir(path);
-		}
-		else
-			loadFile(path);
-	}
-	// TODO: Implementar outros métodos além do GET
 }
 
 Response::Response() : statusCode(200) {}

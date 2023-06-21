@@ -13,8 +13,8 @@
 #include "Connection.hpp"
 
 Connection::Connection(Server &server)
-    : fd(Connection::acceptNewClient(server.getServerSocket())),
-      config(server.getConfig()), requestHandler(server.getRequestHandler()),  request(fd)
+    : fd(Connection::acceptNewClient(server.getServerSocket())), server(server),
+      config(server.getConfig()),  request(fd)
 {
 }
 
