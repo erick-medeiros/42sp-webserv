@@ -142,10 +142,10 @@ int loop(std::string path_config)
 			// Response
 			if (event.events & EPOLLOUT)
 			{
-				// TODO: Esse handleRequest lida com configurações do server
+				// TODO: Usar aqui o handleRequest que lida com a config:
 				// Response response = connection->server.handleRequest(*request);
 
-				// Enquanto não tá pronto...
+				// TODO: Usando isso aqui em baixo enquanto o handleRequest não está pronto
 				Response response;
 				response.loadFile(request->getResourcePath());
 				response.sendHttpResponse();

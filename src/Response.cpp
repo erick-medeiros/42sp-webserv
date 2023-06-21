@@ -113,6 +113,28 @@ Response::Response(const Request &request) : statusCode(200)
 		loadFile(tempFile);
 		std::remove(tempFile.c_str());
 	}
+	else
+	{
+		parse(request);
+	}
+}
+
+void Response::parse(const Request &request)
+{
+	if (request.getMethod() == "GET")
+	{
+		std::string path = request.getResourcePath();
+		if (utils::isDir(HTML_ROOT + path))
+		{
+			// Add trailing slash if not present in path
+			if (path[path.size() - 1] != '/')
+				path = path + "/";
+			listDir(path);
+		}
+		else
+			loadFile(path);
+	}
+	// TODO: Implementar outros métodos além do GET
 }
 
 Response::Response() : statusCode(200) {}
