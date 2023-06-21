@@ -29,6 +29,13 @@ int utils::isDir(const std::string &path)
 	return 0;
 }
 
+int utils::isFile(const std::string &path)
+{
+	struct stat path_stat;
+	stat(path.c_str(), &path_stat);
+	return S_ISREG(path_stat.st_mode);
+}
+
 std::string utils::formatSize(size_t size)
 {
 	std::stringstream ss;

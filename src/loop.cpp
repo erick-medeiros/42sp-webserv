@@ -141,12 +141,7 @@ int loop(std::string path_config)
 			if (event.events & EPOLLOUT)
 			{
 				// TODO: Usar aqui o handleRequest que lida com a config:
-				// Response response = connection->server.handleRequest(*request);
-
-				// TODO: Usando isso aqui em baixo enquanto o handleRequest não está pronto
-				Response response;
-				response.loadFile(request->getResourcePath());
-				response.sendHttpResponse();
+				Response response = connection->server.handleRequest(*request);
 
 				removeConnection(channel, epoll);
 				continue;
