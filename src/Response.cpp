@@ -89,7 +89,7 @@ void Response::loadFile(const std::string &path)
 
 	if (!file.is_open())
 	{
-		setStatus(404);
+		this->statusCode = HttpStatus::NOT_FOUND;
 		return;
 	}
 	std::stringstream buffer;
@@ -161,10 +161,14 @@ Response::~Response(){};
 void Response::setStatus(int code)
 {
 	this->statusCode = code;
-	if (code >= 400)
-	{
-		loadFile(getErrorPage(code));
-	}
+	
+	// TODO: Não dá pra fazer com load file que ele usa o HTML_ROOT
+	// e o errorPage é um path fora do HTML_ROOT
+	// if (code >= 400)
+	// {
+	// 	std::string errorPage = getErrorPage(code);
+	// 	loadFile(errorPage);
+	// }
 }
 
 void Response::setHeader(const std::string &key, const std::string &value)
