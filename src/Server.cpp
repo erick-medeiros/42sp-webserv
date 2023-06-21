@@ -103,131 +103,110 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-Response Server::handleRequest(const Request &request, Connection &connection)
+Response Server::handleRequest(const Request &request)
 {
-	Response    response;
-	std::string serverRoot = _config.getRoot();
-	std::string requestMethod = request.getMethod();
-	std::string requestPath = request.getResourcePath();
-	std::string filePath = serverRoot + requestPath;
-
-	// Overwrite default error pages with config error pages
-	if (_config.hasErrorPages(requestPath))
-	{
-		std::map<int, std::string> errorPages = _config.getErrorPages(requestPath);
-		std::map<int, std::string>::iterator it;
-		for (it = errorPages.begin(); it != errorPages.end(); it++)
-		{
-			response.setErrorPage(it->first, it->second); // EX: 404, custom404.html
-		}
-	}
-
-	// -- SITUATIONS WITH EARLY RETURN --
-	
-	// Config defined a specific return code
-	if (_config.hasReturn(requestPath))
-	{
-		response.setStatus(_config.getReturnCode(requestPath));
-		response.setHeader("Location", _config.getReturnLocation(requestPath));
-		return response;
-	}
-
-	// Request host is not in the config server names
-	if (!_config.hasServerName(request.getHost()))
-	{
-		response.setStatus(HttpStatus::BAD_REQUEST);
-		return response;
-	}
-
-	// Requested method is not accepted for that route
-	std::vector<std::string> methods = _config.getMethods(requestPath);
-	if (std::find(methods.begin(), methods.end(), requestMethod) == methods.end())
-	{
-		response.setStatus(HttpStatus::METHOD_NOT_ALLOWED);
-		return response;
-	}
-
-	// Request asked for a file that does not exist
-	if (!utils::fileExists(filePath))
-	{
-		response.setStatus(HttpStatus::NOT_FOUND);
-		return response;
-	}
-
-	// --- SITUATIONS WITH LATE RETURN ---
-
-
-
-	// TODO: Tem como simplificar um pouco a chamad do CGI?
-	// Acho que o primeiro if já podia checar se é valido aí não precisaria o if/else
-	// Pensei algo nesse formato: 
-	// if (_config.isCGI(requestPath) && CGIRequest::isValid(requestPath))
-	// {
-	// 	std::string scriptOutput = CGIRequest::executeScript(requestPath);
-	// 	response.setBody(scriptOutput);
-	// }
-
-	// Request is a CGI script
-	if (CGIRequest::isValidScriptLocation(requestPath, connection))
-	{
-		CGIRequest cgi(requestPath, connection);
-
-		// TODO: O if em cima já podeia checar isso, aí não precisa desse if/else
-		if (cgi.isValid()) 
-		{
-			request.setCgiAs(true);
-			int status;
-			int pid = fork();
-			if (pid == 0)
-			{
-				cgi.exec(*request, connection.config.getPort());
-			}
-			waitpid(pid, &status, 0);
-		}
-		else
-		{
-			request.setErrorCode(HttpStatus::NOT_FOUND);
-			request.setCgiAs(false);
-		}
-		return response;
-	}
-
-	// Request is a directory - try to load an index file
-	if (utils::isDir(filePath))
-	{
-		std::vector<std::string> indexFiles = _config.getIndexFiles();
-
-		std::vector<std::string>::iterator it;
-		for (it = indexFiles.begin(); it != indexFiles.end(); it++)
-		{
-			if (utils::fileExists(filePath + "/" + *it))
-			{
-				response.loadFile(filePath + "/" + *it);
-				break;
-			}
-		}
-	}
-
-	// Request is a directory and autoindex is enabled
-	if (_config.hasAutoIndex(requestPath) && utils::isDir(filePath))
-	{
-		response.listDir(filePath);
-	}
-
-	// Request is a regular file
-	if (utils::isFile(filePath))
-	{
-		response.loadFile(filePath);
-	}
-
-	// Rquest body is too large, return 413
-	if (request.getBody().size() > _config.getClientBodySize())
-	{
-		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
-	}
-
+	(void) request;
+	Response response;
 	return response;
 }
+
+// Response Server::handleRequest(const Request &request)
+// {
+// 	Response    response;
+// 	std::string serverRoot = _config.getRoot();
+// 	std::string requestMethod = request.getMethod();
+// 	std::string requestPath = request.getResourcePath();
+// 	std::string filePath = serverRoot + requestPath;
+
+// 	// SETUP: Change default error pages with config error pages
+// 	if (_config.hasErrorPages(requestPath))
+// 	{
+// 		std::map<int, std::string> errorPages = _config.getErrorPages(requestPath);
+// 		std::map<int, std::string>::iterator it;
+// 		for (it = errorPages.begin(); it != errorPages.end(); it++)
+// 		{
+// 			response.setErrorPage(it->first, it->second); // EX: 404, custom404.html
+// 		}
+// 	}
+
+// 	// -- SITUATIONS WITH EARLY RETURN --
+
+// 	// Config defined a specific return code
+// 	if (_config.hasReturn(requestPath))
+// 	{
+// 		response.setStatus(_config.getReturnCode(requestPath));
+// 		response.setHeader("Location", _config.getReturnLocation(requestPath));
+// 		return response;
+// 	}
+
+// 	// Request host is not in the config server names
+// 	if (!_config.hasServerName(request.getHost()))
+// 	{
+// 		response.setStatus(HttpStatus::BAD_REQUEST);
+// 		return response;
+// 	}
+
+// 	// Requested method is not accepted for that route
+// 	std::vector<std::string> methods = _config.getMethods(requestPath);
+// 	if (std::find(methods.begin(), methods.end(), requestMethod) == methods.end())
+// 	{
+// 		response.setStatus(HttpStatus::METHOD_NOT_ALLOWED);
+// 		return response;
+// 	}
+
+// 	// Request asked for a file that does not exist
+// 	if (!utils::fileExists(filePath))
+// 	{
+// 		response.setStatus(HttpStatus::NOT_FOUND);
+// 		return response;
+// 	}
+
+// 	// Request is a CGI script
+// 	if (_config.isCGI(requestPath) && CGIRequest::isValid(requestPath))
+// 	{
+// 		std::string scriptOutput = CGIRequest::executeScript(requestPath);
+// 		response.setBody(scriptOutput);
+// 		return response;
+// 	}
+
+// 	// --- SITUATIONS WITH LATE RETURN ---
+
+// 	// Request is a directory - try to load an index file
+// 	if (utils::isDir(filePath))
+// 	{
+// 		std::vector<std::string> indexFiles = _config.getIndexFiles();
+
+// 		std::vector<std::string>::iterator it;
+// 		for (it = indexFiles.begin(); it != indexFiles.end(); it++)
+// 		{
+// 			if (utils::fileExists(filePath + "/" + *it))
+// 			{
+// 				response.loadFile(filePath + "/" + *it);
+// 				break;
+// 			}
+// 		}
+// 	}
+
+// 	// Request is a directory and autoindex is enabled
+// 	if (_config.hasAutoIndex(requestPath) && utils::isDir(filePath))
+// 	{
+// 		response.listDir(filePath);
+// 	}
+
+// 	// Request is a regular file
+// 	if (utils::isFile(filePath))
+// 	{
+// 		response.loadFile(filePath);
+// 	}
+
+// 	// Rquest body is too large, return 413
+// 	if (request.getBody().size() > _config.getClientBodySize())
+// 	{
+// 		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
+// 	}
+
+// 	return response;
+// }
 
 // --- Helper functions ---
 sockaddr_in Server::createServerAddress(int port)

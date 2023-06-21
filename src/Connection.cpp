@@ -14,7 +14,7 @@
 
 Connection::Connection(Server &server)
     : fd(Connection::acceptNewClient(server.getServerSocket())), server(server),
-      config(server.getConfig()),  request(fd)
+      config(server.getConfig()), request(fd)
 {
 }
 

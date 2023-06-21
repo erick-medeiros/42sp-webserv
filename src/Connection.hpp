@@ -24,11 +24,11 @@ class Config;
 class Connection
 {
   public:
-	int             fd;
-	Server		   &server;
-	Config         &config;
-	Request         request;
-	Response        response;
+	int      fd;
+	Server  &server;
+	Config  &config;
+	Request  request;
+	Response response;
 
 	Connection(Server &server);
 	~Connection(void);

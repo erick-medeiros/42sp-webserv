@@ -50,10 +50,10 @@ int loop(std::string path_config)
 	vector<Config> configs = Config::parseConfig(file);
 	// TODO: Que tal inicializar os servers no loop e não aqui?
 	// Seria tudo no construtor e não precisaria o init
-	Server         servers[configs.size()]; 
-	EpollWrapper   epoll(MAX_EVENTS * configs.size());
-	Cookie         cookies;
-	channel_t      channelServers[configs.size()];
+	Server       servers[configs.size()];
+	EpollWrapper epoll(MAX_EVENTS * configs.size());
+	Cookie       cookies;
+	channel_t    channelServers[configs.size()];
 
 	size_t i = 0;
 	while (i < configs.size())
@@ -142,9 +142,14 @@ int loop(std::string path_config)
 			// Response
 			if (event.events & EPOLLOUT)
 			{
-				Server server = connection->server;
-				Response response = server.handleRequest(*request, *connection);
+				// TODO: Esse handleRequest lida com configurações do server
+				// Response response = connection->server.handleRequest(*request);
+
+				// Enquanto não tá pronto...
+				Response response;
+				response.loadFile(request->getResourcePath());
 				response.sendHttpResponse();
+
 				removeConnection(channel, epoll);
 				continue;
 			}
@@ -153,15 +158,12 @@ int loop(std::string path_config)
 	return 0;
 }
 
-// TODO:
-// Acho que podia ter um SessionManager que gerencia as sessões e cookies
-// ex: Usuario faz login, o SessionManager cria uma session relacionada com
-// o usuario, e cria um cookie com o id da sessão, guarda no map de cookies, e
-// envia de volta pro usuario. Quando o usuario faz uma nova requisição, o
-// SessionManager verifica se aquela request tem um cookie, se tiver, ele verifica
-// se o cookie é valido, se for, ele retorna o usuario relacionado com aquele cookie
-// Aí não precisa passar o Cookie nas funções, esse SessionManager checa a request e
-// só isso
+// TODO: Ideia para gerenciar cookies ao invés de usar essa flag:
+// Usuario faz login, cria um Cookie com id e usuário, guarda o id e usuário na lista
+// de cookies Quando o usuario faz uma nova requisição, verifica se aquela request
+// tem um cookie com um id Acho que podia rodar isso em todos request essa checagem
+// se tem um cookie que é igual a um dos cookies que estão na lista de cookies, tipo
+// um checkCookies
 
 // // Cookie test
 // if (FEATURE_FLAG_COOKIE)

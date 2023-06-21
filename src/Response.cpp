@@ -14,7 +14,7 @@
 
 void Response::listDir(const std::string &path)
 {
-	DIR	          *dir;
+	DIR              *dir;
 	struct dirent    *ent;
 	struct stat       filestat;
 	std::string       fullFilePath, modifiedTime;
@@ -98,8 +98,8 @@ void Response::loadFile(const std::string &path)
 	file.close();
 }
 
-// TODO: Não vamos mais criar uma response a partir de um request, 
-// o requestHandler do server confere a config e cria a response 
+// TODO: Não vamos mais criar uma response a partir de um request,
+// o requestHandler do server confere a config e cria a response
 Response::Response(const Request &request) : statusCode(200)
 {
 	this->clientFd = request.getFd();
@@ -112,10 +112,6 @@ Response::Response(const Request &request) : statusCode(200)
 		std::string const tempFile(CGI_RESPONSE + ss.str());
 		loadFile(tempFile);
 		std::remove(tempFile.c_str());
-	}
-	else
-	{
-		parse(request);
 	}
 }
 

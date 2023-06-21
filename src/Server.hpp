@@ -38,16 +38,16 @@ class Server
 	void init(Config const &conf);
 	int  getPort(void);
 
-	int             getServerSocket();
-	Config         &getConfig(void);
+	int     getServerSocket();
+	Config &getConfig(void);
 
 	static int         acceptNewClient(int serverSocket);
 	static std::string getRequestData(Request *request);
-	Response Server::handleRequest(const Request &request, Connection &connection);
+	Response           handleRequest(const Request &request);
 
   private:
-	Config         _config;
-	int            _serverSocket;
+	Config _config;
+	int    _serverSocket;
 
 	int         listenToPort(int port);
 	sockaddr_in createServerAddress(int port);
