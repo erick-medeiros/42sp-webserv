@@ -48,12 +48,10 @@ int loop(std::string path_config)
 
 	string         file = Config::readFile(path_config);
 	vector<Config> configs = Config::parseConfig(file);
-	// TODO: Que tal inicializar os servers no loop e não aqui?
-	// Seria tudo no construtor e não precisaria o init
-	Server       servers[configs.size()];
-	EpollWrapper epoll(MAX_EVENTS * configs.size());
-	Cookie       cookies;
-	channel_t    channelServers[configs.size()];
+	Server         servers[configs.size()];
+	EpollWrapper   epoll(MAX_EVENTS * configs.size());
+	Cookie         cookies;
+	channel_t      channelServers[configs.size()];
 
 	size_t i = 0;
 	while (i < configs.size())

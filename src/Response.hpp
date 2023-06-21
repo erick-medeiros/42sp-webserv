@@ -34,7 +34,7 @@ class Response
 	std::string getMessage() const;
 
 	// Other methods
-	void		parse(const Request &request);
+	void        parse(const Request &request);
 	void        loadFile(const std::string &path);
 	void        listDir(const std::string &path);
 	void        prepareMessage(void);
