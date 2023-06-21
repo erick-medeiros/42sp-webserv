@@ -137,6 +137,22 @@ void Response::parse(const Request &request)
 	// TODO: Implementar outros métodos além do GET
 }
 
+void Response::setCustomErrorPage(int statusCode, const std::string &path)
+{
+	customErrorPages[statusCode] = path;
+}
+
+std::string Response::getErrorPage(int statusCode) const
+{
+	if (customErrorPages.count(statusCode))
+	{
+		return customErrorPages.at(statusCode);
+	}
+	std::stringstream ss;
+	ss << "error_pages/" << statusCode << ".html";
+	return ss.str();
+}
+
 Response::Response() : statusCode(200) {}
 
 Response::~Response(){};
@@ -145,6 +161,10 @@ Response::~Response(){};
 void Response::setStatus(int code)
 {
 	this->statusCode = code;
+	if (code >= 400)
+	{
+		loadFile(getErrorPage(code));
+	}
 }
 
 void Response::setHeader(const std::string &key, const std::string &value)

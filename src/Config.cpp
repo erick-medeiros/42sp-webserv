@@ -260,6 +260,11 @@ string const &Config::getErrorPage(int error)
 	return _errorPage[error];
 }
 
+map<int, string> const &Config::getErrorPages() const
+{
+	return _errorPage;
+}
+
 vector<location_t> const &Config::getLocations() const
 {
 	return _locations;

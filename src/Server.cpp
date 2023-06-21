@@ -108,22 +108,18 @@ Response Server::handleRequest(const Request &request)
 	Response    response;
 	std::string requestMethod = request.getMethod();
 	std::string requestPath = request.getResourcePath();
-	// TODO: trocar para config, ex config.getServerRoot()
-	std::string serverRoot = "html";
-	std::string filePath = serverRoot + requestPath;
+	std::string serverRoot = "html"; // TODO: Pegar o server root da config
+	std::string fullPath = serverRoot + requestPath;
 
-	// // SETUP: Change default error pages with config error pages
-	// if (_config.hasErrorPages(requestPath))
-	// {
-	// 	std::map<int, std::string> errorPages = _config.getErrorPages(requestPath);
-	// 	std::map<int, std::string>::iterator it;
-	// 	for (it = errorPages.begin(); it != errorPages.end(); it++)
-	// 	{
-	// 		response.setErrorPage(it->first, it->second); // EX: 404, custom404.html
-	// 	}
-	// }
+	// Change default error pages with config error pages
+	std::map<int, std::string>           errorPages = _config.getErrorPages();
+	std::map<int, std::string>::iterator it;
+	for (it = errorPages.begin(); it != errorPages.end(); it++)
+	{
+		response.setCustomErrorPage(it->first, it->second);
+	}
 
-	// // -- SITUATIONS WITH EARLY RETURN --
+	// -- SITUATIONS WITH EARLY RETURN --
 
 	// // Config defined a specific return code
 	// if (_config.hasReturn(requestPath))
@@ -149,7 +145,7 @@ Response Server::handleRequest(const Request &request)
 	// }
 
 	// // Request asked for a file that does not exist
-	// if (!utils::fileExists(filePath))
+	// if (!utils::fileExists(fullPath))
 	// {
 	// 	response.setStatus(HttpStatus::NOT_FOUND);
 	// 	return response;
@@ -163,41 +159,39 @@ Response Server::handleRequest(const Request &request)
 	// 	return response;
 	// }
 
-	// // --- SITUATIONS WITH LATE RETURN ---
-
 	// // Request is a directory - try to load an index file
-	// if (utils::isDir(filePath))
+	// if (utils::isDir(fullPath))
 	// {
 	// 	std::vector<std::string> indexFiles = _config.getIndexFiles();
 
 	// 	std::vector<std::string>::iterator it;
 	// 	for (it = indexFiles.begin(); it != indexFiles.end(); it++)
 	// 	{
-	// 		if (utils::fileExists(filePath + "/" + *it))
+	// 		if (utils::fileExists(fullPath + "/" + *it))
 	// 		{
-	// 			response.loadFile(filePath + "/" + *it);
+	// 			response.loadFile(fullPath + "/" + *it);
 	// 			break;
 	// 		}
 	// 	}
 	// }
 
 	// // Request is a directory and autoindex is enabled
-	// if (_config.hasAutoIndex(requestPath) && utils::isDir(filePath))
+	// if (_config.hasAutoIndex(requestPath) && utils::isDir(fullPath))
 	// {
-	// 	response.listDir(filePath);
+	// 	response.listDir(fullPath);
 	// }
 
 	// Request is a regular file
-	if (utils::isFile(filePath))
+	if (utils::isFile(fullPath))
 	{
-		response.loadFile(filePath);
+		response.loadFile(fullPath);
 	}
 
-	// // Rquest body is too large, return 413
-	// if (request.getBody().size() > _config.getClientBodySize())
-	// {
-	// 	response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
-	// }
+	// Rquest body is too large
+	if (request.getBody().size() > _config.getClientBodySize())
+	{
+		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
+	}
 
 	return response;
 }

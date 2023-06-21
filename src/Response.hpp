@@ -40,6 +40,8 @@ class Response
 	void        prepareMessage(void);
 	void        sendHttpResponse(void);
 	std::string getReasonPhrase(void) const;
+	std::string getErrorPage(int code) const;
+	void        setCustomErrorPage(int statusCode, const std::string &path);
 
   private:
 	// Attributes
@@ -48,6 +50,7 @@ class Response
 	std::map<std::string, std::string> headers;
 	std::string                        body;
 	std::string                        message;
+	std::map<int, std::string>         customErrorPages;
 };
 
 #endif
