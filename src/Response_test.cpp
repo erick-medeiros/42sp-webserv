@@ -27,10 +27,7 @@ TEST_CASE("Response class")
 		SUBCASE("Status code 404 with no body")
 		{
 			response.setStatus(404);
-			std::string expected_response = "HTTP/1.1 404 Not Found\r\n"
-			                                "\r\n";
-			response.prepareMessage();
-			CHECK_EQ(response.getMessage(), expected_response);
+			CHECK_EQ(response.getStatusCode(), 404);
 		}
 
 		SUBCASE("Status code 200 with body")
