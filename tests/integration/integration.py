@@ -11,9 +11,9 @@ def get(URL):
         exit(1)
 
 def post(URL, body):
-    # try:
+    try:
         response = requests.post(URL, data=body)
         return response
-    # except:
-    #     print("Error requests.post: " + URL)
-    #     exit(1)
+    except:
+        print("Error requests.post: " + URL)
+        exit(1)
