@@ -1,11 +1,10 @@
 #include "Server.hpp"
 
-Server::Server(void) : serverSocket(0) {}
+Server::Server(void) : _serverSocket(0) {}
 
 void Server::init(Config const &conf)
 {
 	_config = conf;
-
 	logSuccess("initializing new web server");
 
 	listenToPort(_config.getPort());
@@ -13,55 +12,55 @@ void Server::init(Config const &conf)
 
 Server::~Server()
 {
-	close(serverSocket);
+	close(_serverSocket);
 }
 
 int Server::listenToPort(int port)
 {
-	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (serverSocket < 0)
+	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (_serverSocket < 0)
 	{
 		logError("--- Error: socket");
 		exit(1);
 	}
-	logInfo("Server socket created", serverSocket);
+	logInfo("Server socket created", _serverSocket);
 	// --- Configure socket options ---
 	int yes = 1;
-	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+	if (setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
 	{
 		logError("--- Error: setsockopt");
 		exit(1);
 	}
 	// --- Bind socket with port ---
 	sockaddr_in server_address = createServerAddress(port);
-	if (bind(serverSocket, (struct sockaddr *) &server_address,
+	if (bind(_serverSocket, (struct sockaddr *) &server_address,
 	         sizeof(server_address)) < 0)
 	{
 		logError("--- Error: binding");
-		close(serverSocket);
+		close(_serverSocket);
 		exit(1);
 	}
 	// --- Set non-blocking ---
-	if (!setNonBlocking(serverSocket))
+	if (!setNonBlocking(_serverSocket))
 	{
 		logError("--- Error: Set non-blocking");
 		exit(1);
 	}
 	// --- Set socket to listen for connections ---
-	if (listen(serverSocket, 5) < 0)
+	if (listen(_serverSocket, 5) < 0)
 	{
 		logError("--- Error: listen");
 		exit(1);
 	}
 	logInfo("Server listening on port", port);
-	return serverSocket;
+	return _serverSocket;
 }
 
 int Server::getPort()
 {
 	sockaddr_in address;
 	socklen_t   len = sizeof(address);
-	if (getsockname(serverSocket, (struct sockaddr *) &address, &len) < 0)
+	if (getsockname(_serverSocket, (struct sockaddr *) &address, &len) < 0)
 	{
 		logError("--- Error: getsockname");
 		exit(1);
@@ -96,7 +95,7 @@ std::string Server::getRequestData(Request *request)
 
 int Server::getServerSocket()
 {
-	return serverSocket;
+	return _serverSocket;
 }
 
 Config &Server::getConfig(void)
@@ -104,84 +103,97 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-int Server::requestClient(Request *request, Connection &connection)
+Response Server::handleRequest(const Request &request)
 {
-	std::string rawRequest = getRequestData(request);
-	request->parse(rawRequest);
-	std::cout << *request << std::endl;
+	Response    response(request);
+	std::string requestMethod = request.getMethod();
+	std::string requestPath = request.getResourcePath();
+	std::string serverRoot = "html"; // TODO: Pegar o server root da config
+	std::string fullPath = serverRoot + requestPath;
 
-	// Handle CGI
-	std::string resource = request->getResourcePath();
-	resource = trim(resource);
-
-	if (CGIRequest::isValidScriptLocation(resource, connection))
+	// Change default error pages with config error pages
+	std::map<int, std::string>           errorPages = _config.getErrorPages();
+	std::map<int, std::string>::iterator it;
+	for (it = errorPages.begin(); it != errorPages.end(); it++)
 	{
-		CGIRequest cgi(resource, connection);
-
-		if (cgi.isValid())
-		{
-			request->setCgiAs(true);
-			int status;
-			int pid = fork();
-			if (pid == 0)
-			{
-				cgi.exec(*request, connection.config.getPort());
-			}
-			waitpid(pid, &status, 0);
-		}
-		else
-		{
-			request->setErrorCode(HttpStatus::NOT_FOUND);
-			request->setCgiAs(false);
-		}
-	}
-	else
-	{
-		request->setCgiAs(false);
+		response.setCustomErrorPage(it->first, it->second);
 	}
 
-	return 0;
-}
+	// -- SITUATIONS WITH EARLY RETURN --
 
-#ifndef FEATURE_FLAG_COOKIE
-#define FEATURE_FLAG_COOKIE 0
-#endif
+	// // Config defined a specific return code
+	// if (_config.hasReturn(requestPath))
+	// {
+	// 	response.setStatus(_config.getReturnCode(requestPath));
+	// 	response.setHeader("Location", _config.getReturnLocation(requestPath));
+	// 	return response;
+	// }
 
-int Server::responseClient(Request *request, Config &config, Cookie &cookies)
-{
-	Response response(*request);
+	// // Request host is not in the config server names
+	// if (!_config.hasServerName(request.getHost()))
+	// {
+	// 	response.setStatus(HttpStatus::BAD_REQUEST);
+	// 	return response;
+	// }
 
-	if (FEATURE_FLAG_COOKIE) // test
+	// // Requested method is not accepted for that route
+	// std::vector<std::string> methods = _config.getMethods(requestPath);
+	// if (std::find(methods.begin(), methods.end(), requestMethod) == methods.end())
+	// {
+	// 	response.setStatus(HttpStatus::METHOD_NOT_ALLOWED);
+	// 	return response;
+	// }
+
+	// Request asked for a file that does not exist
+	if (!utils::pathExists(fullPath))
 	{
-		string username = Cookie::getUsername(*request);
-		if (username == "")
-		{
-			string value = Cookie::getValueCookie(*request, "session");
-			if (cookies.get(value) != "")
-			{
-				response.setStatus(200);
-				response.setBody("username " + cookies.get(value));
-			}
-		}
-		else
-		{
-			string session = cookies.generateSession();
-			cookies.set(session, username);
-			response.setHeader("Set-Cookie", "session=" + session + ";path=/");
-		}
+		response.setStatus(HttpStatus::NOT_FOUND);
+		return response;
 	}
 
-	// TODO: add other errors
-	if (response.getStatusCode() >= 400 || response.getStatusCode() <= 599)
-	{
-		// Config &config
-		string error_page = config.getErrorPage(response.getStatusCode());
-		if (error_page.size() > 0)
-			response.loadFile(error_page);
-	}
-	response.sendHttpResponse();
+	// // Request is a CGI script
+	// if (_config.isCGI(requestPath) && CGIRequest::isValid(requestPath))
+	// {
+	// 	std::string scriptOutput = CGIRequest::executeScript(requestPath);
+	// 	response.setBody(scriptOutput);
+	// 	return response;
+	// }
 
-	return 0;
+	// // Request is a directory - try to load an index file
+	// if (utils::isDir(fullPath))
+	// {
+	// 	std::vector<std::string> indexFiles = _config.getIndexFiles();
+
+	// 	std::vector<std::string>::iterator it;
+	// 	for (it = indexFiles.begin(); it != indexFiles.end(); it++)
+	// 	{
+	// 		if (utils::fileExists(fullPath + "/" + *it))
+	// 		{
+	// 			response.loadFile(fullPath + "/" + *it);
+	// 			break;
+	// 		}
+	// 	}
+	// }
+
+	// // Request is a directory and autoindex is enabled
+	// if (_config.hasAutoIndex(requestPath) && utils::isDir(fullPath))
+	// {
+	// 	response.listDir(fullPath);
+	// }
+
+	// Request is a regular file
+	if (utils::isFile(fullPath))
+	{
+		response.loadFile(fullPath);
+	}
+
+	// Rquest body is too large
+	if (request.getBody().size() > _config.getClientBodySize())
+	{
+		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
+	}
+
+	return response;
 }
 
 // --- Helper functions ---

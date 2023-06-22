@@ -36,10 +36,12 @@ class Response
 	// Other methods
 	void        parse(const Request &request);
 	void        loadFile(const std::string &path);
+	void        loadErrorPage(int statusCode);
 	void        listDir(const std::string &path);
 	void        prepareMessage(void);
 	void        sendHttpResponse(void);
 	std::string getReasonPhrase(void) const;
+	void        setCustomErrorPage(int statusCode, const std::string &path);
 
   private:
 	// Attributes
@@ -48,6 +50,7 @@ class Response
 	std::map<std::string, std::string> headers;
 	std::string                        body;
 	std::string                        message;
+	std::map<int, std::string>         customErrorPages;
 };
 
 #endif

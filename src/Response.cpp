@@ -14,7 +14,7 @@
 
 void Response::listDir(const std::string &path)
 {
-	DIR	          *dir;
+	DIR              *dir;
 	struct dirent    *ent;
 	struct stat       filestat;
 	std::string       fullFilePath, modifiedTime;
@@ -89,7 +89,7 @@ void Response::loadFile(const std::string &path)
 
 	if (!file.is_open())
 	{
-		setStatus(404);
+		this->statusCode = HttpStatus::NOT_FOUND;
 		return;
 	}
 	std::stringstream buffer;
@@ -98,6 +98,8 @@ void Response::loadFile(const std::string &path)
 	file.close();
 }
 
+// TODO: Não vamos mais criar uma response a partir de um request,
+// o requestHandler do server confere a config e cria a response
 Response::Response(const Request &request) : statusCode(200)
 {
 	this->clientFd = request.getFd();
@@ -113,7 +115,7 @@ Response::Response(const Request &request) : statusCode(200)
 	}
 	else
 	{
-		parse(request);
+		// parse(request);
 	}
 }
 
@@ -135,6 +137,36 @@ void Response::parse(const Request &request)
 	// TODO: Implementar outros métodos além do GET
 }
 
+void Response::setCustomErrorPage(int statusCode, const std::string &path)
+{
+	customErrorPages[statusCode] = path;
+}
+
+void Response::loadErrorPage(int statusCode)
+{
+	std::string errorPagePath;
+
+	if (customErrorPages.count(statusCode))
+	{
+		errorPagePath = customErrorPages.at(statusCode);
+	}
+	else
+	{
+		std::stringstream ss;
+		ss << "error_pages/" << statusCode << ".html";
+		errorPagePath = ss.str();
+	}
+	if (!utils::pathExists(errorPagePath))
+		return;
+
+	std::ifstream file;
+	file.open(errorPagePath.c_str());
+	std::stringstream buffer;
+	buffer << file.rdbuf();
+	setBody(buffer.str());
+	file.close();
+}
+
 Response::Response() : statusCode(200) {}
 
 Response::~Response(){};
@@ -143,6 +175,11 @@ Response::~Response(){};
 void Response::setStatus(int code)
 {
 	this->statusCode = code;
+
+	if (code >= 400) // If it's an error, load the error page
+	{
+		loadErrorPage(code);
+	}
 }
 
 void Response::setHeader(const std::string &key, const std::string &value)

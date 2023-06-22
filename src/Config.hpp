@@ -63,6 +63,7 @@ class Config
 	uint_t const             &getPort(void) const;
 	vector<string> const     &getServerNames(void) const;
 	string const             &getErrorPage(int error);
+	map<int, string> const   &getErrorPages(void) const;
 	size_t const             &getClientBodySize() const;
 	vector<location_t> const &getLocations() const;
 

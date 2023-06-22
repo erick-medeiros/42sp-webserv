@@ -25,6 +25,7 @@ class Connection
 {
   public:
 	int      fd;
+	Server  &server;
 	Config  &config;
 	Request  request;
 	Response response;

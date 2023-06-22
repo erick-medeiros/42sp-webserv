@@ -43,12 +43,12 @@ class Server
 
 	static int         acceptNewClient(int serverSocket);
 	static std::string getRequestData(Request *request);
-	static int         requestClient(Request *request, Connection &connection);
-	static int responseClient(Request *request, Config &config, Cookie &cookies);
+	Response           handleRequest(const Request &request);
 
   private:
-	Config      _config;
-	int         serverSocket;
+	Config _config;
+	int    _serverSocket;
+
 	int         listenToPort(int port);
 	sockaddr_in createServerAddress(int port);
 };

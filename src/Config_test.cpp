@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config_test.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
+/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/18 16:53:42 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/22 11:11:31 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,14 +168,14 @@ TEST_SUITE("client_max_body_size")
 	{
 		Config config;
 		CHECK_EQ(config.add("client_max_body_size", "1M"), 0);
-		CHECK_EQ(config.getClientBodySize(), 1024);
+		CHECK_EQ(config.getClientBodySize(), 1024 * 1024);
 	}
 
 	TEST_CASE("kb")
 	{
 		Config config;
-		CHECK_EQ(config.add("client_max_body_size", "100K"), 0);
-		CHECK_EQ(config.getClientBodySize(), 100);
+		CHECK_EQ(config.add("client_max_body_size", "1K"), 0);
+		CHECK_EQ(config.getClientBodySize(), 1024);
 	}
 
 	TEST_CASE("errors")

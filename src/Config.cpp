@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/19 09:57:58 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/22 11:12:56 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,8 +138,10 @@ int Config::_setClientBodySize(string &value)
 
 	char last = value[value.size() - 1];
 	if (last == 'M')
+		_clientBodySize *= 1024 * 1024;
+	else if (last == 'K')
 		_clientBodySize *= 1024;
-	else if (last != 'K')
+	else
 		return FAILURE;
 
 	return 0;
@@ -258,6 +260,11 @@ size_t const &Config::getClientBodySize() const
 string const &Config::getErrorPage(int error)
 {
 	return _errorPage[error];
+}
+
+map<int, string> const &Config::getErrorPages() const
+{
+	return _errorPage;
 }
 
 vector<location_t> const &Config::getLocations() const

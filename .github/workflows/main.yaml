@@ -24,7 +24,7 @@ jobs:
         run: |
           if [[ "$CACHE_HIT" == 'true' ]]; then
             mkdir -p build
-            sudo cp -fruv ~/build/* ./build
+            sudo rm -fr ~/build/*
           fi
       - name: Compilation
         run: |

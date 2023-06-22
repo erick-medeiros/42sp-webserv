@@ -61,8 +61,9 @@ $(TESTER): $(NAME) $(OBJ_TEST)
 tests: $(TESTER)
 	@$(VALGRIND) ./$(TESTER)
 
+# Optional: make tests-integration TEST_NAME=your_test_name
 tests-integration: $(NAME)
-	@sh $(TESTER_INTEGRATION)
+	sh $(TESTER_INTEGRATION) $(TEST_NAME)
 
 retests: fclean tests
 

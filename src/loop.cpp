@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/19 09:24:12 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/22 09:58:57 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,9 @@ int loop(std::string path_config)
 			{
 				try
 				{
-					Server::requestClient(request, *connection);
+					std::string rawRequest = Server::getRequestData(request);
+					request->parse(rawRequest);
+					std::cout << *request << std::endl;
 					if (request->isParsed())
 					{
 						epoll_data_t data = {channel};
@@ -138,7 +140,8 @@ int loop(std::string path_config)
 			// Response
 			if (event.events & EPOLLOUT)
 			{
-				Server::responseClient(request, connection->config, cookies);
+				Response response = connection->server.handleRequest(*request);
+				response.sendHttpResponse();
 				removeConnection(channel, epoll);
 				continue;
 			}
@@ -146,3 +149,31 @@ int loop(std::string path_config)
 	}
 	return 0;
 }
+
+// TODO: Ideia para gerenciar cookies ao invés de usar essa flag:
+// Usuario faz login, cria um Cookie com id e usuário, guarda o id e usuário na lista
+// de cookies Quando o usuario faz uma nova requisição, verifica se aquela request
+// tem um cookie com um id Acho que podia rodar isso em todos request essa checagem
+// se tem um cookie que é igual a um dos cookies que estão na lista de cookies, tipo
+// um checkCookies
+
+// // Cookie test
+// if (FEATURE_FLAG_COOKIE)
+// {
+// 	string username = Cookie::getUsername(request);
+// 	if (username == "")
+// 	{
+// 		string value = Cookie::getValueCookie(request, "session");
+// 		if (cookies.get(value) != "")
+// 		{
+// 			response.setStatus(200);
+// 			response.setBody("username " + cookies.get(value));
+// 		}
+// 	}
+// 	else
+// 	{
+// 		string session = cookies.generateSession();
+// 		cookies.set(session, username);
+// 		response.setHeader("Set-Cookie", "session=" + session + ";path=/");
+// 	}
+// }
