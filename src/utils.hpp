@@ -20,6 +20,7 @@ std::string &trim(std::string &s);
 
 namespace utils
 {
+int         pathExists(const std::string &path);
 int         isDir(const std::string &path);
 int         isFile(const std::string &path);
 std::string formatSize(size_t size);

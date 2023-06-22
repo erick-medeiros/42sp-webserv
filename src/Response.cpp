@@ -115,7 +115,7 @@ Response::Response(const Request &request) : statusCode(200)
 	}
 	else
 	{
-		parse(request);
+		// parse(request);
 	}
 }
 
@@ -142,15 +142,29 @@ void Response::setCustomErrorPage(int statusCode, const std::string &path)
 	customErrorPages[statusCode] = path;
 }
 
-std::string Response::getErrorPage(int statusCode) const
+void Response::loadErrorPage(int statusCode)
 {
+	std::string errorPagePath;
+
 	if (customErrorPages.count(statusCode))
 	{
-		return customErrorPages.at(statusCode);
+		errorPagePath = customErrorPages.at(statusCode);
 	}
-	std::stringstream ss;
-	ss << "error_pages/" << statusCode << ".html";
-	return ss.str();
+	else
+	{
+		std::stringstream ss;
+		ss << "error_pages/" << statusCode << ".html";
+		errorPagePath = ss.str();
+	}
+	if (!utils::pathExists(errorPagePath))
+		return;
+
+	std::ifstream file;
+	file.open(errorPagePath.c_str());
+	std::stringstream buffer;
+	buffer << file.rdbuf();
+	setBody(buffer.str());
+	file.close();
 }
 
 Response::Response() : statusCode(200) {}
@@ -162,11 +176,10 @@ void Response::setStatus(int code)
 {
 	this->statusCode = code;
 
-	// if (code >= 400) // Is an error
-	// {
-	// 	std::string errorPage = getErrorPage(code);
-	// 	loadFile(errorPage);
-	// }
+	if (code >= 400) // If it's an error, load the error page
+	{
+		loadErrorPage(code);
+	}
 }
 
 void Response::setHeader(const std::string &key, const std::string &value)

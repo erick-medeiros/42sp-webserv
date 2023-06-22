@@ -7,7 +7,11 @@ run() {
 	TEST=$1
 	PY="$TEST_FOLDER""$TEST"/test.py
 	CONF="$TEST_FOLDER""$TEST"/config.conf
-	./$BIN ./$CONF 1>/dev/null 2>/dev/null &
+	if [ $# -eq 1 ]; then # If an args was passed to the script don't redirect the output
+		./$BIN ./$CONF &
+	else # Otherwise redirect the output to /dev/null
+		./$BIN ./$CONF 1>/dev/null 2>/dev/null &
+	fi
 	PID=$!
 	export PYTHONPATH=$PYTHONPATH:$(pwd)/$TEST_FOLDER
 	python3 $PY
@@ -19,8 +23,13 @@ run() {
 	return $EXITCODE
 }
 
-run status_code
+# If an args was passed to the script, run only the test with the same name
+if [ $# -eq 1 ]; then
+	run $1
+	exit $?
+fi
 
-run multiple_servers
-
-run limit_client_body_size
+run "status_code"
+run "multiple_servers"
+run "default_error_pages"
+run "limit_client_body_size"

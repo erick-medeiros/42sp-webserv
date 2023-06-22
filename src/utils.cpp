@@ -36,6 +36,12 @@ int utils::isFile(const std::string &path)
 	return S_ISREG(path_stat.st_mode);
 }
 
+int utils::pathExists(const std::string &path)
+{
+	struct stat path_stat;
+	return stat(path.c_str(), &path_stat) == 0;
+}
+
 std::string utils::formatSize(size_t size)
 {
 	std::stringstream ss;

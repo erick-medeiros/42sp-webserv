@@ -144,12 +144,12 @@ Response Server::handleRequest(const Request &request)
 	// 	return response;
 	// }
 
-	// // Request asked for a file that does not exist
-	// if (!utils::fileExists(fullPath))
-	// {
-	// 	response.setStatus(HttpStatus::NOT_FOUND);
-	// 	return response;
-	// }
+	// Request asked for a file that does not exist
+	if (!utils::pathExists(fullPath))
+	{
+		response.setStatus(HttpStatus::NOT_FOUND);
+		return response;
+	}
 
 	// // Request is a CGI script
 	// if (_config.isCGI(requestPath) && CGIRequest::isValid(requestPath))
@@ -190,8 +190,6 @@ Response Server::handleRequest(const Request &request)
 	// Rquest body is too large
 	if (request.getBody().size() > _config.getClientBodySize())
 	{
-		logWarning("Body size", request.getBody().size());
-		logWarning("MAX Body size", _config.getClientBodySize());
 		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
 	}
 
