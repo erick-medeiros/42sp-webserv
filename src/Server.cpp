@@ -190,8 +190,8 @@ Response Server::handleRequest(const Request &request)
 	// Rquest body is too large
 	if (request.getBody().size() > _config.getClientBodySize())
 	{
-		logWarning("Body size: ", request.getBody().size());
-		logWarning("MAX Body size: ", _config.getClientBodySize());
+		logWarning("Body size", request.getBody().size());
+		logWarning("MAX Body size", _config.getClientBodySize());
 		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
 	}
 
