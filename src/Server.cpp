@@ -105,7 +105,7 @@ Config &Server::getConfig(void)
 
 Response Server::handleRequest(const Request &request)
 {
-	Response    response;
+	Response    response(request);
 	std::string requestMethod = request.getMethod();
 	std::string requestPath = request.getResourcePath();
 	std::string serverRoot = "html"; // TODO: Pegar o server root da config

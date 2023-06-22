@@ -161,10 +161,8 @@ Response::~Response(){};
 void Response::setStatus(int code)
 {
 	this->statusCode = code;
-	
-	// TODO: Não dá pra fazer com load file que ele usa o HTML_ROOT
-	// e o errorPage é um path fora do HTML_ROOT
-	// if (code >= 400)
+
+	// if (code >= 400) // Is an error
 	// {
 	// 	std::string errorPage = getErrorPage(code);
 	// 	loadFile(errorPage);

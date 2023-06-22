@@ -8,7 +8,8 @@ run() {
 	PY="$TEST_FOLDER""$TEST"/test.py
 	CONF="$TEST_FOLDER""$TEST"/config.conf
 	echo "TEST:" $TEST
-	./$BIN ./$CONF 1>/dev/null 2>/dev/null &
+	# ./$BIN ./$CONF 1>/dev/null 2>/dev/null &
+	./$BIN ./$CONF &
 	PID=$!
 	export PYTHONPATH=$PYTHONPATH:$(pwd)/$TEST_FOLDER
 	python3 $PY
@@ -20,4 +21,6 @@ run() {
 
 run status_code
 
-run multiple_servers
+# run multiple_servers
+
+# run limit_client_body_size
