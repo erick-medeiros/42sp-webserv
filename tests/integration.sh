@@ -19,8 +19,8 @@ run() {
 	return $EXITCODE
 }
 
-run status_code
+# run status_code
 
 # run multiple_servers
 
-# run limit_client_body_size
+run limit_client_body_size
