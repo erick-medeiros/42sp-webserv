@@ -39,7 +39,10 @@ jobs:
           sudo apt-get update -qq -y
           sudo apt-get install -qq valgrind
       - name: run valgrind
-        run: make leaks
+        run: |
+          pwd
+          ls build/
+          make leaks
   tests:
     needs: compilation
     timeout-minutes: 5
