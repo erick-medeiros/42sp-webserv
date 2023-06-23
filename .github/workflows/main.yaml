@@ -12,53 +12,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: cache build
-        uses: actions/cache@v3
-        id: cache-build
-        with:
-          path: build
-          key: cache-build
       - name: compilation
-        run: |
-          make re
-          pwd
+        run: make
   leaks:
     needs: compilation
     timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: cache build
-        uses: actions/cache@v3
-        id: cache-build
-        with:
-          path: build
-          key: cache-build
       - name: install valgrind
-        run: |
-          sudo apt-get update -qq -y
-          sudo apt-get install -qq valgrind
+        run: sudo apt-get install valgrind
       - name: run valgrind
-        run: |
-          pwd
-          ls build/
-          make leaks
+        run: make leaks
   tests:
     needs: compilation
     timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: cache build
-        uses: actions/cache@v3
-        id: cache-build
-        with:
-          path: build
-          key: cache-build
       - name: install valgrind
-        run: |
-          sudo apt-get update -qq -y
-          sudo apt-get install -qq valgrind
+        run: sudo apt-get install valgrind
       - name: run tests
         run: make tests
   tests-integration:
@@ -67,12 +40,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: cache build
-        uses: actions/cache@v3
-        id: cache-build
-        with:
-          path: build
-          key: cache-build
       - uses: actions/setup-python@v4
       - name: tests integration
         run: make tests-integration
