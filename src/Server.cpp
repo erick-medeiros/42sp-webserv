@@ -36,7 +36,8 @@ int Server::listenToPort(int port)
 	if (bind(_serverSocket, (struct sockaddr *) &server_address,
 	         sizeof(server_address)) < 0)
 	{
-		logError("--- Error: binding");
+		std::string error = strerror(errno);
+		logError("--- Error: binding: " + error, port);
 		close(_serverSocket);
 		exit(1);
 	}
