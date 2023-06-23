@@ -31,3 +31,7 @@ text_lorem_ipsum_1732b = (
     text_lorem_ipsum_1027b
     + "Etiam auctor auctor eros, nec commodo nulla bibendum eget. Sed consequat urna vel est varius, id blandit eros ullamcorper. Aenean et justo quis erat accumsan ultricies non at purus. Sed mollis nisi eu vestibulum dapibus. Integer tincidunt purus ut arcu sollicitudin, id vulputate lectus mattis. Mauris congue odio nec justo malesuada, a fermentum erat feugiat. Quisque volutpat cursus tristique. Proin finibus elementum eros, sed suscipit neque tristique in. Morbi vitae dapibus turpis. Cras vitae est urna. Nullam accumsan ligula sit amet libero consectetur pellentesque. Sed auctor ante eu enim sollicitudin semper. Sed dapibus ipsum sit amet vestibulum cursus. Sed auctor ex at eros hendrerit faucibus."
 )
+
+assert len(text_lorem_ipsum_663b) == 663
+assert len(text_lorem_ipsum_1027b) == 1027
+assert len(text_lorem_ipsum_1732b) == 1732
