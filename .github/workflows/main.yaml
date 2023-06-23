@@ -19,7 +19,9 @@ jobs:
           path: build
           key: cache-build
       - name: compilation
-        run: make re
+        run: |
+          make re
+          pwd
   leaks:
     needs: compilation
     timeout-minutes: 5
