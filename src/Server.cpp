@@ -103,7 +103,7 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-Response Server::handleRequest(const Request &request)
+Response Server::createResponse(const Request &request)
 {
 	Response    response(request);
 	std::string requestMethod = request.getMethod();
@@ -175,11 +175,11 @@ Response Server::handleRequest(const Request &request)
 	// 	}
 	// }
 
-	// // Request is a directory and autoindex is enabled
-	// if (_config.hasAutoIndex(requestPath) && utils::isDir(fullPath))
-	// {
-	// 	response.listDir(fullPath);
-	// }
+	// Request is a directory and autoindex is enabled
+	if (utils::isDir(fullPath) && _config.directoryListingEnabled(requestPath))
+	{
+		response.listDir(requestPath);
+	}
 
 	// Request is a regular file
 	if (utils::isFile(fullPath))

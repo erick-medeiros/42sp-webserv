@@ -43,7 +43,7 @@ class Server
 
 	static int         acceptNewClient(int serverSocket);
 	static std::string getRequestData(Request *request);
-	Response           handleRequest(const Request &request);
+	Response           createResponse(const Request &request);
 
   private:
 	Config _config;

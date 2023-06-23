@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/22 11:12:56 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/23 11:24:33 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,6 +211,17 @@ int Config::_setDirectoryListing(string &value)
 	location.directory_listing = value;
 
 	return 0;
+}
+
+bool Config::directoryListingEnabled(string path) const
+{
+	vector<location_t>::const_iterator it;
+	for (it = _locations.begin(); it != _locations.end(); ++it)
+	{
+		if (it->location == path)
+			return it->directory_listing == "on";
+	}
+	return false;
 }
 
 int Config::_setResponseIsDir(string &value)

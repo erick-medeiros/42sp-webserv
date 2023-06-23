@@ -51,6 +51,9 @@ class Response
 	std::string                        body;
 	std::string                        message;
 	std::map<int, std::string>         customErrorPages;
+
+	// Methods
+	void addContentType(const std::string &filePath);
 };
 
 #endif
