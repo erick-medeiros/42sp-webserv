@@ -14,7 +14,8 @@
 
 void Response::listDir(const std::string &path)
 {
-	DIR              *dir;
+	DIR *dir;
+
 	struct dirent    *ent;
 	struct stat       filestat;
 	std::string       fullFilePath, modifiedTime;
