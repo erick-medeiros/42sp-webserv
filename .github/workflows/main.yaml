@@ -16,21 +16,11 @@ jobs:
         uses: actions/cache@v3
         id: cache-build
         with:
-          path: "~/build"
+          path: ${{ github.workspace }}/build
           key: cache-build
-      - name: restore cache
-        env:
-          CACHE_HIT: ${{steps.cache-build.outputs.cache-hit}}
-        run: |
-          if [[ "$CACHE_HIT" == 'true' ]]; then
-            mkdir -p build
-            sudo rm -fr ~/build/*
-          fi
       - name: Compilation
         run: |
-          make
-          mkdir -p ~/build
-          sudo cp -fruv webserv ./build/* ~/build/
+          make re
   leaks:
     needs: compilation
     timeout-minutes: 5
@@ -41,16 +31,8 @@ jobs:
         uses: actions/cache@v3
         id: cache-build
         with:
-          path: "~/build"
+          path: ${{ github.workspace }}/build
           key: cache-build
-      - name: restore cache
-        env:
-          CACHE_HIT: ${{steps.cache-build.outputs.cache-hit}}
-        run: |
-          if [[ "$CACHE_HIT" == 'true' ]]; then
-            mkdir -p build
-            sudo cp -fruv ~/build/* ./build
-          fi
       - name: install valgrind
         run: |
           sudo apt-get update -qq -y
@@ -67,16 +49,8 @@ jobs:
         uses: actions/cache@v3
         id: cache-build
         with:
-          path: "~/build"
+          path: ${{ github.workspace }}/build
           key: cache-build
-      - name: restore cache
-        env:
-          CACHE_HIT: ${{steps.cache-build.outputs.cache-hit}}
-        run: |
-          if [[ "$CACHE_HIT" == 'true' ]]; then
-            mkdir -p build
-            sudo cp -fruv ~/build/* ./build
-          fi
       - name: install valgrind
         run: |
           sudo apt-get update -qq -y
