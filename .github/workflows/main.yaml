@@ -19,7 +19,10 @@ jobs:
           path: ${{ github.workspace }}/build
           key: cache-build
       - name: Compilation
+        env:
+            CACHE_PATH: ${{ github.workspace }}/build
         run: |
+          echo $CACHE_PATH
           make re
   leaks:
     needs: compilation
