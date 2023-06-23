@@ -48,7 +48,7 @@ subfolders() {
 }
 
 run_all_tests() {
-	for f in $(folders $TEST_FOLDER); do
+	for f in $(subfolders $TEST_FOLDER); do
 		run $f false
 	done
 }
