@@ -2,8 +2,8 @@ import unittest
 import requests
 import integration
 
-BASE_URL = "http://localhost:8080"
+URL = "http://localhost:8080"
 
-response = integration.get(BASE_URL)
+response = integration.get(URL)
 
 assert response.status_code == 200
