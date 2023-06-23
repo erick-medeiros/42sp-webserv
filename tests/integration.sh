@@ -2,32 +2,38 @@
 
 BIN=webserv
 TEST_FOLDER=tests/integration/
+DEBUG_LOG="$TEST_FOLDER"debug.log
+
+fail() {
+	EXITCODE=$1
+	cat $DEBUG_LOG
+	echo "FAIL! ❌"
+	rm $DEBUG_LOG
+	exit $EXITCODE
+}
+
+success() {
+	echo "SUCCESS! ✅"
+	rm $DEBUG_LOG
+}
 
 run() {
 	TEST=$1
-	DEBUG=$2
-	echo -n "TEST: $TEST "
+	echo "TEST: $TEST"
 	if [ ! -d $TEST ]; then
-		echo ❌
-		exit
+		fail 1
 	fi
 	PY="$TEST"/test.py
 	CONF="$TEST"/config.conf
-	if [ $DEBUG = true ]; then
-		./$BIN ./$CONF &
-	else
-		./$BIN ./$CONF 1>/dev/null 2>/dev/null &
-	fi
+	./$BIN ./$CONF 1>$DEBUG_LOG 2>$DEBUG_LOG &
 	PID=$!
 	export PYTHONPATH=$PYTHONPATH:$(pwd)/$TEST_FOLDER
 	python3 $PY
 	EXITCODE=$?
 	kill $PID
 	if [ $EXITCODE != 0 ]; then
-		echo ❌
-		exit $EXITCODE
+		fail $EXITCODE
 	fi
-	echo ✅
 	return $EXITCODE
 }
 
@@ -49,12 +55,14 @@ subfolders() {
 
 run_all_tests() {
 	for f in $(subfolders $TEST_FOLDER); do
-		run $f false
+		run $f
 	done
+	success
 }
 
 run_single_test() {
-	run $TEST_FOLDER$1 true
+	run $TEST_FOLDER$1
+	success
 }
 
 if [ -n "$1" ]; then
