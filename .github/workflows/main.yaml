@@ -12,49 +12,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: cache build
-        uses: actions/cache@v3
-        id: cache-build
-        with:
-          path: "~/build"
-          key: cache-build
-      - name: restore cache
-        env:
-          CACHE_HIT: ${{steps.cache-build.outputs.cache-hit}}
-        run: |
-          if [[ "$CACHE_HIT" == 'true' ]]; then
-            mkdir -p build
-            sudo rm -fr ~/build/*
-          fi
-      - name: Compilation
-        run: |
-          make
-          mkdir -p ~/build
-          sudo cp -fruv webserv ./build/* ~/build/
+      - name: compilation
+        run: make
   leaks:
     needs: compilation
     timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: cache build
-        uses: actions/cache@v3
-        id: cache-build
-        with:
-          path: "~/build"
-          key: cache-build
-      - name: restore cache
-        env:
-          CACHE_HIT: ${{steps.cache-build.outputs.cache-hit}}
-        run: |
-          if [[ "$CACHE_HIT" == 'true' ]]; then
-            mkdir -p build
-            sudo cp -fruv ~/build/* ./build
-          fi
       - name: install valgrind
-        run: |
-          sudo apt-get update -qq -y
-          sudo apt-get install -qq valgrind
+        run: sudo apt-get install valgrind
+      - name: compilation
+        run: make
       - name: run valgrind
         run: make leaks
   tests:
@@ -63,48 +32,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: cache build
-        uses: actions/cache@v3
-        id: cache-build
-        with:
-          path: "~/build"
-          key: cache-build
-      - name: restore cache
-        env:
-          CACHE_HIT: ${{steps.cache-build.outputs.cache-hit}}
-        run: |
-          if [[ "$CACHE_HIT" == 'true' ]]; then
-            mkdir -p build
-            sudo cp -fruv ~/build/* ./build
-          fi
       - name: install valgrind
-        run: |
-          sudo apt-get update -qq -y
-          sudo apt-get install -qq valgrind
+        run: sudo apt-get install valgrind
+      - name: compilation
+        run: make
       - name: run tests
-        run: |
-          make tests
-          sudo cp -fruv webserv *.out ./build/* ~/build/
+        run: make tests
   tests-integration:
     needs: [compilation, leaks, tests]
     timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: cache build
-        uses: actions/cache@v3
-        id: cache-build
-        with:
-          path: "~/build"
-          key: cache-build
-      - name: restore cache
-        env:
-          CACHE_HIT: ${{steps.cache-build.outputs.cache-hit}}
-        run: |
-          if [[ "$CACHE_HIT" == 'true' ]]; then
-            mkdir -p build
-            sudo cp -fruv ~/build/* ./build
-          fi
       - uses: actions/setup-python@v4
+      - name: compilation
+        run: make
       - name: tests integration
         run: make tests-integration
