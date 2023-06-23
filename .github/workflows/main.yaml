@@ -22,6 +22,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: install valgrind
         run: sudo apt-get install valgrind
+      - name: compilation
+        run: make
       - name: run valgrind
         run: make leaks
   tests:
@@ -32,6 +34,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: install valgrind
         run: sudo apt-get install valgrind
+      - name: compilation
+        run: make
       - name: run tests
         run: make tests
   tests-integration:
@@ -41,5 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
+      - name: compilation
+        run: make
       - name: tests integration
         run: make tests-integration
