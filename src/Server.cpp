@@ -207,3 +207,35 @@ sockaddr_in Server::createServerAddress(int port)
 	address.sin_port = htons(port);
 	return address;
 }
+
+void Server::handleCGI(Connection &connection)
+{
+	std::string resource = connection.request.getResourcePath();
+	resource = trim(resource);
+
+	if (CGIRequest::isValidScriptLocation(resource, connection))
+	{
+		CGIRequest cgi(resource, connection);
+
+		if (cgi.isValid())
+		{
+			connection.request.setCgiAs(true);
+			int status;
+			int pid = fork();
+			if (pid == 0)
+			{
+				cgi.exec(connection.request, connection.config.getPort());
+			}
+			waitpid(pid, &status, 0);
+		}
+		else
+		{
+			connection.request.setErrorCode(HttpStatus::NOT_FOUND);
+			connection.request.setCgiAs(false);
+		}
+	}
+	else
+	{
+		connection.request.setCgiAs(false);
+	}
+}
