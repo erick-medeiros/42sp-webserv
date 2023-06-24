@@ -146,11 +146,11 @@ Response Server::handleRequest(const Request &request)
 	// }
 
 	// Request asked for a file that does not exist
-	if (!utils::pathExists(fullPath))
-	{
-		response.setStatus(HttpStatus::NOT_FOUND);
-		return response;
-	}
+	// if (!utils::pathExists(fullPath))
+	// {
+	// 	response.setStatus(HttpStatus::NOT_FOUND);
+	// 	return response;
+	// }
 
 	// // Request is a CGI script
 	// if (_config.isCGI(requestPath) && CGIRequest::isValid(requestPath))

@@ -1,7 +1,7 @@
 #!/bin/sh
 
-BIN=webserv
-TEST_FOLDER=tests/integration/
+BIN=$(pwd)/webserv
+TEST_FOLDER=$(pwd)/tests/integration/
 DEBUG_LOG="$TEST_FOLDER"debug.log
 
 fail() {
@@ -19,15 +19,17 @@ success() {
 
 run() {
 	TEST=$1
-	echo "TEST: $TEST"
+	TESTNAME="$(basename $(dirname $TEST))/$(basename $TEST)"
+	echo "TEST: $TESTNAME"
 	if [ ! -d $TEST ]; then
 		fail 1
 	fi
-	PY="$TEST"/test.py
-	CONF="$TEST"/config.conf
-	./$BIN ./$CONF 1>$DEBUG_LOG 2>$DEBUG_LOG &
+	cd $TEST
+	PY=test.py
+	CONF=config.conf
+	$BIN $CONF 1>$DEBUG_LOG 2>$DEBUG_LOG &
 	PID=$!
-	export PYTHONPATH=$PYTHONPATH:$(pwd)/$TEST_FOLDER
+	export PYTHONPATH=$PYTHONPATH:$TEST_FOLDER
 	python3 $PY
 	EXITCODE=$?
 	kill $PID
@@ -56,6 +58,7 @@ subfolders() {
 run_all_tests() {
 	for f in $(subfolders $TEST_FOLDER); do
 		run $f
+		sleep 0.5
 	done
 	success
 }
