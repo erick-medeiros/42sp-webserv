@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config_test.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/22 11:11:31 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/24 17:50:02 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,6 +164,12 @@ TEST_SUITE("error pages")
 
 TEST_SUITE("client_max_body_size")
 {
+	TEST_CASE("default")
+	{
+		Config config;
+		CHECK_EQ(config.getClientBodySize(), 1024 * 1024);
+	}
+
 	TEST_CASE("mb")
 	{
 		Config config;
