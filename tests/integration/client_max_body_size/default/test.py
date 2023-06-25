@@ -2,7 +2,7 @@ import unittest
 import requests
 import integration
 
-URL = "http://localhost:8080"
+URL = "http://localhost:9000"
 
 # 1024 * 1024 = 1048576 (1M em bytes)
 
