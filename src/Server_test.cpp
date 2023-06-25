@@ -10,14 +10,14 @@ TEST_CASE("Server")
 	{
 		freopen("/dev/null", "w", stdout);
 		Config config;
-		config.add("port", "8080");
+		config.add("port", "9000");
 
 		Server server;
 		server.init(config);
 		freopen("/dev/tty", "w", stdout);
 		THEN("The port number is set")
 		{
-			CHECK(server.getPort() == 8080);
+			CHECK(server.getPort() == 9000);
 		}
 	}
 }
