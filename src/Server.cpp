@@ -146,11 +146,11 @@ Response Server::handleRequest(const Request &request)
 	// }
 
 	// Request asked for a file that does not exist
-	if (!utils::pathExists(fullPath))
-	{
-		response.setStatus(HttpStatus::NOT_FOUND);
-		return response;
-	}
+	// if (!utils::pathExists(fullPath))
+	// {
+	// 	response.setStatus(HttpStatus::NOT_FOUND);
+	// 	return response;
+	// }
 
 	// // Request is a CGI script
 	// if (_config.isCGI(requestPath) && CGIRequest::isValid(requestPath))
@@ -206,4 +206,36 @@ sockaddr_in Server::createServerAddress(int port)
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons(port);
 	return address;
+}
+
+void Server::handleCGI(Connection &connection)
+{
+	std::string resource = connection.request.getResourcePath();
+	resource = trim(resource);
+
+	if (CGIRequest::isValidScriptLocation(resource, connection))
+	{
+		CGIRequest cgi(resource, connection);
+
+		if (cgi.isValid())
+		{
+			connection.request.setCgiAs(true);
+			int status;
+			int pid = fork();
+			if (pid == 0)
+			{
+				cgi.exec(connection.request, connection.config.getPort());
+			}
+			waitpid(pid, &status, 0);
+		}
+		else
+		{
+			connection.request.setErrorCode(HttpStatus::NOT_FOUND);
+			connection.request.setCgiAs(false);
+		}
+	}
+	else
+	{
+		connection.request.setCgiAs(false);
+	}
 }
