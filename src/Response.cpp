@@ -148,29 +148,25 @@ void Response::setCustomErrorPage(int statusCode, const std::string &path)
 	customErrorPages[statusCode] = path;
 }
 
-void Response::loadErrorPage(int statusCode)
+void Response::createErrorPage()
 {
-	std::string       errorPagePath;
-	std::ifstream     file;
-	std::stringstream buffer;
+	std::stringstream ss;
 
-	if (customErrorPages.count(statusCode))
-	{
-		errorPagePath = customErrorPages.at(statusCode);
-	}
-	else
-	{
-		std::stringstream ss;
-		ss << "error_pages/" << statusCode << ".html";
-		errorPagePath = ss.str();
-	}
-	if (!utils::pathExists(errorPagePath))
-		return;
-	file.open(errorPagePath.c_str());
-	buffer << file.rdbuf();
-	setHeader("Content-Type", "text/html; charset=UTF-8");
-	setBody(buffer.str());
-	file.close();
+	ss << "<html>";
+	ss << "<head>";
+	ss << "<title>" << statusCode << "</title>" ;
+	ss << "<style>" ;
+	ss << "body{display:grid;place-content:center;margin:0;text-align:center;height:100vh}";
+	ss << "code{font-size:3em;background:#ff2a5130;border-radius:.2em}";
+	ss << "</style>" ;
+	ss << "</head>";
+	ss << "<body>" ;
+	ss << "<code>" << statusCode << "</code>";
+	ss << "<h2>" << getReasonPhrase() << "</h2>";
+	ss << "</body>";
+	ss << "</html>";
+
+	setBody(ss.str());
 }
 
 Response::Response() : statusCode(200) {}
@@ -182,9 +178,12 @@ void Response::setStatus(int code)
 {
 	this->statusCode = code;
 
-	if (code >= 400) // If it's an error, load the error page
+	if (code >= 400)
 	{
-		loadErrorPage(code);
+		if (customErrorPages.count(statusCode))
+			loadFile(customErrorPages.at(statusCode));
+		else
+			createErrorPage();
 	}
 }
 
