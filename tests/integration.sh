@@ -22,6 +22,7 @@ run() {
 	TESTNAME="$(basename $(dirname $TEST))/$(basename $TEST)"
 	echo "TEST: $TESTNAME"
 	if [ ! -d $TEST ]; then
+		echo "ERROR: folder $TEST" >> $DEBUG_LOG
 		fail 1
 	fi
 	cd $TEST
@@ -32,7 +33,15 @@ run() {
 	export PYTHONPATH=$PYTHONPATH:$TEST_FOLDER
 	python3 $PY
 	EXITCODE=$?
+	# kill process
+	ps -p $PID 1>/dev/null 2>/dev/null
+	RUNNING=$?
+	if [ $RUNNING != 0 ]; then
+		echo "ERROR: webserv no run" >> $DEBUG_LOG
+		fail 1
+	fi
 	kill $PID
+	#
 	if [ $EXITCODE != 0 ]; then
 		fail $EXITCODE
 	fi
