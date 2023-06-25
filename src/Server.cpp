@@ -182,11 +182,11 @@ Response Server::handleRequest(const Request &request)
 	}
 
 	// Request asked for a file that does not exist
-	if (!utils::pathExists(fullPath))
-	{
-		response.setStatus(HttpStatus::NOT_FOUND);
-		return response;
-	}
+	// if (!utils::pathExists(fullPath))
+	// {
+	// 	response.setStatus(HttpStatus::NOT_FOUND);
+	// 	return response;
+	// }
 
 	// Rquest body is too large
 	if (request.getBody().size() > _config.getClientBodySize())
