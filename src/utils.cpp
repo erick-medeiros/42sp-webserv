@@ -32,7 +32,8 @@ int utils::isDir(const std::string &path)
 int utils::isFile(const std::string &path)
 {
 	struct stat path_stat;
-	stat(path.c_str(), &path_stat);
+	if (stat(path.c_str(), &path_stat))
+		return 0;
 	return S_ISREG(path_stat.st_mode);
 }
 
