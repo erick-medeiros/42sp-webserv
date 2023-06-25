@@ -69,4 +69,11 @@ retests: fclean tests
 
 -include $(DEP)
 
-.PHONY: all clean fclean re leaks tests retests
+up:
+	docker-compose up --build -d
+	docker exec -it webserv bash
+
+down:
+	docker-compose down --rmi all --volumes
+
+.PHONY: all clean fclean re leaks tests retests up down

@@ -4,7 +4,7 @@ import integration
 
 params = "arg1=123&arg2=456"
 
-URL = "http://localhost:8080/cgi?" + params
+URL = "http://localhost:9000/cgi?" + params
 
 response = integration.get(URL)
 

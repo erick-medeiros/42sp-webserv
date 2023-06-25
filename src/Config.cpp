@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
+/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/24 17:51:53 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/25 13:46:14 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -369,6 +369,12 @@ static list<labels_t> _getLabels(list<string> &lines)
 
 	while (!lines.empty())
 	{
+		if (startWith(lines.front(), "#"))
+		{
+			extractFront(lines);
+			continue;
+		}
+
 		if (!populateServer)
 		{
 			if (extractFront(lines) != "server")
