@@ -154,13 +154,14 @@ void Response::createErrorPage()
 
 	ss << "<html>";
 	ss << "<head>";
-	ss << "<title>" << statusCode << "</title>" ;
-	ss << "<style>" ;
-	ss << "body{display:grid;place-content:center;margin:0;text-align:center;height:100vh}";
+	ss << "<title>" << statusCode << "</title>";
+	ss << "<style>";
+	ss << "body{display:grid;place-content:center;margin:0;text-align:center;height:"
+	      "100vh}";
 	ss << "code{font-size:3em;background:#ff2a5130;border-radius:.2em}";
-	ss << "</style>" ;
+	ss << "</style>";
 	ss << "</head>";
-	ss << "<body>" ;
+	ss << "<body>";
 	ss << "<code>" << statusCode << "</code>";
 	ss << "<h2>" << getReasonPhrase() << "</h2>";
 	ss << "</body>";

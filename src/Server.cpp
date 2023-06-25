@@ -104,7 +104,7 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-Response Server::createResponse(const Request &request)
+Response Server::handleRequest(const Request &request)
 {
 	Response    response(request);
 	std::string requestMethod = request.getMethod();
