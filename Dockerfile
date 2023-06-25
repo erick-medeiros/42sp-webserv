@@ -3,7 +3,7 @@ FROM ubuntu:latest
 ARG UID GID
 
 RUN apt-get update && apt-get install -y \
-	make g++ clang-format bash-completion pip \
+	make g++ valgrind clang-format bash-completion pip \
 	&& apt-get clean
 
 RUN pip install requests
