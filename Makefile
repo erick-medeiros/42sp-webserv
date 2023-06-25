@@ -28,8 +28,6 @@ VALGRIND = valgrind -q --error-exitcode=1 \
 FORMAT = which clang-format >/dev/null 2>&1 \
 && echo $^ | xargs clang-format -i || true
 
-DOCKER_COMPOSE_FILE=container/docker-compose.yml
-
 all: $(NAME)
 
 run: all
@@ -72,10 +70,10 @@ retests: fclean tests
 -include $(DEP)
 
 up:
-	docker-compose -f $(DOCKER_COMPOSE_FILE) up --build -d
+	docker-compose up --build -d
 	docker exec -it webserv bash
 
 down:
-	docker-compose -f $(DOCKER_COMPOSE_FILE) down --rmi all --volumes
+	docker-compose down --rmi all --volumes
 
 .PHONY: all clean fclean re leaks tests retests up down
