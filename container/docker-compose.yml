@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  webserv:
+    container_name: webserv
+    image: webserv
+    restart: on-failure
+    env_file: .env
+    build:
+      context: .
+      args:
+        - UID=${UID}
+        - GID=${GID}
+    user: ${UID}:${GID}
+    ports:
+      - "8080:8080"
+    volumes:
+      - webserv:/webserv
+
+volumes:
+  webserv:
+    name: webserv
+    driver: local
+    driver_opts:
+      device: .
+      o: bind
+      type: none
