@@ -76,7 +76,7 @@ std::string Server::getRequestData(Request *request)
 	int  buffSize = 1024;
 	char buff[buffSize];
 
-	int bytesRead = recv(clientSocket, buff, sizeof(buff), 0);
+	int bytesRead = recv(clientSocket, buff, sizeof(buff) - 1, 0);
 
 	if (bytesRead == -1)
 	{
