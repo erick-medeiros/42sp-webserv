@@ -109,7 +109,7 @@ Response Server::handleRequest(const Request &request)
 	Response    response(request);
 	std::string requestMethod = request.getMethod();
 	std::string requestPath = request.getResourcePath();
-	std::string serverRoot = "html"; // TODO: Pegar o server root da config
+	std::string serverRoot = "."; // TODO: Pegar o server root da config
 	std::string fullPath = serverRoot + requestPath;
 
 	// Change default error pages with config error pages
@@ -182,11 +182,11 @@ Response Server::handleRequest(const Request &request)
 	}
 
 	// Request asked for a file that does not exist
-	// if (!utils::pathExists(fullPath))
-	// {
-	// 	response.setStatus(HttpStatus::NOT_FOUND);
-	// 	return response;
-	// }
+	if (!request.isCgiEnabled() && !utils::pathExists(fullPath))
+	{
+		response.setStatus(HttpStatus::NOT_FOUND);
+		return response;
+	}
 
 	// Rquest body is too large
 	if (request.getBody().size() > _config.getClientBodySize())

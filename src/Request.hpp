@@ -14,7 +14,7 @@
 #include "log_utils.hpp"
 #include "utils.hpp"
 
-#define CGI_RESPONSE "/tmp/CGIResponse-"
+#define CGI_RESPONSE "CGIResponse-"
 
 enum
 {

@@ -10,7 +10,7 @@
 #include "log_utils.hpp"
 #include "utils.hpp"
 
-#define HTML_ROOT "html" // TODO: Trocar pelo root_path passado na conf
+#define HTML_ROOT "." // TODO: Trocar pelo root_path passado na conf
 
 void Response::listDir(const std::string &path)
 {
