@@ -213,6 +213,17 @@ int Config::_setDirectoryListing(string &value)
 	return 0;
 }
 
+bool Config::directoryListingEnabled(string path) const
+{
+	vector<location_t>::const_iterator it;
+	for (it = _locations.begin(); it != _locations.end(); ++it)
+	{
+		if (it->location == path)
+			return it->directory_listing == "on";
+	}
+	return false;
+}
+
 int Config::_setResponseIsDir(string &value)
 {
 	if (_locations.size() == 0)

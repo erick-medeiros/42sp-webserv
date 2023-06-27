@@ -10,7 +10,7 @@
 #include "log_utils.hpp"
 #include "utils.hpp"
 
-#define HTML_ROOT "html" // TODO: Trocar pelo root_path passado na conf
+#define HTML_ROOT "." // TODO: Trocar pelo root_path passado na conf
 
 void Response::listDir(const std::string &path)
 {
@@ -56,8 +56,8 @@ void Response::listDir(const std::string &path)
 		}
 		else
 		{
-			ss << "<td><a href=\"" << path << ent->d_name << "\">" << ent->d_name
-			   << "</a></td>";
+			ss << "<td><a href=\"" << path << "/" << ent->d_name << "\">"
+			   << ent->d_name << "</a></td>";
 			ss << "<td>" << utils::formatSize(filestat.st_size) << "</td>";
 		}
 		ss << "<td>" << modifiedTime;
@@ -74,29 +74,36 @@ void Response::listDir(const std::string &path)
 
 void Response::loadFile(const std::string &path)
 {
-	std::string   fullPath;
-	std::ifstream file;
-
-	if (this->cgiState)
-	{
-		fullPath = path;
-		file.open(fullPath.c_str());
-	}
-	else
-	{
-		fullPath = HTML_ROOT + path;
-		file.open(fullPath.c_str());
-	}
-
-	if (!file.is_open())
-	{
-		this->statusCode = HttpStatus::NOT_FOUND;
-		return;
-	}
+	std::ifstream     file;
 	std::stringstream buffer;
+	std::string       fileExtenstion;
+
+	file.open(path.c_str());
 	buffer << file.rdbuf();
-	setBody(buffer.str());
 	file.close();
+
+	fileExtenstion = path.substr(path.find_last_of(".") + 1);
+	addContentType(fileExtenstion);
+
+	setBody(buffer.str());
+}
+
+void Response::addContentType(const std::string &fileExtenstion)
+{
+	if (fileExtenstion == "html")
+		setHeader("Content-Type", "text/html; charset=UTF-8");
+	else if (fileExtenstion == "css")
+		setHeader("Content-Type", "text/css; charset=UTF-8");
+	else if (fileExtenstion == "js")
+		setHeader("Content-Type", "text/javascript; charset=UTF-8");
+	else if (fileExtenstion == "jpg" || fileExtenstion == "jpeg")
+		setHeader("Content-Type", "image/jpeg; charset=UTF-8");
+	else if (fileExtenstion == "ico")
+		setHeader("Content-Type", "image/x-icon");
+	else if (fileExtenstion == "txt")
+		setHeader("Content-Type", "text/plain");
+	else
+		setHeader("Content-Type", "application/octet-stream");
 }
 
 // TODO: Não vamos mais criar uma response a partir de um request,
@@ -143,29 +150,26 @@ void Response::setCustomErrorPage(int statusCode, const std::string &path)
 	customErrorPages[statusCode] = path;
 }
 
-void Response::loadErrorPage(int statusCode)
+void Response::createErrorPage()
 {
-	std::string errorPagePath;
+	std::stringstream ss;
 
-	if (customErrorPages.count(statusCode))
-	{
-		errorPagePath = customErrorPages.at(statusCode);
-	}
-	else
-	{
-		std::stringstream ss;
-		ss << "error_pages/" << statusCode << ".html";
-		errorPagePath = ss.str();
-	}
-	if (!utils::pathExists(errorPagePath))
-		return;
+	ss << "<html>";
+	ss << "<head>";
+	ss << "<title>" << statusCode << "</title>";
+	ss << "<style>";
+	ss << "body{display:grid;place-content:center;margin:0;text-align:center;height:"
+	      "100vh}";
+	ss << "code{font-size:3em;background:#ff2a5130;border-radius:.2em}";
+	ss << "</style>";
+	ss << "</head>";
+	ss << "<body>";
+	ss << "<code>" << statusCode << "</code>";
+	ss << "<h2>" << getReasonPhrase() << "</h2>";
+	ss << "</body>";
+	ss << "</html>";
 
-	std::ifstream file;
-	file.open(errorPagePath.c_str());
-	std::stringstream buffer;
-	buffer << file.rdbuf();
-	setBody(buffer.str());
-	file.close();
+	setBody(ss.str());
 }
 
 Response::Response() : statusCode(200) {}
@@ -177,9 +181,12 @@ void Response::setStatus(int code)
 {
 	this->statusCode = code;
 
-	if (code >= 400) // If it's an error, load the error page
+	if (code >= 400)
 	{
-		loadErrorPage(code);
+		if (customErrorPages.count(statusCode))
+			loadFile(customErrorPages.at(statusCode));
+		else
+			createErrorPage();
 	}
 }
 

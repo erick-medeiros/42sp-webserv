@@ -109,7 +109,7 @@ Response Server::handleRequest(const Request &request)
 	Response    response(request);
 	std::string requestMethod = request.getMethod();
 	std::string requestPath = request.getResourcePath();
-	std::string serverRoot = "html"; // TODO: Pegar o server root da config
+	std::string serverRoot = "."; // TODO: Pegar o server root da config
 	std::string fullPath = serverRoot + requestPath;
 
 	// Change default error pages with config error pages
@@ -118,6 +118,13 @@ Response Server::handleRequest(const Request &request)
 	for (it = errorPages.begin(); it != errorPages.end(); it++)
 	{
 		response.setCustomErrorPage(it->first, it->second);
+	}
+
+	// Request asked for a file that does not exist
+	if (!request.isCgiEnabled() && !utils::pathExists(fullPath))
+	{
+		response.setStatus(HttpStatus::NOT_FOUND);
+		return response;
 	}
 
 	// -- SITUATIONS WITH EARLY RETURN --
@@ -145,13 +152,6 @@ Response Server::handleRequest(const Request &request)
 	// 	return response;
 	// }
 
-	// Request asked for a file that does not exist
-	// if (!utils::pathExists(fullPath))
-	// {
-	// 	response.setStatus(HttpStatus::NOT_FOUND);
-	// 	return response;
-	// }
-
 	// // Request is a CGI script
 	// if (_config.isCGI(requestPath) && CGIRequest::isValid(requestPath))
 	// {
@@ -176,11 +176,18 @@ Response Server::handleRequest(const Request &request)
 	// 	}
 	// }
 
-	// // Request is a directory and autoindex is enabled
-	// if (_config.hasAutoIndex(requestPath) && utils::isDir(fullPath))
-	// {
-	// 	response.listDir(fullPath);
-	// }
+	// Request is a directory and autoindex is enabled
+	if (utils::isDir(fullPath) && requestPath != "/")
+	{
+		if (_config.directoryListingEnabled(requestPath))
+		{
+			response.listDir(requestPath);
+		}
+		else
+		{
+			response.setStatus(HttpStatus::NOT_FOUND);
+		}
+	}
 
 	// Request is a regular file
 	if (utils::isFile(fullPath))

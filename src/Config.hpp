@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
+/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/18 16:15:12 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/23 11:24:57 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,9 @@ class Config
 	map<int, string> const   &getErrorPages(void) const;
 	size_t const             &getClientBodySize() const;
 	vector<location_t> const &getLocations() const;
+
+	// Helpers
+	bool directoryListingEnabled(std::string path) const;
 
 	static string         readFile(const string &filename);
 	static vector<Config> parseConfig(string &filedata);
