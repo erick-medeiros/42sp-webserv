@@ -17,32 +17,29 @@ class Connection;
 class CGIRequest
 {
   private:
-	char      **scriptArgs;
-	char      **envp;
-	int         fd;
-	Connection &_connection;
+	char **scriptArgs;
+	char **envp;
+	int    fd;
 
-  public:
-	CGIRequest(void);
-	CGIRequest(std::string const &resource, Connection &connection);
-	~CGIRequest(void);
+	Connection const &_connection;
 
 	std::string fileScript;
 	std::string script;
 	std::string portNumber;
-
-	bool        isValid(void) const;
-	void        exec(Request const &request, int const connectionPortNumber);
-	std::string getContentLength(Request const &request) const;
-	void        prepareCGIRequest(Request const &request);
-	void        initTemporaryDescriptor(Request const &request);
-	void        initScriptArguments(Request const &request);
-	void        initEnviromentVariables(Request const &request);
+	std::string getContentLength() const;
+	void        prepareCGIRequest();
+	void        initTemporaryDescriptor();
+	void        initScriptArguments();
+	void        initEnviromentVariables();
 	void        executeCGIScript(void);
 	char      **createArrayOfStrings(std::vector<std::string> const &envVars) const;
 	void        destroyArrayOfStrings(char **envp) const;
-	static bool isValidScriptLocation(std::string const &resource,
-	                                  Connection        &connection);
+
+  public:
+	CGIRequest(std::string const &resource, Connection &connection);
+	~CGIRequest(void);
+
+	int exec(void);
 };
 
 #endif

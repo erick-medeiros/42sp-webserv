@@ -123,7 +123,8 @@ Response Server::handleRequest(Connection &connection)
 		std::string resource = serverRoot + locations[i].location + requestPath;
 		if (utils::isFile(resource))
 		{
-			Server::handleCGI(connection, resource);
+			CGIRequest cgi(resource, connection);
+			cgi.exec();
 
 			std::stringstream ss;
 			ss << connection.request.getFd();
@@ -171,14 +172,6 @@ Response Server::handleRequest(Connection &connection)
 	// if (std::find(methods.begin(), methods.end(), requestMethod) == methods.end())
 	// {
 	// 	response.setStatus(HttpStatus::METHOD_NOT_ALLOWED);
-	// 	return response;
-	// }
-
-	// // Request is a CGI script
-	// if (_config.isCGI(requestPath) && CGIRequest::isValid(requestPath))
-	// {
-	// 	std::string scriptOutput = CGIRequest::executeScript(requestPath);
-	// 	response.setBody(scriptOutput);
 	// 	return response;
 	// }
 
@@ -235,18 +228,4 @@ sockaddr_in Server::createServerAddress(int port)
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons(port);
 	return address;
-}
-
-void Server::handleCGI(Connection &connection, std::string const &fileScript)
-{
-	CGIRequest cgi(fileScript, connection);
-
-	int status;
-	int pid = fork();
-	if (pid == 0)
-	{
-		cgi.exec(connection.request, connection.config.getPort());
-		return;
-	}
-	waitpid(pid, &status, 0);
 }
