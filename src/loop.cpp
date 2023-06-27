@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 00:37:47 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/27 00:44:39 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,9 +139,8 @@ int loop(std::string path_config)
 			// Response
 			if (event.events & EPOLLOUT)
 			{
-				Response response = connection->server.handleRequest(*connection);
-
-				response.sendHttpResponse();
+				connection->server.handleRequest(*connection);
+				connection->sendHttpResponse();
 				removeConnection(channel, epoll);
 				continue;
 			}

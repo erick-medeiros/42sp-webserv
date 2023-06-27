@@ -103,11 +103,11 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-Response Server::handleRequest(Connection &connection)
+int Server::handleRequest(Connection &connection)
 {
 	Request    &request = connection.request;
 	Config     &config = connection.config;
-	Response    response(connection.fd);
+	Response   &response = connection.response;
 	std::string requestMethod = request.getMethod();
 	std::string requestPath = request.getResourcePath();
 
@@ -124,7 +124,7 @@ Response Server::handleRequest(Connection &connection)
 			CGIRequest cgi(resource, connection);
 			cgi.exec();
 			response.loadFile(cgi.getFileName());
-			return response;
+			return 0;
 		}
 	}
 
@@ -140,7 +140,7 @@ Response Server::handleRequest(Connection &connection)
 	if (!request.isCgiEnabled() && !utils::pathExists(fullPath))
 	{
 		response.setStatus(HttpStatus::NOT_FOUND);
-		return response;
+		return 0;
 	}
 
 	// -- SITUATIONS WITH EARLY RETURN --
@@ -209,7 +209,7 @@ Response Server::handleRequest(Connection &connection)
 		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
 	}
 
-	return response;
+	return 0;
 }
 
 // --- Helper functions ---

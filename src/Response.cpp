@@ -106,10 +106,6 @@ void Response::addContentType(const std::string &fileExtenstion)
 		setHeader("Content-Type", "application/octet-stream");
 }
 
-// TODO: Não vamos mais criar uma response a partir de um request,
-// o requestHandler do server confere a config e cria a response
-Response::Response(int clientFd) : statusCode(200), clientFd(clientFd) {}
-
 void Response::parse(const Request &request)
 {
 	if (request.getMethod() == "GET")
@@ -235,17 +231,6 @@ void Response::prepareMessage()
 		message << this->body;
 
 	this->message = message.str();
-}
-
-void Response::sendHttpResponse()
-{
-	prepareMessage();
-	logWarning("Sending response:\n" + message);
-
-	if (send(clientFd, message.c_str(), message.size(), 0) < 0)
-	{
-		throw std::runtime_error("Error sending response");
-	}
 }
 
 // --- Reason Phrase
