@@ -120,6 +120,13 @@ Response Server::handleRequest(const Request &request)
 		response.setCustomErrorPage(it->first, it->second);
 	}
 
+	// Request asked for a file that does not exist
+	if (!request.isCgiEnabled() && !utils::pathExists(fullPath))
+	{
+		response.setStatus(HttpStatus::NOT_FOUND);
+		return response;
+	}
+
 	// -- SITUATIONS WITH EARLY RETURN --
 
 	// // Config defined a specific return code
@@ -170,22 +177,22 @@ Response Server::handleRequest(const Request &request)
 	// }
 
 	// Request is a directory and autoindex is enabled
-	if (utils::isDir(fullPath) && _config.directoryListingEnabled(requestPath))
+	if (utils::isDir(fullPath) && requestPath != "/")
 	{
-		response.listDir(requestPath);
+		if (_config.directoryListingEnabled(requestPath))
+		{
+			response.listDir(requestPath);
+		}
+		else
+		{
+			response.setStatus(HttpStatus::NOT_FOUND);
+		}
 	}
 
 	// Request is a regular file
 	if (utils::isFile(fullPath))
 	{
 		response.loadFile(fullPath);
-	}
-
-	// Request asked for a file that does not exist
-	if (!request.isCgiEnabled() && !utils::pathExists(fullPath))
-	{
-		response.setStatus(HttpStatus::NOT_FOUND);
-		return response;
 	}
 
 	// Rquest body is too large

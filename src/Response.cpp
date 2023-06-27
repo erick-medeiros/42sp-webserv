@@ -100,8 +100,10 @@ void Response::addContentType(const std::string &fileExtenstion)
 		setHeader("Content-Type", "image/jpeg; charset=UTF-8");
 	else if (fileExtenstion == "ico")
 		setHeader("Content-Type", "image/x-icon");
-	else
+	else if (fileExtenstion == "txt")
 		setHeader("Content-Type", "text/plain");
+	else
+		setHeader("Content-Type", "application/octet-stream");
 }
 
 // TODO: Não vamos mais criar uma response a partir de um request,
