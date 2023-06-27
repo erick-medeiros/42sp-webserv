@@ -1,8 +1,8 @@
 #include "Request.hpp"
 
-Request::Request(int fd)
-    : fd(fd), errorCode(0), contentLength(0), startLineParsed(false),
-      headersParsed(false), bodyParsed(false), cgiState(false)
+Request::Request()
+    : errorCode(0), contentLength(0), startLineParsed(false), headersParsed(false),
+      bodyParsed(false), cgiState(false)
 {
 }
 

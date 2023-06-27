@@ -30,7 +30,6 @@ enum
 class Request
 {
   private:
-	int                                fd;
 	int                                errorCode;
 	int                                contentLength;
 	std::map<std::string, std::string> startLine;
@@ -49,7 +48,7 @@ class Request
 	bool                               cgiState;
 
   public:
-	Request(int fd);
+	Request(void);
 	~Request(void);
 	void parse(std::string const rawRequest);
 
