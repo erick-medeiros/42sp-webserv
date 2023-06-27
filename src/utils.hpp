@@ -24,6 +24,7 @@ int         pathExists(const std::string &path);
 int         isDir(const std::string &path);
 int         isFile(const std::string &path);
 std::string formatSize(size_t size);
+std::string to_string(int);
 } // namespace utils
 
 #endif

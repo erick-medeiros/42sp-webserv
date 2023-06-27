@@ -9,10 +9,7 @@ CGIRequest::CGIRequest(std::string const &resource, Connection &connection)
     : _connection(connection), script(""), portNumber("")
 {
 	this->fileScript = resource;
-
-	std::stringstream ss;
-	ss << connection.fd;
-	_fileName = CGI_RESPONSE + ss.str();
+	_fileName = CGI_RESPONSE + utils::to_string(connection.fd);
 }
 
 int CGIRequest::exec(void)

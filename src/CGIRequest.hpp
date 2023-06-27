@@ -11,6 +11,7 @@
 
 #include "Connection.hpp"
 #include "Request.hpp"
+#include "utils.hpp"
 
 #define CGI_RESPONSE "CGIResponse-"
 
