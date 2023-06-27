@@ -108,27 +108,12 @@ int Server::handleRequest(Connection &connection)
 	Request    &request = connection.request;
 	Config     &config = connection.config;
 	Response   &response = connection.response;
+	std::string serverRoot = ".";
 	std::string requestMethod = request.getMethod();
 	std::string requestPath = request.getResourcePath();
-
-	std::string serverRoot = ".";
-
 	std::string fullPath = serverRoot + requestPath;
 
-	std::vector<location_t> locations = config.getLocations();
-	for (size_t i = 0; i < locations.size(); i++)
-	{
-		std::string resource = serverRoot + locations[i].location + requestPath;
-		if (utils::isFile(resource))
-		{
-			CGIRequest cgi(resource, connection);
-			cgi.exec();
-			response.loadFile(cgi.getFileName());
-			return 0;
-		}
-	}
-
-	// Change default error pages with config error pages
+	// Prepare response with custom error pages
 	std::map<int, std::string>           errorPages = _config.getErrorPages();
 	std::map<int, std::string>::iterator it;
 	for (it = errorPages.begin(); it != errorPages.end(); it++)
@@ -136,10 +121,19 @@ int Server::handleRequest(Connection &connection)
 		response.setCustomErrorPage(it->first, it->second);
 	}
 
-	// Request asked for a file that does not exist
+	// Request asked for a path that does not exist
 	if (!utils::pathExists(fullPath))
 	{
 		response.setStatus(HttpStatus::NOT_FOUND);
+		return 0;
+	}
+
+	// If there is cgi enabled for this location
+	if (config.hasCGI(requestPath))
+	{
+		CGIRequest  cgi(fullPath, connection);
+		std::string result = cgi.exec();
+		response.setBody(result);
 		return 0;
 	}
 

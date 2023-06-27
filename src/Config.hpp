@@ -66,6 +66,8 @@ class Config
 	map<int, string> const   &getErrorPages(void) const;
 	size_t const             &getClientBodySize() const;
 	vector<location_t> const &getLocations() const;
+	vector<location_t>        getLocations(std::string path) const;
+	bool                      hasCGI(std::string path) const;
 
 	// Helpers
 	bool directoryListingEnabled(std::string path) const;
