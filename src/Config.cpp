@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/25 13:46:14 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/27 08:42:30 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -302,16 +302,6 @@ string Config::readFile(const string &filename)
 	return buffer.str();
 }
 
-static bool startWith(const string &text, const string &term)
-{
-	return text.substr(0, term.size()) == term;
-}
-
-static bool endWith(const string &text, const string &term)
-{
-	return text.substr(text.size() - term.size(), text.size()) == term;
-}
-
 static void _panic(string err)
 {
 	throw runtime_error("Panic: " + err);
@@ -328,7 +318,7 @@ static list<string> _getLineFromFileData(string &filedata)
 		line = trim(line);
 		if (line.size() > 0)
 		{
-			if (line.size() > 1 && endWith(line, "{"))
+			if (line.size() > 1 && utils::end_with(line, "{"))
 			{
 				line.resize(line.size() - 1);
 				line = trim(line);
@@ -369,7 +359,7 @@ static list<labels_t> _getLabels(list<string> &lines)
 
 	while (!lines.empty())
 	{
-		if (startWith(lines.front(), "#"))
+		if (utils::start_with(lines.front(), "#"))
 		{
 			extractFront(lines);
 			continue;
@@ -387,7 +377,7 @@ static list<labels_t> _getLabels(list<string> &lines)
 
 		string line = extractFront(lines);
 
-		if (populateServer && startWith(line, "location"))
+		if (populateServer && utils::start_with(line, "location"))
 		{
 			config.push_back(getLabel(line));
 			if (extractFront(lines) != "{")

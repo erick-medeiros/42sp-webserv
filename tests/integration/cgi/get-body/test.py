@@ -2,7 +2,7 @@ import unittest
 import requests
 import integration
 
-URL = "http://localhost:9000/cgi"
+URL = "http://localhost:9000/index.py"
 
 response = integration.get(URL)
 

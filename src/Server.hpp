@@ -41,10 +41,8 @@ class Server
 	int     getServerSocket();
 	Config &getConfig(void);
 
-	static int         acceptNewClient(int serverSocket);
-	static std::string getRequestData(Request *request);
-	Response           handleRequest(const Request &request);
-	static void        handleCGI(Connection &connection);
+	static std::string getRequestData(int clientSocket);
+	int                handleRequest(Connection &connection);
 
   private:
 	Config _config;

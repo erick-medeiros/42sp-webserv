@@ -57,3 +57,20 @@ std::string utils::formatSize(size_t size)
 	ss << size << units[unit];
 	return ss.str();
 }
+
+std::string utils::to_string(int value)
+{
+	std::stringstream ss;
+	ss << value;
+	return ss.str();
+}
+
+bool utils::start_with(const std::string &text, const std::string &term)
+{
+	return text.substr(0, term.size()) == term;
+}
+
+bool utils::end_with(const std::string &text, const std::string &term)
+{
+	return text.substr(text.size() - term.size(), text.size()) == term;
+}
