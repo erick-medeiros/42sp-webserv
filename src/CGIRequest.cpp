@@ -1,11 +1,18 @@
 #include "CGIRequest.hpp"
 
-CGIRequest::~CGIRequest(void) {}
+CGIRequest::~CGIRequest(void)
+{
+	std::remove(getFileName().c_str());
+}
 
 CGIRequest::CGIRequest(std::string const &resource, Connection &connection)
     : _connection(connection), script(""), portNumber("")
 {
 	this->fileScript = resource;
+
+	std::stringstream ss;
+	ss << connection.fd;
+	_fileName = CGI_RESPONSE + ss.str();
 }
 
 int CGIRequest::exec(void)
@@ -29,6 +36,11 @@ int CGIRequest::exec(void)
 	else
 		status = 1;
 	return status;
+}
+
+std::string const &CGIRequest::getFileName(void) const
+{
+	return _fileName;
 }
 
 void CGIRequest::prepareCGIRequest()

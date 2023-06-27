@@ -12,6 +12,8 @@
 #include "Connection.hpp"
 #include "Request.hpp"
 
+#define CGI_RESPONSE "CGIResponse-"
+
 class Connection;
 
 class CGIRequest
@@ -26,6 +28,7 @@ class CGIRequest
 	std::string fileScript;
 	std::string script;
 	std::string portNumber;
+	std::string _fileName;
 	std::string getContentLength() const;
 	void        prepareCGIRequest();
 	void        initTemporaryDescriptor();
@@ -40,6 +43,8 @@ class CGIRequest
 	~CGIRequest(void);
 
 	int exec(void);
+
+	std::string const &getFileName(void) const;
 };
 
 #endif

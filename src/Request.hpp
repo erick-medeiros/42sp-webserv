@@ -14,8 +14,6 @@
 #include "log_utils.hpp"
 #include "utils.hpp"
 
-#define CGI_RESPONSE "CGIResponse-"
-
 enum
 {
 	GET,

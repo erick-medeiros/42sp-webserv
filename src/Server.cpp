@@ -123,12 +123,7 @@ Response Server::handleRequest(Connection &connection)
 		{
 			CGIRequest cgi(resource, connection);
 			cgi.exec();
-
-			std::stringstream ss;
-			ss << connection.fd;
-			std::string const tempFile(CGI_RESPONSE + ss.str());
-			response.loadFile(tempFile);
-			std::remove(tempFile.c_str());
+			response.loadFile(cgi.getFileName());
 			return response;
 		}
 	}
