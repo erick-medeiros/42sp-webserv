@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "utils.hpp"
 
 Server::Server(void) : _serverSocket(0) {}
 
@@ -104,13 +105,34 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-Response Server::handleRequest(const Request &request)
+Response Server::handleRequest(Connection &connection)
 {
+	Request    &request = connection.request;
+	Config     &config = connection.config;
 	Response    response(request);
 	std::string requestMethod = request.getMethod();
 	std::string requestPath = request.getResourcePath();
-	std::string serverRoot = "."; // TODO: Pegar o server root da config
+
+	std::string serverRoot = ".";
+
 	std::string fullPath = serverRoot + requestPath;
+
+	std::vector<location_t> locations = config.getLocations();
+	for (size_t i = 0; i < locations.size(); i++)
+	{
+		std::string resource = serverRoot + locations[i].location + requestPath;
+		if (utils::isFile(resource))
+		{
+			Server::handleCGI(connection, resource);
+
+			std::stringstream ss;
+			ss << connection.request.getFd();
+			std::string const tempFile(CGI_RESPONSE + ss.str());
+			response.loadFile(tempFile);
+			std::remove(tempFile.c_str());
+			return response;
+		}
+	}
 
 	// Change default error pages with config error pages
 	std::map<int, std::string>           errorPages = _config.getErrorPages();
@@ -215,34 +237,16 @@ sockaddr_in Server::createServerAddress(int port)
 	return address;
 }
 
-void Server::handleCGI(Connection &connection)
+void Server::handleCGI(Connection &connection, std::string const &fileScript)
 {
-	std::string resource = connection.request.getResourcePath();
-	resource = trim(resource);
+	CGIRequest cgi(fileScript, connection);
 
-	if (CGIRequest::isValidScriptLocation(resource, connection))
+	int status;
+	int pid = fork();
+	if (pid == 0)
 	{
-		CGIRequest cgi(resource, connection);
-
-		if (cgi.isValid())
-		{
-			connection.request.setCgiAs(true);
-			int status;
-			int pid = fork();
-			if (pid == 0)
-			{
-				cgi.exec(connection.request, connection.config.getPort());
-			}
-			waitpid(pid, &status, 0);
-		}
-		else
-		{
-			connection.request.setErrorCode(HttpStatus::NOT_FOUND);
-			connection.request.setCgiAs(false);
-		}
+		cgi.exec(connection.request, connection.config.getPort());
+		return;
 	}
-	else
-	{
-		connection.request.setCgiAs(false);
-	}
+	waitpid(pid, &status, 0);
 }

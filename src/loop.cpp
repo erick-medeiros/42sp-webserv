@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   loop.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/24 17:13:58 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/26 23:43:37 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,7 +126,6 @@ int loop(std::string path_config)
 					{
 						epoll_data_t data = {channel};
 						epoll.modify(connection->fd, data, EPOLLOUT);
-						Server::handleCGI(*connection);
 					}
 				}
 				catch (std::exception const &e)
@@ -141,7 +140,8 @@ int loop(std::string path_config)
 			// Response
 			if (event.events & EPOLLOUT)
 			{
-				Response response = connection->server.handleRequest(*request);
+				Response response = connection->server.handleRequest(*connection);
+
 				response.sendHttpResponse();
 				removeConnection(channel, epoll);
 				continue;

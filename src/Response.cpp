@@ -111,20 +111,6 @@ void Response::addContentType(const std::string &fileExtenstion)
 Response::Response(const Request &request) : statusCode(200)
 {
 	this->clientFd = request.getFd();
-	this->cgiState = request.isCgiEnabled();
-
-	if (this->cgiState == true)
-	{
-		std::stringstream ss;
-		ss << this->clientFd;
-		std::string const tempFile(CGI_RESPONSE + ss.str());
-		loadFile(tempFile);
-		std::remove(tempFile.c_str());
-	}
-	else
-	{
-		// parse(request);
-	}
 }
 
 void Response::parse(const Request &request)

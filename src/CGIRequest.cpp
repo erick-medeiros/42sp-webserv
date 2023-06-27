@@ -1,13 +1,14 @@
 #include "CGIRequest.hpp"
+#include "utils.hpp"
 
-CGIRequest::CGIRequest(void) {}
+// CGIRequest::CGIRequest(void) {}
 
 CGIRequest::~CGIRequest(void) {}
 
 CGIRequest::CGIRequest(std::string const &resource, Connection &connection)
-    : script(""), portNumber("")
+    : _connection(connection), script(""), portNumber("")
 {
-	this->initLocation(resource, connection);
+	this->fileScript = resource;
 }
 
 bool CGIRequest::isValid(void) const
@@ -45,7 +46,7 @@ void CGIRequest::initScriptArguments(Request const &r)
 {
 	std::vector<std::string> args;
 
-	int         i = this->fileScript.find_first_of(".");
+	int         i = this->fileScript.find_last_of(".");
 	std::string ext = std::string(fileScript.begin() + i + 1, fileScript.end());
 
 	if (ext == "php")
@@ -153,18 +154,4 @@ bool CGIRequest::isValidScriptLocation(std::string const &resource,
 		}
 	}
 	return false;
-}
-
-void CGIRequest::initLocation(std::string const &resource, Connection &connection)
-{
-	std::vector<location_t> arr = connection.config.getLocations();
-
-	for (size_t i = 0; i < arr.size(); i++)
-	{
-		if (arr[i].location == resource)
-		{
-			this->location = arr[i].location;
-			this->fileScript = arr[i].cgi.path;
-		}
-	}
 }

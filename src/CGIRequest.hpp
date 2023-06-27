@@ -17,11 +17,10 @@ class Connection;
 class CGIRequest
 {
   private:
-	char **scriptArgs;
-	char **envp;
-	int    fd;
-
-	void initLocation(std::string const &resource, Connection &connection);
+	char      **scriptArgs;
+	char      **envp;
+	int         fd;
+	Connection &_connection;
 
   public:
 	CGIRequest(void);
@@ -31,7 +30,6 @@ class CGIRequest
 	std::string fileScript;
 	std::string script;
 	std::string portNumber;
-	std::string location;
 
 	bool        isValid(void) const;
 	void        exec(Request const &request, int const connectionPortNumber);
