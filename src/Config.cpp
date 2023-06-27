@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 08:42:30 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/27 17:52:06 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,12 +238,10 @@ int Config::_setResponseIsDir(string &value)
 
 int Config::_setCGI(string &value)
 {
-	cgi_t cgi;
-	cgi.path = value;
-
+	if (value.find(" ") != std::string::npos)
+		return 1;
 	vector<location_t>::reference location = _locations.back();
-
-	location.cgi = cgi;
+	location.cgi_pass = value;
 	return 0;
 }
 
@@ -304,7 +302,7 @@ bool Config::hasCGI(std::string path) const
 	for (it = locations.begin(); it != locations.end(); ++it)
 	{
 		// If the file extension is among the CGI extensions, it is a CGI
-		if (it->cgi.path.find(fileExtenstion) != string::npos)
+		if (it->cgi_pass.find(fileExtenstion) != string::npos)
 			return true;
 	}
 	return false;
