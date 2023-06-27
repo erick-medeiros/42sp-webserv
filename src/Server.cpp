@@ -70,10 +70,8 @@ int Server::getPort()
 	return ntohs(address.sin_port);
 }
 
-std::string Server::getRequestData(Request *request)
+std::string Server::getRequestData(int clientSocket)
 {
-	int clientSocket = request->getFd();
-
 	int  buffSize = 1024;
 	char buff[buffSize];
 
@@ -109,7 +107,7 @@ Response Server::handleRequest(Connection &connection)
 {
 	Request    &request = connection.request;
 	Config     &config = connection.config;
-	Response    response(request);
+	Response    response(connection.fd);
 	std::string requestMethod = request.getMethod();
 	std::string requestPath = request.getResourcePath();
 
@@ -127,7 +125,7 @@ Response Server::handleRequest(Connection &connection)
 			cgi.exec();
 
 			std::stringstream ss;
-			ss << connection.request.getFd();
+			ss << connection.fd;
 			std::string const tempFile(CGI_RESPONSE + ss.str());
 			response.loadFile(tempFile);
 			std::remove(tempFile.c_str());

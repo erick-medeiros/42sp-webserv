@@ -16,7 +16,7 @@ class Response
 {
   public:
 	// Constructor
-	Response(const Request &request);
+	Response(int clientFd);
 	Response();
 	~Response();
 

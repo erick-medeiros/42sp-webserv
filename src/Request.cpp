@@ -159,12 +159,6 @@ void Request::parseHeaders()
 	unparsed = iss.str().substr(iss.tellg()); // Keep the remaining unparsed part
 }
 
-// getters
-int Request::getFd(void) const
-{
-	return this->fd;
-}
-
 std::map<std::string, std::string> Request::getStartLine(void) const
 {
 	return this->startLine;

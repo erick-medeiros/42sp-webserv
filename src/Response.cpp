@@ -108,10 +108,7 @@ void Response::addContentType(const std::string &fileExtenstion)
 
 // TODO: Não vamos mais criar uma response a partir de um request,
 // o requestHandler do server confere a config e cria a response
-Response::Response(const Request &request) : statusCode(200)
-{
-	this->clientFd = request.getFd();
-}
+Response::Response(int clientFd) : statusCode(200), clientFd(clientFd) {}
 
 void Response::parse(const Request &request)
 {
