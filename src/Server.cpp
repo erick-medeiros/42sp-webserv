@@ -137,7 +137,7 @@ int Server::handleRequest(Connection &connection)
 	}
 
 	// Request asked for a file that does not exist
-	if (!request.isCgiEnabled() && !utils::pathExists(fullPath))
+	if (!utils::pathExists(fullPath))
 	{
 		response.setStatus(HttpStatus::NOT_FOUND);
 		return 0;

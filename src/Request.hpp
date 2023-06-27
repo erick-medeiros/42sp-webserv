@@ -45,7 +45,6 @@ class Request
 	bool                               headersParsed;
 	bool                               URIParsed;
 	bool                               bodyParsed;
-	bool                               cgiState;
 
   public:
 	Request(void);
@@ -63,9 +62,7 @@ class Request
 	std::string                        getHeaderValue(std::string const) const;
 	bool isValidMethod(std::string const &requestMethod) const;
 	bool isValidHttpVersion(std::string &requestVersion) const;
-	bool isCgiEnabled(void) const;
 	bool isParsed(void) const;
-	void setCgiAs(bool newState);
 	void setErrorCode(int errorCode);
 };
 

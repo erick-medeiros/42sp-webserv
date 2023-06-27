@@ -2,7 +2,7 @@
 
 Request::Request()
     : errorCode(0), contentLength(0), startLineParsed(false), headersParsed(false),
-      bodyParsed(false), cgiState(false)
+      bodyParsed(false)
 {
 }
 
@@ -277,19 +277,9 @@ bool Request::isValidHttpVersion(std::string &requestVersion) const
 	}
 }
 
-bool Request::isCgiEnabled(void) const
-{
-	return this->cgiState;
-}
-
 bool Request::isParsed(void) const
 {
 	return this->startLineParsed && this->headersParsed && this->bodyParsed;
-}
-
-void Request::setCgiAs(bool newState)
-{
-	this->cgiState = newState;
 }
 
 void Request::setErrorCode(int errorCode)
