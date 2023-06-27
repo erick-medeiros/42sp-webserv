@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 00:17:02 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/27 00:37:47 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,6 @@ int loop(std::string path_config)
 			}
 
 			Connection *connection = reinterpret_cast<Connection *>(channel->ptr);
-			Request    *request = reinterpret_cast<Request *>(&connection->request);
 
 			if (event.events & EPOLLERR)
 			{
@@ -120,9 +119,9 @@ int loop(std::string path_config)
 				try
 				{
 					std::string rawRequest = Server::getRequestData(connection->fd);
-					request->parse(rawRequest);
-					std::cout << *request << std::endl;
-					if (request->isParsed())
+					connection->request.parse(rawRequest);
+					std::cout << connection->request << std::endl;
+					if (connection->request.isParsed())
 					{
 						epoll_data_t data = {channel};
 						epoll.modify(connection->fd, data, EPOLLOUT);
