@@ -150,6 +150,27 @@ void Response::setCustomErrorPage(int statusCode, const std::string &path)
 	customErrorPages[statusCode] = path;
 }
 
+void Response::createWelcomePage(void)
+{
+	std::string page = "<html>"
+	                   "<head>"
+	                   "<title>Welcome to Webserver</title>"
+	                   "<style>body{margin:1em;font-family:sans-serif;font-size:"
+	                   "large}code{background:#b6fff2;border-radius:.2em;padding:."
+	                   "2em}</style>"
+	                   "</head>"
+	                   "<body>"
+	                   "<h2>Welcome to <code>Webserver</code></h2>"
+	                   "<p>"
+	                   "If you see this page, <strong>Webserver</strong>"
+	                   "is successfully installed and working."
+	                   "<br>Further configuration is required."
+	                   "</p>"
+	                   "</body>"
+	                   "</html>";
+	setBody(page);
+}
+
 void Response::createErrorPage()
 {
 	std::stringstream ss;

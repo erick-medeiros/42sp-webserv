@@ -41,6 +41,7 @@ class Response
 	void        sendHttpResponse(void);
 	std::string getReasonPhrase(void) const;
 	void        setCustomErrorPage(int statusCode, const std::string &path);
+	void        createWelcomePage();
 
   private:
 	// Attributes
