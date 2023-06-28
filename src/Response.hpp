@@ -16,7 +16,6 @@ class Response
 {
   public:
 	// Constructor
-	Response(const Request &request);
 	Response();
 	~Response();
 
@@ -38,7 +37,6 @@ class Response
 	void        loadFile(const std::string &path);
 	void        listDir(const std::string &path);
 	void        prepareMessage(void);
-	void        sendHttpResponse(void);
 	std::string getReasonPhrase(void) const;
 	void        setCustomErrorPage(int statusCode, const std::string &path);
 	void        createWelcomePage();
@@ -46,7 +44,6 @@ class Response
   private:
 	// Attributes
 	int                                statusCode;
-	int                                clientFd;
 	std::map<std::string, std::string> headers;
 	std::string                        body;
 	std::string                        message;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
+/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 09:26:18 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/18 15:51:19 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/27 00:42:57 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ class Connection
 
 	Connection(Server &server);
 	~Connection(void);
+
+	int sendHttpResponse(void);
 
 	int disconnect();
 

@@ -67,6 +67,8 @@ tests-integration: $(NAME)
 
 retests: fclean tests
 
+all-tests: $(NAME) leaks tests tests-integration
+
 -include $(DEP)
 
 up:
@@ -76,4 +78,4 @@ up:
 down:
 	docker-compose down --rmi all --volumes
 
-.PHONY: all clean fclean re leaks tests retests up down
+.PHONY: all clean fclean re leaks tests retests all-tests up down

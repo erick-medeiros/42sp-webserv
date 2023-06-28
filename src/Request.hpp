@@ -14,8 +14,6 @@
 #include "log_utils.hpp"
 #include "utils.hpp"
 
-#define CGI_RESPONSE "CGIResponse-"
-
 enum
 {
 	GET,
@@ -32,7 +30,6 @@ enum
 class Request
 {
   private:
-	int                                fd;
 	int                                errorCode;
 	int                                contentLength;
 	std::map<std::string, std::string> startLine;
@@ -48,10 +45,9 @@ class Request
 	bool                               headersParsed;
 	bool                               URIParsed;
 	bool                               bodyParsed;
-	bool                               cgiState;
 
   public:
-	Request(int fd);
+	Request(void);
 	~Request(void);
 	void parse(std::string const rawRequest);
 
@@ -64,12 +60,9 @@ class Request
 	std::string                        getMethod(void) const;
 	std::string                        getUrl(void) const;
 	std::string                        getHeaderValue(std::string const) const;
-	int                                getFd(void) const;
 	bool isValidMethod(std::string const &requestMethod) const;
 	bool isValidHttpVersion(std::string &requestVersion) const;
-	bool isCgiEnabled(void) const;
 	bool isParsed(void) const;
-	void setCgiAs(bool newState);
 	void setErrorCode(int errorCode);
 };
 

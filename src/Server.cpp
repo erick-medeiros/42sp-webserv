@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "utils.hpp"
 
 Server::Server(void) : _serverSocket(0) {}
 
@@ -69,10 +70,8 @@ int Server::getPort()
 	return ntohs(address.sin_port);
 }
 
-std::string Server::getRequestData(Request *request)
+std::string Server::getRequestData(int clientSocket)
 {
-	int clientSocket = request->getFd();
-
 	int  buffSize = 1024;
 	char buff[buffSize];
 
@@ -104,13 +103,30 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-Response Server::handleRequest(const Request &request)
+int Server::handleRequest(Connection &connection)
 {
-	Response    response(request);
+	Request    &request = connection.request;
+	Config     &config = connection.config;
+	Response   &response = connection.response;
 	std::string requestMethod = request.getMethod();
 	std::string requestPath = request.getResourcePath();
-	std::string serverRoot = "."; // TODO: Pegar o server root da config
+
+	std::string serverRoot = ".";
+
 	std::string fullPath = serverRoot + requestPath;
+
+	std::vector<location_t> locations = config.getLocations();
+	for (size_t i = 0; i < locations.size(); i++)
+	{
+		std::string resource = serverRoot + locations[i].location + requestPath;
+		if (utils::isFile(resource))
+		{
+			CGIRequest cgi(resource, connection);
+			cgi.exec();
+			response.loadFile(cgi.getFileName());
+			return 0;
+		}
+	}
 
 	// Change default error pages with config error pages
 	std::map<int, std::string>           errorPages = _config.getErrorPages();
@@ -121,10 +137,10 @@ Response Server::handleRequest(const Request &request)
 	}
 
 	// Request asked for a file that does not exist
-	if (!request.isCgiEnabled() && !utils::pathExists(fullPath))
+	if (!utils::pathExists(fullPath))
 	{
 		response.setStatus(HttpStatus::NOT_FOUND);
-		return response;
+		return 0;
 	}
 
 	// -- SITUATIONS WITH EARLY RETURN --
@@ -149,14 +165,6 @@ Response Server::handleRequest(const Request &request)
 	// if (std::find(methods.begin(), methods.end(), requestMethod) == methods.end())
 	// {
 	// 	response.setStatus(HttpStatus::METHOD_NOT_ALLOWED);
-	// 	return response;
-	// }
-
-	// // Request is a CGI script
-	// if (_config.isCGI(requestPath) && CGIRequest::isValid(requestPath))
-	// {
-	// 	std::string scriptOutput = CGIRequest::executeScript(requestPath);
-	// 	response.setBody(scriptOutput);
 	// 	return response;
 	// }
 
@@ -201,7 +209,7 @@ Response Server::handleRequest(const Request &request)
 		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
 	}
 
-	return response;
+	return 0;
 }
 
 // --- Helper functions ---
@@ -213,36 +221,4 @@ sockaddr_in Server::createServerAddress(int port)
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons(port);
 	return address;
-}
-
-void Server::handleCGI(Connection &connection)
-{
-	std::string resource = connection.request.getResourcePath();
-	resource = trim(resource);
-
-	if (CGIRequest::isValidScriptLocation(resource, connection))
-	{
-		CGIRequest cgi(resource, connection);
-
-		if (cgi.isValid())
-		{
-			connection.request.setCgiAs(true);
-			int status;
-			int pid = fork();
-			if (pid == 0)
-			{
-				cgi.exec(connection.request, connection.config.getPort());
-			}
-			waitpid(pid, &status, 0);
-		}
-		else
-		{
-			connection.request.setErrorCode(HttpStatus::NOT_FOUND);
-			connection.request.setCgiAs(false);
-		}
-	}
-	else
-	{
-		connection.request.setCgiAs(false);
-	}
 }

@@ -1,8 +1,8 @@
 #include "Request.hpp"
 
-Request::Request(int fd)
-    : fd(fd), errorCode(0), contentLength(0), startLineParsed(false),
-      headersParsed(false), bodyParsed(false), cgiState(false)
+Request::Request()
+    : errorCode(0), contentLength(0), startLineParsed(false), headersParsed(false),
+      bodyParsed(false)
 {
 }
 
@@ -159,12 +159,6 @@ void Request::parseHeaders()
 	unparsed = iss.str().substr(iss.tellg()); // Keep the remaining unparsed part
 }
 
-// getters
-int Request::getFd(void) const
-{
-	return this->fd;
-}
-
 std::map<std::string, std::string> Request::getStartLine(void) const
 {
 	return this->startLine;
@@ -283,19 +277,9 @@ bool Request::isValidHttpVersion(std::string &requestVersion) const
 	}
 }
 
-bool Request::isCgiEnabled(void) const
-{
-	return this->cgiState;
-}
-
 bool Request::isParsed(void) const
 {
 	return this->startLineParsed && this->headersParsed && this->bodyParsed;
-}
-
-void Request::setCgiAs(bool newState)
-{
-	this->cgiState = newState;
 }
 
 void Request::setErrorCode(int errorCode)
