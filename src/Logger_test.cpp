@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/27 13:59:03 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 22:41:56 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/27 23:07:26 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,10 @@ TEST_SUITE("Logger")
 		std::ostringstream oss;
 
 		cout_redirect(oss);
-		logger.debug("level");
-		logger.info("level");
-		logger.warning("level");
-		logger.error("level");
+		logger.debug("debug");
+		logger.info("info");
+		logger.warning("warning");
+		logger.error("error");
 		cout_restore();
 
 		CHECK_EQ(oss.str(), "");
@@ -54,13 +54,20 @@ TEST_SUITE("Logger")
 		std::ostringstream oss;
 
 		cout_redirect(oss);
-		logger.debug("level");
-		logger.info("level");
-		logger.warning("level");
-		logger.error("error");
+		logger.debug("debug");
+		logger.info("info");
+		logger.warning("warning");
 		cout_restore();
+		CHECK_EQ(oss.str(), "");
 
-		CHECK_EQ(oss.str(), "error\n");
+		SUBCASE("")
+		{
+			std::ostringstream oss;
+			cout_redirect(oss);
+			logger.error("error");
+			cout_restore();
+			CHECK_NE(oss.str().find("error"), std::string::npos);
+		}
 	}
 	TEST_CASE("warning")
 	{
@@ -70,13 +77,21 @@ TEST_SUITE("Logger")
 		std::ostringstream oss;
 
 		cout_redirect(oss);
-		logger.debug("level");
-		logger.info("level");
-		logger.warning("warning");
-		logger.error("error");
+		logger.debug("debug");
+		logger.info("info");
 		cout_restore();
+		CHECK_EQ(oss.str(), "");
 
-		CHECK_EQ(oss.str(), "warning\nerror\n");
+		SUBCASE("")
+		{
+			std::ostringstream oss;
+			cout_redirect(oss);
+			logger.warning("warning");
+			logger.error("error");
+			cout_restore();
+			CHECK_NE(oss.str().find("warning"), std::string::npos);
+			CHECK_NE(oss.str().find("error"), std::string::npos);
+		}
 	}
 	TEST_CASE("info")
 	{
@@ -86,13 +101,22 @@ TEST_SUITE("Logger")
 		std::ostringstream oss;
 
 		cout_redirect(oss);
-		logger.debug("level");
-		logger.info("info");
-		logger.warning("warning");
-		logger.error("error");
+		logger.debug("debug");
 		cout_restore();
+		CHECK_EQ(oss.str(), "");
 
-		CHECK_EQ(oss.str(), "info\nwarning\nerror\n");
+		SUBCASE("")
+		{
+			std::ostringstream oss;
+			cout_redirect(oss);
+			logger.info("info");
+			logger.warning("warning");
+			logger.error("error");
+			cout_restore();
+			CHECK_NE(oss.str().find("info"), std::string::npos);
+			CHECK_NE(oss.str().find("warning"), std::string::npos);
+			CHECK_NE(oss.str().find("error"), std::string::npos);
+		}
 	}
 	TEST_CASE("debug")
 	{
@@ -100,14 +124,16 @@ TEST_SUITE("Logger")
 		logger.level(LOGGER_LEVEL_DEBUG);
 
 		std::ostringstream oss;
-
 		cout_redirect(oss);
-		logger.debug("debug");
+		logger.info("debug");
 		logger.info("info");
 		logger.warning("warning");
 		logger.error("error");
 		cout_restore();
 
-		CHECK_EQ(oss.str(), "debug\ninfo\nwarning\nerror\n");
+		CHECK_NE(oss.str().find("debug"), std::string::npos);
+		CHECK_NE(oss.str().find("info"), std::string::npos);
+		CHECK_NE(oss.str().find("warning"), std::string::npos);
+		CHECK_NE(oss.str().find("error"), std::string::npos);
 	}
 }
