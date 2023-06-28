@@ -67,7 +67,6 @@ subfolders() {
 run_all_tests() {
 	for f in $(subfolders $TEST_FOLDER); do
 		run $f
-		sleep 0.5
 	done
 	success
 }

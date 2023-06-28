@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/24 17:13:58 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/27 00:44:39 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,6 @@ int loop(std::string path_config)
 			}
 
 			Connection *connection = reinterpret_cast<Connection *>(channel->ptr);
-			Request    *request = reinterpret_cast<Request *>(&connection->request);
 
 			if (event.events & EPOLLERR)
 			{
@@ -119,14 +118,13 @@ int loop(std::string path_config)
 			{
 				try
 				{
-					std::string rawRequest = Server::getRequestData(request);
-					request->parse(rawRequest);
-					std::cout << *request << std::endl;
-					if (request->isParsed())
+					std::string rawRequest = Server::getRequestData(connection->fd);
+					connection->request.parse(rawRequest);
+					std::cout << connection->request << std::endl;
+					if (connection->request.isParsed())
 					{
 						epoll_data_t data = {channel};
 						epoll.modify(connection->fd, data, EPOLLOUT);
-						Server::handleCGI(*connection);
 					}
 				}
 				catch (std::exception const &e)
@@ -141,8 +139,8 @@ int loop(std::string path_config)
 			// Response
 			if (event.events & EPOLLOUT)
 			{
-				Response response = connection->server.handleRequest(*request);
-				response.sendHttpResponse();
+				connection->server.handleRequest(*connection);
+				connection->sendHttpResponse();
 				removeConnection(channel, epoll);
 				continue;
 			}

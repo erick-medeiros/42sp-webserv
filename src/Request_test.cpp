@@ -3,8 +3,6 @@
 
 typedef std::map<std::string, std::string> map;
 
-#define TEST_FD 42
-
 TEST_CASE("Client start line request")
 {
 	struct s_tt
@@ -35,12 +33,12 @@ TEST_CASE("Client start line request")
 	{
 		if (tt[i].expected < 3)
 		{
-			Request req(TEST_FD);
+			Request req;
 			CHECK_THROWS_AS(req.parse(tt[i].request), std::runtime_error);
 		}
 		else
 		{
-			Request req(TEST_FD);
+			Request req;
 			req.parse(tt[i].request);
 			map requestStartLine = req.getStartLine();
 
@@ -82,12 +80,12 @@ TEST_CASE("Client request headers")
 
 		if (tt[i].expected == -1)
 		{
-			Request req(TEST_FD);
+			Request req;
 			CHECK_THROWS_AS(req.parse(request), std::runtime_error);
 		}
 		else
 		{
-			Request req(TEST_FD);
+			Request req;
 			req.parse(request);
 			map requestHeaders = req.getHeaders();
 
@@ -120,7 +118,7 @@ TEST_CASE("Client request body")
 	while (++i < n)
 	{
 		std::string const request = tt[i].startLine + tt[i].headers + tt[i].body;
-		Request           req(TEST_FD);
+		Request           req;
 		req.parse(request);
 		std::string const requestBody = req.getBody();
 
@@ -150,7 +148,7 @@ TEST_CASE("getResourcePath")
 	while (++i < n)
 	{
 		std::string const request = tt[i].startLine;
-		Request           req(TEST_FD);
+		Request           req;
 		req.parse(request);
 		std::string const requestPath = req.getResourcePath();
 
@@ -181,7 +179,7 @@ TEST_CASE("getResourceQuery")
 	while (++i < n)
 	{
 		std::string const request = tt[i].startLine;
-		Request           req(TEST_FD);
+		Request           req;
 		req.parse(request);
 		std::string const requestPath = req.getResourceQuery();
 
@@ -211,7 +209,7 @@ TEST_CASE("getAllParams")
 	while (++i < n)
 	{
 		std::string const request = tt[i].startLine;
-		Request           req(TEST_FD);
+		Request           req;
 		req.parse(request);
 		std::vector<std::string> const params = req.getAllParams();
 
@@ -237,7 +235,7 @@ TEST_CASE("getMethod")
 	while (++i < n)
 	{
 		std::string const request = tt[i].startLine;
-		Request           req(TEST_FD);
+		Request           req;
 		req.parse(request);
 		std::string const method = req.getMethod();
 
@@ -263,7 +261,7 @@ TEST_CASE("getUrl")
 	while (++i < n)
 	{
 		std::string const request = tt[i].startLine;
-		Request           req(TEST_FD);
+		Request           req;
 		req.parse(request);
 		std::string const url = req.getUrl();
 
@@ -298,13 +296,13 @@ TEST_CASE("getHeaderValue")
 		std::string const request = tt[i].header;
 		if (tt[i].expectException)
 		{
-			Request req(TEST_FD);
+			Request req;
 			req.parse(request);
 			CHECK_THROWS_AS(req.getHeaderValue(tt[i].value), std::runtime_error);
 		}
 		else
 		{
-			Request req(TEST_FD);
+			Request req;
 			req.parse(request);
 			std::string const headerValue = req.getHeaderValue(tt[i].value);
 
@@ -341,12 +339,12 @@ TEST_CASE("isValidMethod")
 		std::string const request = tt[i].header;
 		if (tt[i].expected == false)
 		{
-			Request req(TEST_FD);
+			Request req;
 			CHECK_THROWS_AS(req.parse(request), std::runtime_error);
 		}
 		else
 		{
-			Request req(TEST_FD);
+			Request req;
 			req.parse(request);
 			std::string const requestMethod = req.getMethod();
 			bool              isValidMethod = req.isValidMethod(requestMethod);
@@ -376,13 +374,13 @@ TEST_CASE("isValidHttpVersion")
 		std::string const request = tt[i].header;
 		if (tt[i].expected == false)
 		{
-			Request req(TEST_FD);
+			Request req;
 
 			CHECK_THROWS_AS(req.parse(request), std::runtime_error);
 		}
 		else
 		{
-			Request req(TEST_FD);
+			Request req;
 			req.parse(request);
 			std::string const requestMethod = req.getMethod();
 			bool              isValidMethod = req.isValidMethod(requestMethod);

@@ -1,51 +1,65 @@
 #include "CGIRequest.hpp"
 
-CGIRequest::CGIRequest(void) {}
-
-CGIRequest::~CGIRequest(void) {}
+CGIRequest::~CGIRequest(void)
+{
+	std::remove(getFileName().c_str());
+}
 
 CGIRequest::CGIRequest(std::string const &resource, Connection &connection)
-    : script(""), portNumber("")
+    : _connection(connection), script(""), portNumber("")
 {
-	this->initLocation(resource, connection);
+	this->fileScript = resource;
+	_fileName = CGI_RESPONSE + utils::to_string(connection.fd);
 }
 
-bool CGIRequest::isValid(void) const
+int CGIRequest::exec(void)
 {
-	struct stat buff;
-	return (stat(this->fileScript.c_str(), &buff) == 0);
+	int status;
+	int pid = fork();
+	if (pid == 0)
+	{
+		std::stringstream ss;
+		ss << _connection.config.getPort();
+		this->portNumber = ss.str();
+
+		prepareCGIRequest();
+		executeCGIScript();
+		// error
+		exit(1);
+	}
+	waitpid(pid, &status, 0);
+	if (WIFEXITED(status))
+		status = WEXITSTATUS(status);
+	else
+		status = 1;
+	return status;
 }
 
-void CGIRequest::exec(Request const &request, int const connectionPortNumber)
+std::string const &CGIRequest::getFileName(void) const
+{
+	return _fileName;
+}
+
+void CGIRequest::prepareCGIRequest()
+{
+	initTemporaryDescriptor();
+	initScriptArguments();
+	initEnviromentVariables();
+}
+
+void CGIRequest::initTemporaryDescriptor()
 {
 	std::stringstream ss;
-	ss << connectionPortNumber;
-	this->portNumber = ss.str();
-
-	prepareCGIRequest(request);
-	executeCGIScript();
-}
-
-void CGIRequest::prepareCGIRequest(Request const &request)
-{
-	initTemporaryDescriptor(request);
-	initScriptArguments(request);
-	initEnviromentVariables(request);
-}
-
-void CGIRequest::initTemporaryDescriptor(Request const &r)
-{
-	std::stringstream ss;
-	ss << r.getFd();
+	ss << _connection.fd;
 	std::string const tempFile(CGI_RESPONSE + ss.str());
 	this->fd = open(tempFile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
 }
 
-void CGIRequest::initScriptArguments(Request const &r)
+void CGIRequest::initScriptArguments()
 {
 	std::vector<std::string> args;
 
-	int         i = this->fileScript.find_first_of(".");
+	int         i = this->fileScript.find_last_of(".");
 	std::string ext = std::string(fileScript.begin() + i + 1, fileScript.end());
 
 	if (ext == "php")
@@ -55,20 +69,22 @@ void CGIRequest::initScriptArguments(Request const &r)
 
 	args.push_back(this->script);
 	args.push_back(this->fileScript);
-	args.push_back(r.getBody());
+	args.push_back(_connection.request.getBody());
 	this->scriptArgs = createArrayOfStrings(args);
 }
 
-void CGIRequest::initEnviromentVariables(Request const &request)
+void CGIRequest::initEnviromentVariables()
 {
 	std::vector<std::string> env;
 	std::string              httpVersion;
+
+	Request const &request = _connection.request;
 
 	httpVersion = request.getStartLine()["version"];
 	env.push_back("SERVER_PROTOCOL=" + httpVersion);
 
 	env.push_back("SERVER_PORT=" + this->portNumber);
-	env.push_back(getContentLength(request));
+	env.push_back(getContentLength());
 
 	env.push_back("HTTP_HOST=" + request.getHeaderValue("host"));
 	env.push_back("HTTP_ACCEPT=" + request.getHeaderValue("accept"));
@@ -107,8 +123,9 @@ void CGIRequest::executeCGIScript(void)
 	}
 }
 
-std::string CGIRequest::getContentLength(Request const &r) const
+std::string CGIRequest::getContentLength() const
 {
+	Request const &r = _connection.request;
 	if (r.getBody().size() > 0)
 	{
 		std::string len = r.getHeaderValue("content-length");
@@ -139,32 +156,4 @@ void CGIRequest::destroyArrayOfStrings(char **envp) const
 		delete[] * p;
 	}
 	delete[] envp;
-}
-
-bool CGIRequest::isValidScriptLocation(std::string const &resource,
-                                       Connection        &connection)
-{
-	std::vector<location_t> arr = connection.config.getLocations();
-	for (size_t i = 0; i < arr.size(); i++)
-	{
-		if (arr[i].location == resource)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-void CGIRequest::initLocation(std::string const &resource, Connection &connection)
-{
-	std::vector<location_t> arr = connection.config.getLocations();
-
-	for (size_t i = 0; i < arr.size(); i++)
-	{
-		if (arr[i].location == resource)
-		{
-			this->location = arr[i].location;
-			this->fileScript = arr[i].cgi.path;
-		}
-	}
 }
