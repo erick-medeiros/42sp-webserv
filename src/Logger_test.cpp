@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/27 13:59:03 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 22:24:12 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/27 22:38:47 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ TEST_SUITE("Logger")
 	}
 	TEST_CASE("debug")
 	{
-		Logger::level(LOGGER_LEVEL_INFO);
+		Logger::level(LOGGER_LEVEL_DEBUG);
 
 		std::ostringstream oss;
 
