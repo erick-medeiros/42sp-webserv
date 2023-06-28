@@ -197,6 +197,11 @@ int Server::handleRequest(Connection &connection)
 		}
 	}
 
+	if (requestPath == "/")
+	{
+		response.createWelcomePage();
+	}
+
 	// Request is a regular file
 	if (utils::isFile(fullPath))
 	{

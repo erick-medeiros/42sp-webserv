@@ -141,7 +141,7 @@ void Response::createWelcomePage(void)
 	                   "<body>"
 	                   "<h2>Welcome to <code>Webserver</code></h2>"
 	                   "<p>"
-	                   "If you see this page, <strong>Webserver</strong>"
+	                   "If you see this page, <strong>Webserver</strong> "
 	                   "is successfully installed and working."
 	                   "<br>Further configuration is required."
 	                   "</p>"
