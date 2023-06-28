@@ -6,17 +6,17 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/27 13:59:06 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 22:22:05 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/27 22:51:01 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Logger.hpp"
-#include <cstdarg>
-#include <iostream>
-#include <ostream>
 
-e_log_level   Logger::_level = LOGGER_LEVEL_INFO;
-std::ostream &Logger::_stream = std::cout;
+Logger::Logger() : _stream(std::cout), _level(LOGGER_LEVEL_INFO) {}
+
+Logger::Logger(std::ostream &stream) : _stream(stream), _level(LOGGER_LEVEL_INFO) {}
+
+Logger::~Logger() {}
 
 void Logger::level(e_log_level level)
 {
