@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/16 11:33:15 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/27 23:35:22 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 #define EPOLLWRAPPER_HPP
 
 #include "Config.hpp"
+#include "Logger.hpp"
 #include "Request.hpp"
-#include "log_utils.hpp"
 #include <cstddef>
 #include <cstring>
 #include <errno.h>
@@ -23,8 +23,6 @@
 #include <iostream>
 #include <sys/epoll.h>
 #include <unistd.h>
-
-using namespace std;
 
 typedef struct
 {

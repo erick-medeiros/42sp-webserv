@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/27 13:59:08 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 23:14:10 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/27 23:25:07 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,5 +49,8 @@ class Logger
 	void warning(std::string msg);
 	void error(std::string msg);
 };
+
+// global
+static Logger logger;
 
 #endif /* LOGGER_HPP */
