@@ -6,11 +6,12 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/28 23:14:20 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/29 00:12:58 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "EpollWrapper.hpp"
+#include "Logger.hpp"
 #include "doctest.h"
 #include <cstdlib>
 #include <iostream>
@@ -36,6 +37,7 @@ TEST_SUITE("EpollWrapper")
 {
 	TEST_CASE("constructor")
 	{
+		Logger::level = LOGGER_LEVEL_NONE;
 		EpollWrapper(1);
 	}
 	TEST_CASE("add file descriptor")
@@ -74,10 +76,8 @@ TEST_SUITE("EpollWrapper")
 			CHECK_EQ(event.events, EPOLLIN);
 		}
 		{
-			freopen("/dev/null", "w", stderr);
 			epoll_data_t data = {0};
 			CHECK_NE(epoll.modify(pipefd[PIPE_WRITE], data, EPOLLOUT), 0);
-			freopen("/dev/tty", "w", stderr);
 		}
 
 		_closepipe(pipefd);
@@ -92,9 +92,7 @@ TEST_SUITE("EpollWrapper")
 		data.fd = pipefd[PIPE_READ];
 		CHECK_EQ(epoll.add(pipefd[PIPE_READ], data, EPOLLIN), 0);
 		CHECK_EQ(epoll.remove(pipefd[PIPE_READ]), 0);
-		freopen("/dev/null", "w", stderr);
 		CHECK_EQ(epoll.remove(pipefd[PIPE_WRITE]), -1);
-		freopen("/dev/tty", "w", stderr);
 
 		_closepipe(pipefd);
 	}

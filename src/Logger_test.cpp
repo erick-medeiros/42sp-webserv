@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/27 13:59:03 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 23:07:26 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/29 00:14:03 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ TEST_SUITE("Logger")
 	TEST_CASE("none")
 	{
 		Logger logger;
-		logger.level(LOGGER_LEVEL_NONE);
+		Logger::level = LOGGER_LEVEL_NONE;
 
 		std::ostringstream oss;
 
@@ -49,7 +49,7 @@ TEST_SUITE("Logger")
 	TEST_CASE("error")
 	{
 		Logger logger;
-		logger.level(LOGGER_LEVEL_ERROR);
+		Logger::level = LOGGER_LEVEL_ERROR;
 
 		std::ostringstream oss;
 
@@ -72,7 +72,7 @@ TEST_SUITE("Logger")
 	TEST_CASE("warning")
 	{
 		Logger logger;
-		logger.level(LOGGER_LEVEL_WARNING);
+		Logger::level = LOGGER_LEVEL_WARNING;
 
 		std::ostringstream oss;
 
@@ -96,7 +96,7 @@ TEST_SUITE("Logger")
 	TEST_CASE("info")
 	{
 		Logger logger;
-		logger.level(LOGGER_LEVEL_INFO);
+		Logger::level = LOGGER_LEVEL_INFO;
 
 		std::ostringstream oss;
 
@@ -121,7 +121,7 @@ TEST_SUITE("Logger")
 	TEST_CASE("debug")
 	{
 		Logger logger;
-		logger.level(LOGGER_LEVEL_DEBUG);
+		Logger::level = LOGGER_LEVEL_DEBUG;
 
 		std::ostringstream oss;
 		cout_redirect(oss);

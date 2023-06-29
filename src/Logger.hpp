@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/27 13:59:08 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/28 23:19:22 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/29 00:11:27 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,14 +36,14 @@ class Logger
 {
   private:
 	std::ostream &_stream;
-	e_log_level   _level;
 	bool          _color;
 
   public:
+	static e_log_level level;
+
 	Logger();
 	Logger(std::ostream &);
 	~Logger();
-	void level(e_log_level level);
 	void debug(std::string msg);
 	void info(std::string msg);
 	void warning(std::string msg);
