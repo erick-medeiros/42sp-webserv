@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/27 13:59:08 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 23:25:07 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/28 23:19:22 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,6 @@ class Logger
 };
 
 // global
-static Logger logger;
+static Logger log;
 
 #endif /* LOGGER_HPP */
