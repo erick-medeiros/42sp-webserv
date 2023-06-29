@@ -74,3 +74,15 @@ bool utils::end_with(const std::string &text, const std::string &term)
 {
 	return text.substr(text.size() - term.size(), text.size()) == term;
 }
+
+std::string utils::readFile(const std::string &path)
+{
+	std::ifstream     file;
+	std::stringstream buffer;
+
+	file.open(path.c_str());
+	buffer << file.rdbuf();
+	file.close();
+
+	return buffer.str();
+}

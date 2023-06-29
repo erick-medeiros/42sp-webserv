@@ -30,6 +30,7 @@ class CGIRequest
 	std::string script;
 	std::string portNumber;
 	std::string _fileName;
+	std::string _result;
 	std::string getContentLength() const;
 	void        prepareCGIRequest();
 	void        initTemporaryDescriptor();
@@ -43,7 +44,7 @@ class CGIRequest
 	CGIRequest(std::string const &resource, Connection &connection);
 	~CGIRequest(void);
 
-	int exec(void);
+	std::string exec(void);
 
 	std::string const &getFileName(void) const;
 };

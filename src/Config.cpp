@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 08:42:30 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/27 17:52:06 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,18 +238,10 @@ int Config::_setResponseIsDir(string &value)
 
 int Config::_setCGI(string &value)
 {
-	stringstream ss(value);
-	cgi_t        cgi;
-
-	ss >> cgi.path;
-
-	if (!ss.eof())
+	if (value.find(" ") != std::string::npos)
 		return 1;
-
 	vector<location_t>::reference location = _locations.back();
-
-	location.cgi = cgi;
-
+	location.cgi_pass = value;
 	return 0;
 }
 
@@ -281,6 +273,39 @@ map<int, string> const &Config::getErrorPages() const
 vector<location_t> const &Config::getLocations() const
 {
 	return _locations;
+}
+
+// Return the locations that match the path
+vector<location_t> Config::getLocations(std::string path) const
+{
+	vector<location_t>                 locations;
+	vector<location_t>::const_iterator it;
+	for (it = _locations.begin(); it != _locations.end(); ++it)
+	{
+		if (path.find(it->location) == 0)
+			locations.push_back(*it);
+	}
+	// TODO (opcional) ordenar por "nesting" (mais especifico primeiro)
+	return locations;
+}
+
+bool Config::hasCGI(std::string path) const
+{
+	std::string fileExtenstion = path.substr(path.find_last_of(".") + 1);
+
+	// If there is no file extension, it is not a CGI
+	if (fileExtenstion.empty())
+		return false;
+
+	vector<location_t>                 locations = getLocations(path);
+	vector<location_t>::const_iterator it;
+	for (it = locations.begin(); it != locations.end(); ++it)
+	{
+		// If the file extension is among the CGI extensions, it is a CGI
+		if (it->cgi_pass.find(fileExtenstion) != string::npos)
+			return true;
+	}
+	return false;
 }
 
 string Config::readFile(const string &filename)

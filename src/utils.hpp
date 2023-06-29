@@ -11,6 +11,7 @@
 #define RES "\x1b[0m"
 
 #include <dirent.h>
+#include <fstream> // ifstream
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -27,6 +28,7 @@ std::string formatSize(size_t size);
 std::string to_string(int);
 bool        start_with(const std::string &text, const std::string &term);
 bool        end_with(const std::string &text, const std::string &term);
+std::string readFile(const std::string &path);
 } // namespace utils
 
 #endif
