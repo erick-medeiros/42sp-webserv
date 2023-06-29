@@ -1,12 +1,12 @@
 #include "Server.hpp"
-#include "utils.hpp"
 
 Server::Server(void) : _serverSocket(0) {}
 
 void Server::init(Config const &conf)
 {
 	_config = conf;
-	logSuccess("initializing new web server");
+
+	log.info("initializing server in port " + utils::to_string(_config.getPort()));
 
 	listenToPort(_config.getPort());
 }
@@ -108,7 +108,7 @@ int Server::handleRequest(Connection &connection)
 	Request    &request = connection.request;
 	Config     &config = connection.config;
 	Response   &response = connection.response;
-	std::string serverRoot = ".";
+	std::string serverRoot = config.getMainRoot();
 	std::string requestMethod = request.getMethod();
 	std::string requestPath = request.getResourcePath();
 	std::string fullPath = serverRoot + requestPath;
