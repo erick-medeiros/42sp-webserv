@@ -1,7 +1,7 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#include <bits/stdc++.h>
+#include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <iostream>

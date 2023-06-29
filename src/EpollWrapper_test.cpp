@@ -6,11 +6,12 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/08 12:23:13 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/29 00:12:58 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "EpollWrapper.hpp"
+#include "Logger.hpp"
 #include "doctest.h"
 #include <cstdlib>
 #include <iostream>
@@ -36,6 +37,7 @@ TEST_SUITE("EpollWrapper")
 {
 	TEST_CASE("constructor")
 	{
+		Logger::level = LOGGER_LEVEL_NONE;
 		EpollWrapper(1);
 	}
 	TEST_CASE("add file descriptor")
@@ -74,10 +76,8 @@ TEST_SUITE("EpollWrapper")
 			CHECK_EQ(event.events, EPOLLIN);
 		}
 		{
-			freopen("/dev/null", "w", stderr);
 			epoll_data_t data = {0};
 			CHECK_NE(epoll.modify(pipefd[PIPE_WRITE], data, EPOLLOUT), 0);
-			freopen("/dev/tty", "w", stderr);
 		}
 
 		_closepipe(pipefd);
@@ -92,9 +92,7 @@ TEST_SUITE("EpollWrapper")
 		data.fd = pipefd[PIPE_READ];
 		CHECK_EQ(epoll.add(pipefd[PIPE_READ], data, EPOLLIN), 0);
 		CHECK_EQ(epoll.remove(pipefd[PIPE_READ]), 0);
-		freopen("/dev/null", "w", stderr);
 		CHECK_EQ(epoll.remove(pipefd[PIPE_WRITE]), -1);
-		freopen("/dev/tty", "w", stderr);
 
 		_closepipe(pipefd);
 	}
@@ -201,23 +199,23 @@ TEST_SUITE("EpollWrapper::wait")
 			bzero(buff, 3);
 			//
 			read(epoll.events[0].data.fd, buff, size_buff);
-			CHECK_EQ(buff, string("ab"));
+			CHECK_EQ(buff, std::string("ab"));
 			read(epoll.events[1].data.fd, buff, size_buff);
-			CHECK_EQ(buff, string("12"));
+			CHECK_EQ(buff, std::string("12"));
 			CHECK_EQ(epoll.wait(0), 2);
 			//
 			read(epoll.events[0].data.fd, buff, size_buff);
-			CHECK_EQ(buff, string("cd"));
+			CHECK_EQ(buff, std::string("cd"));
 			read(epoll.events[1].data.fd, buff, size_buff);
-			CHECK_EQ(buff, string("34"));
+			CHECK_EQ(buff, std::string("34"));
 			CHECK_EQ(epoll.wait(0), 2);
 			//
 			read(epoll.events[0].data.fd, buff, size_buff);
-			CHECK_EQ(buff, string("ef"));
+			CHECK_EQ(buff, std::string("ef"));
 			CHECK_EQ(epoll.wait(0), 1);
 			//
 			read(epoll.events[1].data.fd, buff, size_buff);
-			CHECK_EQ(buff, string("56"));
+			CHECK_EQ(buff, std::string("56"));
 			CHECK_EQ(epoll.wait(0), 0);
 		}
 

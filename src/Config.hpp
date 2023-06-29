@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 17:51:10 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/28 23:52:53 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,20 +25,18 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
-typedef pair<string, string> pair_string_t;
-typedef list<pair_string_t>  labels_t;
+typedef std::pair<std::string, std::string> pair_string_t;
+typedef std::list<pair_string_t>            labels_t;
 
 typedef struct
 {
-	string         location;
-	vector<string> http_methods;
-	string         http_redirection;
-	string         root;
-	string         directory_listing;
-	string         response_is_dir;
-	std::string    cgi_pass;
+	std::string              location;
+	std::vector<std::string> http_methods;
+	std::string              http_redirection;
+	std::string              root;
+	std::string              directory_listing;
+	std::string              response_is_dir;
+	std::string              cgi_pass;
 } location_t;
 
 typedef unsigned int uint_t;
@@ -53,41 +51,41 @@ class Config
 
 	bool isValid(void) const;
 
-	int add(string label, string value);
+	int add(std::string label, std::string value);
 
-	uint_t const             &getPort(void) const;
-	vector<string> const     &getServerNames(void) const;
-	string const             &getErrorPage(int error);
-	map<int, string> const   &getErrorPages(void) const;
-	size_t const             &getClientBodySize() const;
-	vector<location_t> const &getLocations() const;
-	vector<location_t>        getLocations(std::string path) const;
-	bool                      hasCGI(std::string path) const;
+	uint_t const	                 &getPort(void) const;
+	std::vector<std::string> const   &getServerNames(void) const;
+	std::string const                &getErrorPage(int error);
+	std::map<int, std::string> const &getErrorPages(void) const;
+	size_t const	                 &getClientBodySize() const;
+	std::vector<location_t> const    &getLocations() const;
+	std::vector<location_t>           getLocations(std::string path) const;
+	bool                              hasCGI(std::string path) const;
 
 	// Helpers
 	bool directoryListingEnabled(std::string path) const;
 
-	static string         readFile(const string &filename);
-	static vector<Config> parseConfig(string &filedata);
+	static std::string         readFile(const std::string &filename);
+	static std::vector<Config> parseConfig(std::string &filedata);
 
   private:
-	uint_t             _port;
-	vector<string>     _serverNames;
-	map<int, string>   _errorPage;
-	size_t             _clientBodySize;
-	vector<location_t> _locations;
+	uint_t                     _port;
+	std::vector<std::string>   _serverNames;
+	std::map<int, std::string> _errorPage;
+	size_t                     _clientBodySize;
+	std::vector<location_t>    _locations;
 
-	int _setPort(string &);
-	int _setServerName(string &);
-	int _setErrorPage(string &);
-	int _setClientBodySize(string &);
-	int _setLocation(string &);
-	int _setHttpMethods(string &);
-	int _setHttpRedirection(string &);
-	int _setRoot(string &);
-	int _setDirectoryListing(string &);
-	int _setResponseIsDir(string &);
-	int _setCGI(string &);
+	int _setPort(std::string &);
+	int _setServerName(std::string &);
+	int _setErrorPage(std::string &);
+	int _setClientBodySize(std::string &);
+	int _setLocation(std::string &);
+	int _setHttpMethods(std::string &);
+	int _setHttpRedirection(std::string &);
+	int _setRoot(std::string &);
+	int _setDirectoryListing(std::string &);
+	int _setResponseIsDir(std::string &);
+	int _setCGI(std::string &);
 };
 
 #endif /* CONFIG_HPP */

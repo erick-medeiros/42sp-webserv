@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 00:44:39 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/28 23:18:49 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "EpollWrapper.hpp"
 #include "Request.hpp"
 #include "Server.hpp"
+#include <csignal>
 
 bool running(bool status)
 {
@@ -46,12 +47,12 @@ int loop(std::string path_config)
 	std::signal(SIGINT, shutdown);
 	std::signal(SIGQUIT, shutdown);
 
-	string         file = Config::readFile(path_config);
-	vector<Config> configs = Config::parseConfig(file);
-	Server         servers[configs.size()];
-	EpollWrapper   epoll(MAX_EVENTS * configs.size());
-	Cookie         cookies;
-	channel_t      channelServers[configs.size()];
+	std::string         file = Config::readFile(path_config);
+	std::vector<Config> configs = Config::parseConfig(file);
+	Server              servers[configs.size()];
+	EpollWrapper        epoll(MAX_EVENTS * configs.size());
+	Cookie              cookies;
+	channel_t           channelServers[configs.size()];
 
 	size_t i = 0;
 	while (i < configs.size())
