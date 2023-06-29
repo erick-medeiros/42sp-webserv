@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/28 23:19:41 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/29 09:44:15 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ EpollWrapper::EpollWrapper(size_t maxevents) : _maxevents(maxevents)
 	_epoll_fd = epoll_create(1);
 	if (_epoll_fd == -1)
 	{
-		log.error("epoll_create: " + std::string(strerror(errno)));
+		log.error("epoll_create", strerror(errno));
 	}
 	events = new epoll_event[_maxevents];
 	memset(events, 0, sizeof(epoll_event) * _maxevents);
@@ -30,7 +30,7 @@ int EpollWrapper::add(int fd, epoll_data_t data, uint32_t events)
 	event.data = data;
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, fd, &event) == -1)
 	{
-		log.error("epoll_ctl: " + std::string(strerror(errno)));
+		log.error("epoll_ctl", strerror(errno));
 		return -1;
 	}
 	return 0;
@@ -43,7 +43,7 @@ int EpollWrapper::modify(int fd, epoll_data_t data, uint32_t new_events)
 	event.data = data;
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
-		log.error("epoll_ctl: " + std::string(strerror(errno)));
+		log.error("epoll_ctl", strerror(errno));
 		return -1;
 	}
 	return 0;
@@ -53,7 +53,7 @@ int EpollWrapper::remove(int fd)
 {
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, 0) == -1)
 	{
-		log.error("epoll_ctl: " + std::string(strerror(errno)));
+		log.error("epoll_ctl", strerror(errno));
 		return -1;
 	}
 	return 0;
@@ -64,7 +64,7 @@ int EpollWrapper::wait(int timeout)
 	int fds = epoll_wait(_epoll_fd, events, _maxevents, timeout);
 	if (fds == -1)
 	{
-		log.error("epoll_wait: " + std::string(strerror(errno)));
+		log.error("epoll_wait", strerror(errno));
 	}
 	return fds;
 }
@@ -82,7 +82,7 @@ bool setNonBlocking(int fd)
 		return false;
 	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
 	{
-		log.error("fcntl: " + std::string(strerror(errno)));
+		log.error("fcntl", strerror(errno));
 		return false;
 	}
 	return true;

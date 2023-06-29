@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/27 13:59:06 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/29 09:32:42 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/29 09:33:20 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,4 +84,18 @@ void Logger::error(std::string msg)
 	if (_checkLevel(LOGGER_LEVEL_ERROR))
 		return;
 	_stream << _start() << msg << _end;
+}
+
+void Logger::error(std::string msg, int n)
+{
+	if (_checkLevel(LOGGER_LEVEL_ERROR))
+		return;
+	_stream << _start() << msg << ": " << utils::to_string(n) << _end;
+}
+
+void Logger::error(std::string msg, char *s)
+{
+	if (_checkLevel(LOGGER_LEVEL_ERROR))
+		return;
+	_stream << _start() << msg << ": " << std::string(s) << _end;
 }
