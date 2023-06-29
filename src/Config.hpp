@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/28 23:09:36 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/28 23:52:53 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,18 +30,13 @@ typedef std::list<pair_string_t>            labels_t;
 
 typedef struct
 {
-	std::string path;
-} cgi_t;
-
-typedef struct
-{
 	std::string              location;
 	std::vector<std::string> http_methods;
 	std::string              http_redirection;
 	std::string              root;
 	std::string              directory_listing;
 	std::string              response_is_dir;
-	cgi_t                    cgi;
+	std::string              cgi_pass;
 } location_t;
 
 typedef unsigned int uint_t;
@@ -64,6 +59,8 @@ class Config
 	std::map<int, std::string> const &getErrorPages(void) const;
 	size_t const	                 &getClientBodySize() const;
 	std::vector<location_t> const    &getLocations() const;
+	std::vector<location_t>           getLocations(std::string path) const;
+	bool                              hasCGI(std::string path) const;
 
 	// Helpers
 	bool directoryListingEnabled(std::string path) const;

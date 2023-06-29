@@ -12,7 +12,7 @@ CGIRequest::CGIRequest(std::string const &resource, Connection &connection)
 	_fileName = CGI_RESPONSE + utils::to_string(connection.fd);
 }
 
-int CGIRequest::exec(void)
+std::string CGIRequest::exec(void)
 {
 	int status;
 	int pid = fork();
@@ -32,7 +32,9 @@ int CGIRequest::exec(void)
 		status = WEXITSTATUS(status);
 	else
 		status = 1;
-	return status;
+
+	std::string result = utils::readFile(getFileName());
+	return result;
 }
 
 std::string const &CGIRequest::getFileName(void) const

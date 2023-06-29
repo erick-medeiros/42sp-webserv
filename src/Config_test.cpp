@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/28 23:14:03 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/28 23:52:30 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -308,7 +308,7 @@ TEST_SUITE("location")
 
 		location_t const &location = config.getLocations()[0];
 
-		CHECK_EQ(location.cgi.path, "/bin");
+		CHECK_EQ(location.cgi_pass, "/bin");
 
 		SUBCASE("error")
 		{
@@ -334,8 +334,8 @@ TEST_SUITE("location")
 			location_t const &location_first = config.getLocations()[0];
 			location_t const &location_second = config.getLocations()[1];
 
-			CHECK_EQ(location_first.cgi.path, "/php");
-			CHECK_EQ(location_second.cgi.path, "/python");
+			CHECK_EQ(location_first.cgi_pass, "/php");
+			CHECK_EQ(location_second.cgi_pass, "/python");
 		}
 	}
 }
