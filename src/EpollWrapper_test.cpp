@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 09:37:33 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/08 12:23:13 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/28 23:14:20 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,23 +201,23 @@ TEST_SUITE("EpollWrapper::wait")
 			bzero(buff, 3);
 			//
 			read(epoll.events[0].data.fd, buff, size_buff);
-			CHECK_EQ(buff, string("ab"));
+			CHECK_EQ(buff, std::string("ab"));
 			read(epoll.events[1].data.fd, buff, size_buff);
-			CHECK_EQ(buff, string("12"));
+			CHECK_EQ(buff, std::string("12"));
 			CHECK_EQ(epoll.wait(0), 2);
 			//
 			read(epoll.events[0].data.fd, buff, size_buff);
-			CHECK_EQ(buff, string("cd"));
+			CHECK_EQ(buff, std::string("cd"));
 			read(epoll.events[1].data.fd, buff, size_buff);
-			CHECK_EQ(buff, string("34"));
+			CHECK_EQ(buff, std::string("34"));
 			CHECK_EQ(epoll.wait(0), 2);
 			//
 			read(epoll.events[0].data.fd, buff, size_buff);
-			CHECK_EQ(buff, string("ef"));
+			CHECK_EQ(buff, std::string("ef"));
 			CHECK_EQ(epoll.wait(0), 1);
 			//
 			read(epoll.events[1].data.fd, buff, size_buff);
-			CHECK_EQ(buff, string("56"));
+			CHECK_EQ(buff, std::string("56"));
 			CHECK_EQ(epoll.wait(0), 0);
 		}
 

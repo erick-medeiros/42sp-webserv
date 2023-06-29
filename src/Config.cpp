@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 08:42:30 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/28 23:12:37 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ Config::Config(void) : _port(0), _clientBodySize(1024 * 1024) {}
 
 Config::~Config(void) {}
 
-int Config::add(string label, string value)
+int Config::add(std::string label, std::string value)
 {
 	if (label == "port")
 		return _setPort(value);
@@ -51,10 +51,10 @@ bool Config::isValid(void) const
 	return true;
 }
 
-int Config::_setPort(string &value)
+int Config::_setPort(std::string &value)
 {
-	stringstream ss(value);
-	int          port;
+	std::stringstream ss(value);
+	int               port;
 
 	if (_port != 0)
 	{
@@ -81,7 +81,7 @@ int Config::_setPort(string &value)
 	return 0;
 }
 
-int Config::_setServerName(string &value)
+int Config::_setServerName(std::string &value)
 {
 	if (_serverNames.size() > 0)
 	{
@@ -94,8 +94,8 @@ int Config::_setServerName(string &value)
 		return FAILURE;
 	}
 
-	stringstream ss(value);
-	string       server_name;
+	std::stringstream ss(value);
+	std::string       server_name;
 
 	while (!ss.eof())
 	{
@@ -107,11 +107,11 @@ int Config::_setServerName(string &value)
 	return 0;
 }
 
-int Config::_setErrorPage(string &value)
+int Config::_setErrorPage(std::string &value)
 {
-	stringstream ss(value);
-	int          error = 0;
-	string       page;
+	std::stringstream ss(value);
+	int               error = 0;
+	std::string       page;
 	ss >> error;
 	ss >> page;
 	if (!ss.eof())
@@ -126,9 +126,9 @@ int Config::_setErrorPage(string &value)
 	return 0;
 }
 
-int Config::_setClientBodySize(string &value)
+int Config::_setClientBodySize(std::string &value)
 {
-	stringstream ss(value);
+	std::stringstream ss(value);
 	ss >> _clientBodySize;
 	if (_clientBodySize == 0)
 		return FAILURE;
@@ -147,7 +147,7 @@ int Config::_setClientBodySize(string &value)
 	return 0;
 }
 
-int Config::_setLocation(string &value)
+int Config::_setLocation(std::string &value)
 {
 	location_t location;
 	location.location = value;
@@ -155,17 +155,17 @@ int Config::_setLocation(string &value)
 	return 0;
 }
 
-int Config::_setHttpMethods(string &value)
+int Config::_setHttpMethods(std::string &value)
 {
 	if (_locations.size() == 0)
 		return 1;
 
-	stringstream                  ss(value);
-	vector<location_t>::reference location = _locations.back();
+	std::stringstream                  ss(value);
+	std::vector<location_t>::reference location = _locations.back();
 
 	while (!ss.eof())
 	{
-		string str;
+		std::string str;
 		ss >> str;
 		str = trim(str);
 		if (str == "GET" || str == "POST" || str == "DELETE")
@@ -177,45 +177,45 @@ int Config::_setHttpMethods(string &value)
 	return 0;
 }
 
-int Config::_setHttpRedirection(string &value)
+int Config::_setHttpRedirection(std::string &value)
 {
 	if (_locations.size() == 0)
 		return 1;
-	stringstream                  ss(value);
-	vector<location_t>::reference location = _locations.back();
+	std::stringstream                  ss(value);
+	std::vector<location_t>::reference location = _locations.back();
 
 	location.http_redirection = value;
 
 	return 0;
 }
 
-int Config::_setRoot(string &value)
+int Config::_setRoot(std::string &value)
 {
 	if (_locations.size() == 0)
 		return 1;
-	stringstream                  ss(value);
-	vector<location_t>::reference location = _locations.back();
+	std::stringstream                  ss(value);
+	std::vector<location_t>::reference location = _locations.back();
 
 	location.root = value;
 
 	return 0;
 }
 
-int Config::_setDirectoryListing(string &value)
+int Config::_setDirectoryListing(std::string &value)
 {
 	if (_locations.size() == 0)
 		return 1;
-	stringstream                  ss(value);
-	vector<location_t>::reference location = _locations.back();
+	std::stringstream                  ss(value);
+	std::vector<location_t>::reference location = _locations.back();
 
 	location.directory_listing = value;
 
 	return 0;
 }
 
-bool Config::directoryListingEnabled(string path) const
+bool Config::directoryListingEnabled(std::string path) const
 {
-	vector<location_t>::const_iterator it;
+	std::vector<location_t>::const_iterator it;
 	for (it = _locations.begin(); it != _locations.end(); ++it)
 	{
 		if (it->location == path)
@@ -224,29 +224,29 @@ bool Config::directoryListingEnabled(string path) const
 	return false;
 }
 
-int Config::_setResponseIsDir(string &value)
+int Config::_setResponseIsDir(std::string &value)
 {
 	if (_locations.size() == 0)
 		return 1;
-	stringstream                  ss(value);
-	vector<location_t>::reference location = _locations.back();
+	std::stringstream                  ss(value);
+	std::vector<location_t>::reference location = _locations.back();
 
 	location.response_is_dir = value;
 
 	return 0;
 }
 
-int Config::_setCGI(string &value)
+int Config::_setCGI(std::string &value)
 {
-	stringstream ss(value);
-	cgi_t        cgi;
+	std::stringstream ss(value);
+	cgi_t             cgi;
 
 	ss >> cgi.path;
 
 	if (!ss.eof())
 		return 1;
 
-	vector<location_t>::reference location = _locations.back();
+	std::vector<location_t>::reference location = _locations.back();
 
 	location.cgi = cgi;
 
@@ -258,7 +258,7 @@ uint_t const &Config::getPort(void) const
 	return _port;
 }
 
-vector<string> const &Config::getServerNames(void) const
+std::vector<std::string> const &Config::getServerNames(void) const
 {
 	return _serverNames;
 }
@@ -268,25 +268,25 @@ size_t const &Config::getClientBodySize() const
 	return _clientBodySize;
 }
 
-string const &Config::getErrorPage(int error)
+std::string const &Config::getErrorPage(int error)
 {
 	return _errorPage[error];
 }
 
-map<int, string> const &Config::getErrorPages() const
+std::map<int, std::string> const &Config::getErrorPages() const
 {
 	return _errorPage;
 }
 
-vector<location_t> const &Config::getLocations() const
+std::vector<location_t> const &Config::getLocations() const
 {
 	return _locations;
 }
 
-string Config::readFile(const string &filename)
+std::string Config::readFile(const std::string &filename)
 {
-	ifstream     file(filename.c_str());
-	stringstream buffer;
+	std::ifstream     file(filename.c_str());
+	std::stringstream buffer;
 
 	if (file)
 	{
@@ -302,17 +302,17 @@ string Config::readFile(const string &filename)
 	return buffer.str();
 }
 
-static void _panic(string err)
+static void _panic(std::string err)
 {
-	throw runtime_error("Panic: " + err);
+	throw std::runtime_error("Panic: " + err);
 }
 
-static list<string> _getLineFromFileData(string &filedata)
+static std::list<std::string> _getLineFromFileData(std::string &filedata)
 {
-	list<string> lines;
-	stringstream ss(filedata);
+	std::list<std::string> lines;
+	std::stringstream      ss(filedata);
 
-	string line;
+	std::string line;
 	while (getline(ss, line))
 	{
 		line = trim(line);
@@ -332,26 +332,26 @@ static list<string> _getLineFromFileData(string &filedata)
 	return lines;
 }
 
-static pair<string, string> getLabel(string &line)
+static std::pair<std::string, std::string> getLabel(std::string &line)
 {
-	pair<string, string> content;
-	istringstream        ss(line);
+	std::pair<std::string, std::string> content;
+	std::istringstream                  ss(line);
 	ss >> content.first;
 	content.second = line.substr(content.first.size());
 	content.second = trim(content.second);
 	return content;
 }
 
-static string extractFront(list<string> &lines)
+static std::string extractFront(std::list<std::string> &lines)
 {
-	string str = lines.front();
+	std::string str = lines.front();
 	lines.pop_front();
 	return str;
 }
 
-static list<labels_t> _getLabels(list<string> &lines)
+static std::list<labels_t> _getLabels(std::list<std::string> &lines)
 {
-	list<labels_t> configs;
+	std::list<labels_t> configs;
 
 	bool populateServer = false;
 
@@ -375,7 +375,7 @@ static list<labels_t> _getLabels(list<string> &lines)
 			continue;
 		}
 
-		string line = extractFront(lines);
+		std::string line = extractFront(lines);
 
 		if (populateServer && utils::start_with(line, "location"))
 		{
@@ -384,7 +384,7 @@ static list<labels_t> _getLabels(list<string> &lines)
 				_panic("3");
 			while (!lines.empty())
 			{
-				string line = extractFront(lines);
+				std::string line = extractFront(lines);
 				if (line == "}")
 					break;
 				pair_string_t data = getLabel(line);
@@ -409,17 +409,17 @@ static list<labels_t> _getLabels(list<string> &lines)
 	return configs;
 }
 
-vector<Config> Config::parseConfig(string &filedata)
+std::vector<Config> Config::parseConfig(std::string &filedata)
 {
-	list<string> lines = _getLineFromFileData(filedata);
+	std::list<std::string> lines = _getLineFromFileData(filedata);
 
-	list<labels_t> configs = _getLabels(lines);
+	std::list<labels_t> configs = _getLabels(lines);
 
-	vector<Config> data;
+	std::vector<Config> data;
 
-	for (list<labels_t>::iterator i = configs.begin(); i != configs.end(); i++)
+	for (std::list<labels_t>::iterator i = configs.begin(); i != configs.end(); i++)
 	{
-		cout << "--- server ---" << endl;
+		std::cout << "--- server ---" << std::endl;
 		labels_t &server = *i;
 
 		Config config;

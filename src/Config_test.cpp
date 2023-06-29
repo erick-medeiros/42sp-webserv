@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config_test.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
+/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/24 17:50:02 by mi               ###   ########.fr       */
+/*   Updated: 2023/06/28 23:14:03 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,10 +80,10 @@ TEST_SUITE("server name")
 {
 	TEST_CASE("single")
 	{
-		Config config;
-		string server = "localhost";
+		Config      config;
+		std::string server = "localhost";
 		CHECK_EQ(config.add("server_name", server), 0);
-		vector<string> const &serverNames = config.getServerNames();
+		std::vector<std::string> const &serverNames = config.getServerNames();
 
 		CHECK_EQ(serverNames.size(), 1);
 		CHECK_EQ(serverNames[0], server);
@@ -98,9 +98,9 @@ TEST_SUITE("server name")
 
 	TEST_CASE("multiples")
 	{
-		Config config;
-		string server1 = "localhost";
-		string server2 = "www.localhost";
+		Config      config;
+		std::string server1 = "localhost";
+		std::string server2 = "www.localhost";
 
 		CHECK_EQ(config.add("server_name", server1 + " " + server2), 0);
 
@@ -110,7 +110,7 @@ TEST_SUITE("server name")
 			freopen("/dev/tty", "w", stderr);
 		}
 
-		vector<string> const &serverNames = config.getServerNames();
+		std::vector<std::string> const &serverNames = config.getServerNames();
 
 		CHECK_EQ(serverNames.size(), 2);
 		CHECK_EQ(serverNames[0], server1);
@@ -206,7 +206,7 @@ TEST_SUITE("location")
 
 			CHECK_EQ(config.add("location", "value"), 0);
 
-			vector<location_t> locations = config.getLocations();
+			std::vector<location_t> locations = config.getLocations();
 
 			CHECK_EQ(locations[0].location, "value");
 		}
@@ -222,8 +222,8 @@ TEST_SUITE("location")
 
 			CHECK_EQ(config.add("location_http_methods", "GET"), 0);
 
-			vector<location_t> locations = config.getLocations();
-			vector<string>    &methods = locations[0].http_methods;
+			std::vector<location_t>   locations = config.getLocations();
+			std::vector<std::string> &methods = locations[0].http_methods;
 
 			CHECK_EQ(methods.size(), 1);
 			CHECK_EQ(methods[0], "GET");
@@ -236,8 +236,8 @@ TEST_SUITE("location")
 
 			CHECK_EQ(config.add("location_http_methods", "GET POST DELETE"), 0);
 
-			vector<location_t> locations = config.getLocations();
-			vector<string>    &methods = locations[0].http_methods;
+			std::vector<location_t>   locations = config.getLocations();
+			std::vector<std::string> &methods = locations[0].http_methods;
 
 			CHECK_EQ(methods[0], "GET");
 			CHECK_EQ(methods[1], "POST");
@@ -254,7 +254,7 @@ TEST_SUITE("location")
 
 		CHECK_EQ(config.add("location_http_redirection", "redirect"), 0);
 
-		vector<location_t> locations = config.getLocations();
+		std::vector<location_t> locations = config.getLocations();
 
 		CHECK_EQ(locations[0].http_redirection, "redirect");
 	}
