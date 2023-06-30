@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/30 11:17:59 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/30 11:34:18 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -369,5 +369,12 @@ TEST_SUITE("index")
 		Config config;
 		CHECK_EQ(config.add("index", "index.htm"), 0);
 		CHECK_EQ(config.getIndex(), "index.htm");
+	}
+	TEST_CASE("multiples")
+	{
+		Config      config;
+		std::string index = "index.htm index.ht index.h";
+		CHECK_EQ(config.add("index", index), 0);
+		CHECK_EQ(config.getIndex(), index);
 	}
 }
