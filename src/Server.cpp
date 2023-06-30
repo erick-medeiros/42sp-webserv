@@ -6,7 +6,7 @@ void Server::init(Config const &conf)
 {
 	_config = conf;
 
-	log.info("initializing server in port " + utils::to_string(_config.getPort()));
+	log.info("Server init in port " + utils::to_string(_config.getPort()));
 
 	listenToPort(_config.getPort());
 }
@@ -21,15 +21,15 @@ int Server::listenToPort(int port)
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverSocket < 0)
 	{
-		logError("--- Error: socket");
+		log.error("socket", strerror(errno));
 		exit(1);
 	}
-	logInfo("Server socket created", _serverSocket);
+	log.info("Server socket created " + utils::to_string(_serverSocket));
 	// --- Configure socket options ---
 	int yes = 1;
 	if (setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
 	{
-		logError("--- Error: setsockopt");
+		log.error("setsockopt", strerror(errno));
 		exit(1);
 	}
 	// --- Bind socket with port ---
@@ -37,24 +37,22 @@ int Server::listenToPort(int port)
 	if (bind(_serverSocket, (struct sockaddr *) &server_address,
 	         sizeof(server_address)) < 0)
 	{
-		std::string error = strerror(errno);
-		logError("--- Error: binding: " + error, port);
+		log.error("bind port " + utils::to_string(port), strerror(errno));
 		close(_serverSocket);
 		exit(1);
 	}
 	// --- Set non-blocking ---
 	if (!setNonBlocking(_serverSocket))
 	{
-		logError("--- Error: Set non-blocking");
 		exit(1);
 	}
 	// --- Set socket to listen for connections ---
 	if (listen(_serverSocket, 5) < 0)
 	{
-		logError("--- Error: listen");
+		log.error("listen", strerror(errno));
 		exit(1);
 	}
-	logInfo("Server listening on port", port);
+	log.info("Server listening on port " + utils::to_string(port));
 	return _serverSocket;
 }
 
@@ -64,7 +62,7 @@ int Server::getPort()
 	socklen_t   len = sizeof(address);
 	if (getsockname(_serverSocket, (struct sockaddr *) &address, &len) < 0)
 	{
-		logError("--- Error: getsockname");
+		log.error("getsockname", strerror(errno));
 		exit(1);
 	}
 	return ntohs(address.sin_port);
@@ -79,17 +77,17 @@ std::string Server::getRequestData(int clientSocket)
 
 	if (bytesRead == -1)
 	{
-		logError("--- Error: while receiving data");
+		log.warning("Error: while receiving data");
 		return "";
 	}
 	if (bytesRead == 0)
 	{
-		logError("--- Error: client has closed its connection");
+		log.warning("Error: client has closed its connection");
 		close(clientSocket);
 		return "";
 	}
 	buff[bytesRead] = 0;
-	logInfo("Request size", bytesRead);
+	log.info("Request size " + utils::to_string(bytesRead));
 	return std::string(buff);
 }
 
@@ -160,47 +158,6 @@ int Server::handleRequest(Connection &connection)
 		response.setBody(result);
 		return 0;
 	}
-
-	// -- SITUATIONS WITH EARLY RETURN --
-
-	// // Config defined a specific return code
-	// if (_config.hasReturn(requestPath))
-	// {
-	// 	response.setStatus(_config.getReturnCode(requestPath));
-	// 	response.setHeader("Location", _config.getReturnLocation(requestPath));
-	// 	return response;
-	// }
-
-	// // Request host is not in the config server names
-	// if (!_config.hasServerName(request.getHost()))
-	// {
-	// 	response.setStatus(HttpStatus::BAD_REQUEST);
-	// 	return response;
-	// }
-
-	// // Requested method is not accepted for that route
-	// std::vector<std::string> methods = _config.getMethods(requestPath);
-	// if (std::find(methods.begin(), methods.end(), requestMethod) == methods.end())
-	// {
-	// 	response.setStatus(HttpStatus::METHOD_NOT_ALLOWED);
-	// 	return response;
-	// }
-
-	// // Request is a directory - try to load an index file
-	// if (utils::isDir(fullPath))
-	// {
-	// 	std::vector<std::string> indexFiles = _config.getIndexFiles();
-
-	// 	std::vector<std::string>::iterator it;
-	// 	for (it = indexFiles.begin(); it != indexFiles.end(); it++)
-	// 	{
-	// 		if (utils::fileExists(fullPath + "/" + *it))
-	// 		{
-	// 			response.loadFile(fullPath + "/" + *it);
-	// 			break;
-	// 		}
-	// 	}
-	// }
 
 	// Request is a directory and autoindex is enabled
 
