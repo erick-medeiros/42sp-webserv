@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/29 11:40:39 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/30 11:17:59 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -354,5 +354,20 @@ TEST_SUITE("root")
 		Config config;
 		CHECK_EQ(config.add("root", "path"), 0);
 		CHECK_EQ(config.getMainRoot(), "path");
+	}
+}
+
+TEST_SUITE("index")
+{
+	TEST_CASE("default")
+	{
+		Config config;
+		CHECK_EQ(config.getIndex(), "index.html");
+	}
+	TEST_CASE("set and get")
+	{
+		Config config;
+		CHECK_EQ(config.add("index", "index.htm"), 0);
+		CHECK_EQ(config.getIndex(), "index.htm");
 	}
 }

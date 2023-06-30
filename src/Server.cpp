@@ -179,20 +179,28 @@ int Server::handleRequest(Connection &connection)
 	// }
 
 	// Request is a directory and autoindex is enabled
-	if (utils::isDir(fullPath) && requestPath != "/")
+
+	if (utils::isDir(fullPath))
 	{
-		if (_config.directoryListingEnabled(requestPath))
+		if (utils::isFile(fullPath + config.getIndex()))
 		{
-			response.listDir(requestPath);
+			response.loadFile(fullPath + config.getIndex());
 		}
-		else
+		else if (requestPath != "/")
 		{
-			response.setStatus(HttpStatus::NOT_FOUND);
+			if (_config.directoryListingEnabled(requestPath))
+			{
+				response.listDir(requestPath);
+			}
+			else
+			{
+				response.setStatus(HttpStatus::NOT_FOUND);
+			}
 		}
 	}
 
 	// Request is a regular file
-	if (utils::isFile(fullPath))
+	else if (utils::isFile(fullPath))
 	{
 		response.loadFile(fullPath);
 	}

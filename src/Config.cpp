@@ -6,13 +6,16 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/29 11:42:35 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/30 11:17:33 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 
-Config::Config(void) : _port(0), _clientBodySize(1024 * 1024), _mainRoot(".") {}
+Config::Config(void)
+    : _port(0), _clientBodySize(1024 * 1024), _mainRoot("."), _index("index.html")
+{
+}
 
 Config::~Config(void) {}
 
@@ -29,6 +32,8 @@ int Config::add(std::string label, std::string value)
 		return _setClientBodySize(value);
 	if (label == "root")
 		return _setMainRoot(value);
+	if (label == "index")
+		return _setIndex(value);
 	if (label == "location")
 		return _setLocation(value);
 	if (label == "location_http_methods")
@@ -254,6 +259,12 @@ int Config::_setMainRoot(std::string &value)
 	return 0;
 }
 
+int Config::_setIndex(std::string &value)
+{
+	_index = value;
+	return 0;
+}
+
 uint_t const &Config::getPort(void) const
 {
 	return _port;
@@ -287,6 +298,11 @@ std::vector<location_t> const &Config::getLocations() const
 const std::string &Config::getMainRoot(void) const
 {
 	return _mainRoot;
+}
+
+const std::string &Config::getIndex(void) const
+{
+	return _index;
 }
 
 // Return the locations that match the path
