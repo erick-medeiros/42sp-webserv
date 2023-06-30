@@ -6,14 +6,14 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/28 23:52:53 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/30 11:16:33 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#include "log_utils.hpp"
+#include "Logger.hpp"
 #include "utils.hpp"
 #include <cstddef>
 #include <cstdio>
@@ -61,6 +61,8 @@ class Config
 	std::vector<location_t> const    &getLocations() const;
 	std::vector<location_t>           getLocations(std::string path) const;
 	bool                              hasCGI(std::string path) const;
+	const std::string                &getMainRoot(void) const;
+	const std::string                &getIndex(void) const;
 
 	// Helpers
 	bool directoryListingEnabled(std::string path) const;
@@ -74,6 +76,8 @@ class Config
 	std::map<int, std::string> _errorPage;
 	size_t                     _clientBodySize;
 	std::vector<location_t>    _locations;
+	std::string                _mainRoot;
+	std::string                _index;
 
 	int _setPort(std::string &);
 	int _setServerName(std::string &);
@@ -86,6 +90,8 @@ class Config
 	int _setDirectoryListing(std::string &);
 	int _setResponseIsDir(std::string &);
 	int _setCGI(std::string &);
+	int _setMainRoot(std::string &);
+	int _setIndex(std::string &);
 };
 
 #endif /* CONFIG_HPP */

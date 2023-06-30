@@ -6,11 +6,12 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/28 23:52:30 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/30 11:34:18 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
+#include "Logger.hpp"
 #include "doctest.h"
 #include <sys/types.h>
 
@@ -18,6 +19,7 @@ TEST_SUITE("Class Config")
 {
 	TEST_CASE("Constructor")
 	{
+		Logger::level = LOGGER_LEVEL_NONE;
 		Config conf;
 	}
 	TEST_CASE("error name")
@@ -337,5 +339,42 @@ TEST_SUITE("location")
 			CHECK_EQ(location_first.cgi_pass, "/php");
 			CHECK_EQ(location_second.cgi_pass, "/python");
 		}
+	}
+}
+
+TEST_SUITE("root")
+{
+	TEST_CASE("default")
+	{
+		Config config;
+		CHECK_EQ(config.getMainRoot(), ".");
+	}
+	TEST_CASE("set and get")
+	{
+		Config config;
+		CHECK_EQ(config.add("root", "path"), 0);
+		CHECK_EQ(config.getMainRoot(), "path");
+	}
+}
+
+TEST_SUITE("index")
+{
+	TEST_CASE("default")
+	{
+		Config config;
+		CHECK_EQ(config.getIndex(), "index.html");
+	}
+	TEST_CASE("set and get")
+	{
+		Config config;
+		CHECK_EQ(config.add("index", "index.htm"), 0);
+		CHECK_EQ(config.getIndex(), "index.htm");
+	}
+	TEST_CASE("multiples")
+	{
+		Config      config;
+		std::string index = "index.htm index.ht index.h";
+		CHECK_EQ(config.add("index", index), 0);
+		CHECK_EQ(config.getIndex(), index);
 	}
 }

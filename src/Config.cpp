@@ -6,18 +6,22 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/28 23:53:13 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/30 11:17:33 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 
-Config::Config(void) : _port(0), _clientBodySize(1024 * 1024) {}
+Config::Config(void)
+    : _port(0), _clientBodySize(1024 * 1024), _mainRoot("."), _index("index.html")
+{
+}
 
 Config::~Config(void) {}
 
 int Config::add(std::string label, std::string value)
 {
+	log.debug("config: " + label + ": " + value);
 	if (label == "port")
 		return _setPort(value);
 	if (label == "server_name")
@@ -26,6 +30,10 @@ int Config::add(std::string label, std::string value)
 		return _setErrorPage(value);
 	if (label == "client_max_body_size")
 		return _setClientBodySize(value);
+	if (label == "root")
+		return _setMainRoot(value);
+	if (label == "index")
+		return _setIndex(value);
 	if (label == "location")
 		return _setLocation(value);
 	if (label == "location_http_methods")
@@ -40,7 +48,7 @@ int Config::add(std::string label, std::string value)
 		return _setResponseIsDir(value);
 	if (label == "location_cgi_pass")
 		return _setCGI(value);
-	logError("config label not match: ", label);
+	log.error("config label not match: " + label);
 	return 1;
 }
 
@@ -58,7 +66,7 @@ int Config::_setPort(std::string &value)
 
 	if (_port != 0)
 	{
-		logError("port: exist");
+		log.error("port: exist");
 		return FAILURE;
 	}
 
@@ -66,13 +74,13 @@ int Config::_setPort(std::string &value)
 
 	if (port < 1024 || port > 49151)
 	{
-		logError("port: range invalid");
+		log.error("port: range invalid");
 		return FAILURE;
 	}
 
 	if (!ss.eof())
 	{
-		logError("port: error value");
+		log.error("port: error value");
 		return FAILURE;
 	}
 
@@ -85,12 +93,12 @@ int Config::_setServerName(std::string &value)
 {
 	if (_serverNames.size() > 0)
 	{
-		logError("server_name: exist");
+		log.error("server_name: exist");
 		return FAILURE;
 	}
 	if (value == "")
 	{
-		logError("server_name empty");
+		log.error("server_name empty");
 		return FAILURE;
 	}
 
@@ -119,7 +127,7 @@ int Config::_setErrorPage(std::string &value)
 
 	if (error < 400 || error > 599)
 	{
-		logError("error_page: range err: ", value);
+		log.error("error_page: range err: " + value);
 		return FAILURE;
 	}
 	_errorPage[error] = page;
@@ -245,6 +253,18 @@ int Config::_setCGI(std::string &value)
 	return 0;
 }
 
+int Config::_setMainRoot(std::string &value)
+{
+	_mainRoot = value;
+	return 0;
+}
+
+int Config::_setIndex(std::string &value)
+{
+	_index = value;
+	return 0;
+}
+
 uint_t const &Config::getPort(void) const
 {
 	return _port;
@@ -273,6 +293,16 @@ std::map<int, std::string> const &Config::getErrorPages() const
 std::vector<location_t> const &Config::getLocations() const
 {
 	return _locations;
+}
+
+const std::string &Config::getMainRoot(void) const
+{
+	return _mainRoot;
+}
+
+const std::string &Config::getIndex(void) const
+{
+	return _index;
 }
 
 // Return the locations that match the path
@@ -320,7 +350,7 @@ std::string Config::readFile(const std::string &filename)
 	}
 	else
 	{
-		logError("Error: readFile", filename);
+		log.error("Error: readFile: " + filename);
 		return "";
 	}
 

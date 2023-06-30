@@ -1,6 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+#include <cstdlib>  // exit
 #include <cstring>  // memset
 #include <fcntl.h>  // fcntl
 #include <fstream>  // input stream
@@ -9,8 +10,7 @@
 #include <netinet/in.h> // sockaddr_in
 #include <sstream>      // stringstream
 #include <stdexcept>
-#include <stdlib.h> // exit
-#include <string>   // to_string
+#include <string> // to_string
 #include <sys/wait.h>
 #include <unistd.h> // close
 #include <vector>
@@ -23,10 +23,8 @@
 #include "HttpStatus.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
-#include "log_utils.hpp"
 
 #define MAX_EVENTS 500
-#define BLOCK_IND -1
 
 class Connection;
 
