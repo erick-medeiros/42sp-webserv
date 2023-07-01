@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/30 11:16:33 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/01 18:24:46 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ typedef std::list<pair_string_t>            labels_t;
 typedef struct
 {
 	std::string              location;
+	std::vector<std::string> allowed_methods;
 	std::vector<std::string> http_methods;
 	std::string              http_redirection;
 	std::string              root;
@@ -63,6 +64,7 @@ class Config
 	bool                              hasCGI(std::string path) const;
 	const std::string                &getMainRoot(void) const;
 	const std::string                &getIndex(void) const;
+	std::vector<std::string> const   &getAllowedMethods(void) const;
 
 	// Helpers
 	bool directoryListingEnabled(std::string path) const;
@@ -78,6 +80,7 @@ class Config
 	std::vector<location_t>    _locations;
 	std::string                _mainRoot;
 	std::string                _index;
+	std::vector<std::string>   _allowedMethods;
 
 	int _setPort(std::string &);
 	int _setServerName(std::string &);
@@ -92,6 +95,8 @@ class Config
 	int _setCGI(std::string &);
 	int _setMainRoot(std::string &);
 	int _setIndex(std::string &);
+	int _setAllowedMethods(std::string &);
+	int _isValidHttpVerb(std::string const) const;
 };
 
 #endif /* CONFIG_HPP */
