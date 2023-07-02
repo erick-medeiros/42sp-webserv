@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/30 11:16:33 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/06/30 17:06:44 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <iostream>
 #include <list>
 #include <map>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -36,7 +37,7 @@ typedef struct
 	std::string              root;
 	std::string              directory_listing;
 	std::string              response_is_dir;
-	std::string              cgi_pass;
+	std::set<std::string>    cgi_pass;
 } location_t;
 
 typedef unsigned int uint_t;
@@ -53,11 +54,11 @@ class Config
 
 	int add(std::string label, std::string value);
 
-	uint_t const	                 &getPort(void) const;
+	uint_t const                     &getPort(void) const;
 	std::vector<std::string> const   &getServerNames(void) const;
 	std::string const                &getErrorPage(int error);
 	std::map<int, std::string> const &getErrorPages(void) const;
-	size_t const	                 &getClientBodySize() const;
+	size_t const                     &getClientBodySize() const;
 	std::vector<location_t> const    &getLocations() const;
 	std::vector<location_t>           getLocations(std::string path) const;
 	bool                              hasCGI(std::string path) const;

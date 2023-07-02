@@ -52,9 +52,9 @@ void Request::parseStartLine()
 	iss >> httpVersion;
 
 	// trim the strings
-	method = trim(method);
-	uri = trim(uri);
-	httpVersion = trim(httpVersion);
+	method = utils::trim(method);
+	uri = utils::trim(uri);
+	httpVersion = utils::trim(httpVersion);
 
 	if (method.empty())
 		throw std::runtime_error("missing HTTP request method");
@@ -114,7 +114,7 @@ void Request::parseHeaders()
 
 	while (std::getline(iss, row))
 	{
-		row = trim(row);
+		row = utils::trim(row);
 		if (row.empty())
 		{
 			// End of headers section
@@ -131,9 +131,9 @@ void Request::parseHeaders()
 
 		std::string key = row.substr(0, pos);
 		std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-		key = trim(key);
+		key = utils::trim(key);
 		std::string value = row.substr(pos + 1);
-		value = trim(value);
+		value = utils::trim(value);
 
 		if (value.empty())
 		{
