@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   loop.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/28 23:18:49 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/02 00:02:35 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,7 @@ int loop(std::string path_config)
 				try
 				{
 					std::string rawRequest = Server::getRequestData(connection->fd);
-					connection->request.parse(rawRequest);
+					connection->request.parse(rawRequest, connection->config);
 					std::cout << connection->request << std::endl;
 					if (connection->request.isParsed())
 					{

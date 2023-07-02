@@ -6,15 +6,19 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/01 18:25:22 by mi               ###   ########.fr       */
+/*   Updated: 2023/07/02 13:03:37 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
+#include <stdexcept>
 
 Config::Config(void)
     : _port(0), _clientBodySize(1024 * 1024), _mainRoot("."), _index("index.html")
 {
+	this->_allowedMethods.push_back("GET");
+	this->_allowedMethods.push_back("POST");
+	this->_allowedMethods.push_back("DELETE");
 }
 
 Config::~Config(void) {}
@@ -34,12 +38,12 @@ int Config::add(std::string label, std::string value)
 		return _setMainRoot(value);
 	if (label == "index")
 		return _setIndex(value);
-	if (label == "location")
-		return _setLocation(value);
 	if (label == "allowed_methods")
 		return _setAllowedMethods(value);
 	if (label == "location_http_methods")
 		return _setHttpMethods(value);
+	if (label == "location")
+		return _setLocation(value);
 	if (label == "location_http_redirection")
 		return _setHttpRedirection(value);
 	if (label == "location_root")
@@ -161,6 +165,9 @@ int Config::_setLocation(std::string &value)
 {
 	location_t location;
 	location.location = value;
+	location.http_methods.push_back("GET");
+	location.http_methods.push_back("POST");
+	location.http_methods.push_back("DELETE");
 	_locations.push_back(location);
 	return 0;
 }
@@ -172,8 +179,8 @@ int Config::_setHttpMethods(std::string &value)
 		return 1;
 	}
 
-	std::stringstream                  ss(value);
 	std::vector<location_t>::reference location = _locations.back();
+	std::stringstream                  ss(value);
 
 	std::vector<std::string> temp;
 	while (!ss.eof())
@@ -183,6 +190,7 @@ int Config::_setHttpMethods(std::string &value)
 		verb = trim(verb);
 		if (!_isValidHttpVerb(verb) || !utils::contains(_allowedMethods, verb))
 		{
+			location.http_methods.clear();
 			return 1;
 		}
 
@@ -194,17 +202,20 @@ int Config::_setHttpMethods(std::string &value)
 		temp.push_back(verb);
 	}
 
+	std::vector<std::string> methods;
 	for (size_t i = 0; i < temp.size(); ++i)
 	{
 		for (size_t j = 0; j < _allowedMethods.size(); ++j)
 		{
 			if (temp[i] == _allowedMethods[j])
 			{
-				location.http_methods.push_back(temp[i]);
+				methods.push_back(temp[i]);
 			}
 		}
 	}
 
+	location.http_methods.clear();
+	location.http_methods = methods;
 	return 0;
 }
 
@@ -278,7 +289,8 @@ int Config::_setCGI(std::string &value)
 
 int Config::_setAllowedMethods(std::string &value)
 {
-	std::stringstream ss(value);
+	std::vector<std::string> methods;
+	std::stringstream        ss(value);
 
 	while (!ss.eof())
 	{
@@ -288,17 +300,20 @@ int Config::_setAllowedMethods(std::string &value)
 
 		if (httpVerb == "GET" || httpVerb == "POST" || httpVerb == "DELETE")
 		{
-			if (utils::contains(_allowedMethods, httpVerb))
+			if (utils::contains(methods, httpVerb))
 			{
 				continue;
 			}
-			_allowedMethods.push_back(httpVerb);
+			methods.push_back(httpVerb);
 		}
 		else
 		{
 			return 1;
 		}
 	}
+
+	this->_allowedMethods.clear();
+	this->_allowedMethods = methods;
 	return 0;
 }
 

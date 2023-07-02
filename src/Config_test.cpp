@@ -6,7 +6,7 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/01 18:08:20 by mi               ###   ########.fr       */
+/*   Updated: 2023/07/02 01:10:11 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,6 +200,18 @@ TEST_SUITE("client_max_body_size")
 
 TEST_SUITE("allowed_methods")
 {
+	TEST_CASE("default")
+	{
+		Config config;
+
+		std::vector<std::string> allowedMethods = config.getAllowedMethods();
+
+		CHECK_EQ(allowedMethods.size(), 3);
+		CHECK_EQ(allowedMethods[0], "GET");
+		CHECK_EQ(allowedMethods[1], "POST");
+		CHECK_EQ(allowedMethods[2], "DELETE");
+	}
+
 	TEST_CASE("GET only")
 	{
 		Config config;
@@ -301,6 +313,22 @@ TEST_SUITE("location")
 
 	TEST_CASE("http_methods")
 	{
+		SUBCASE("default")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("allowed_methods", "GET POST DELETE"), 0);
+			CHECK_EQ(config.add("location", "value"), 0);
+
+			std::vector<location_t>   locations = config.getLocations();
+			std::vector<std::string> &methods = locations[0].http_methods;
+
+			CHECK_EQ(methods.size(), 3);
+			CHECK_EQ(methods[0], "GET");
+			CHECK_EQ(methods[1], "POST");
+			CHECK_EQ(methods[2], "DELETE");
+		}
+
 		SUBCASE("GET only")
 		{
 			Config config;
