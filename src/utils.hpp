@@ -30,7 +30,7 @@ std::string to_string(int);
 bool        start_with(const std::string &text, const std::string &term);
 bool        end_with(const std::string &text, const std::string &term);
 std::string readFile(const std::string &path);
-bool        contains(std::vector<std::string> &collection, std::string &str);
+bool        contains(std::vector<std::string> &, std::string const &);
 } // namespace utils
 
 #endif
