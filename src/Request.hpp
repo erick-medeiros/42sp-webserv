@@ -12,7 +12,6 @@
 
 #include "Config.hpp"
 #include "HttpStatus.hpp"
-#include "log_utils.hpp"
 #include "utils.hpp"
 
 enum

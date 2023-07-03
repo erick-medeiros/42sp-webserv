@@ -1,17 +1,5 @@
 #include "Response.hpp"
 
-#include <ctime>        // time
-#include <dirent.h>     // opendir
-#include <fstream>      // ifstream
-#include <sstream>      // stringstream
-#include <sys/socket.h> // send
-#include <sys/stat.h>   // stat
-
-#include "log_utils.hpp"
-#include "utils.hpp"
-
-#define HTML_ROOT "." // TODO: Trocar pelo root_path passado na conf
-
 void Response::listDir(const std::string &path)
 {
 	DIR *dir;

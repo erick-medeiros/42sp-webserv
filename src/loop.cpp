@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   loop.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
+/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/02 00:02:35 by mi               ###   ########.fr       */
+/*   Updated: 2023/07/02 21:51:22 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,7 @@ int loop(std::string path_config)
 
 			if (event.events & EPOLLERR)
 			{
-				logError("Epoll error on socket", connection->fd);
+				log.error("Epoll error on socket", connection->fd);
 				removeConnection(channel, epoll);
 				continue;
 			}
@@ -131,7 +131,7 @@ int loop(std::string path_config)
 				catch (std::exception const &e)
 				{
 					// TODO: handle exception properly...
-					logError(e.what());
+					log.error(e.what());
 					removeConnection(channel, epoll);
 				}
 				continue;

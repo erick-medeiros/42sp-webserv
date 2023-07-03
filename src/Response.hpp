@@ -1,12 +1,19 @@
 #ifndef RESPONSE_H
 #define RESPONSE_H
 
+#include <ctime>    // time
+#include <dirent.h> // opendir
+#include <fstream>  // ifstream
 #include <map>
-#include <sstream>
+#include <sstream> // stringstream
 #include <string>
+#include <sys/socket.h> // send
+#include <sys/stat.h>   // stat
 
 #include "Request.hpp"
+#include "utils.hpp"
 
+#define HTML_ROOT "." // TODO: Trocar pelo root_path passado na conf
 #define HTTP_VERSION "HTTP/1.1"
 #define CRLF "\r\n"
 #define SP " "
