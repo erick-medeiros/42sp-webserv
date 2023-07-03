@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/30 17:06:44 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/02 21:34:16 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ typedef std::list<pair_string_t>            labels_t;
 typedef struct
 {
 	std::string              location;
+	std::vector<std::string> allowed_methods;
 	std::vector<std::string> http_methods;
 	std::string              http_redirection;
 	std::string              root;
@@ -54,16 +55,17 @@ class Config
 
 	int add(std::string label, std::string value);
 
-	uint_t const                     &getPort(void) const;
+	uint_t const	                 &getPort(void) const;
 	std::vector<std::string> const   &getServerNames(void) const;
 	std::string const                &getErrorPage(int error);
 	std::map<int, std::string> const &getErrorPages(void) const;
-	size_t const                     &getClientBodySize() const;
+	size_t const	                 &getClientBodySize() const;
 	std::vector<location_t> const    &getLocations() const;
 	std::vector<location_t>           getLocations(std::string path) const;
 	bool                              hasCGI(std::string path) const;
 	const std::string                &getMainRoot(void) const;
 	const std::string                &getIndex(void) const;
+	std::vector<std::string> const   &getAllowedMethods(void) const;
 
 	// Helpers
 	bool directoryListingEnabled(std::string path) const;
@@ -79,6 +81,7 @@ class Config
 	std::vector<location_t>    _locations;
 	std::string                _mainRoot;
 	std::string                _index;
+	std::vector<std::string>   _allowedMethods;
 
 	int _setPort(std::string &);
 	int _setServerName(std::string &);
@@ -93,6 +96,8 @@ class Config
 	int _setCGI(std::string &);
 	int _setMainRoot(std::string &);
 	int _setIndex(std::string &);
+	int _setAllowedMethods(std::string &);
+	int _isValidHttpVerb(std::string const) const;
 };
 
 #endif /* CONFIG_HPP */

@@ -86,3 +86,15 @@ std::string utils::readFile(const std::string &path)
 
 	return buffer.str();
 }
+
+bool utils::contains(std::vector<std::string> &collection, std::string const &verb)
+{
+	for (size_t i = 0; i < collection.size(); ++i)
+	{
+		if (verb == collection[i])
+		{
+			return true;
+		}
+	}
+	return false;
+}
