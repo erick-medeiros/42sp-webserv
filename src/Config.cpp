@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/02 21:35:13 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/03 10:03:35 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,6 +167,7 @@ int Config::_setLocation(std::string &value)
 	location.http_methods.push_back("GET");
 	location.http_methods.push_back("POST");
 	location.http_methods.push_back("DELETE");
+	location.http_redirection.first = 0;
 	_locations.push_back(location);
 	return 0;
 }
@@ -225,7 +226,15 @@ int Config::_setHttpRedirection(std::string &value)
 	std::stringstream                  ss(value);
 	std::vector<location_t>::reference location = _locations.back();
 
-	location.http_redirection = value;
+	ss << value;
+
+	ss >> location.http_redirection.first;
+
+	if (location.http_redirection.first < 300 ||
+	    location.http_redirection.first > 399)
+		return 1;
+
+	ss >> location.http_redirection.second;
 
 	return 0;
 }

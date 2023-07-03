@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/02 21:34:16 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/03 09:32:55 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 typedef std::pair<std::string, std::string> pair_string_t;
@@ -31,14 +32,14 @@ typedef std::list<pair_string_t>            labels_t;
 
 typedef struct
 {
-	std::string              location;
-	std::vector<std::string> allowed_methods;
-	std::vector<std::string> http_methods;
-	std::string              http_redirection;
-	std::string              root;
-	std::string              directory_listing;
-	std::string              response_is_dir;
-	std::set<std::string>    cgi_pass;
+	std::string                          location;
+	std::vector<std::string>             allowed_methods;
+	std::vector<std::string>             http_methods;
+	std::pair<unsigned int, std::string> http_redirection;
+	std::string                          root;
+	std::string                          directory_listing;
+	std::string                          response_is_dir;
+	std::set<std::string>                cgi_pass;
 } location_t;
 
 typedef unsigned int uint_t;

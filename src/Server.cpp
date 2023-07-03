@@ -150,6 +150,19 @@ int Server::handleRequest(Connection &connection)
 		}
 	}
 
+	if (!locations.empty())
+	{
+		for (size_t i = 0; i < locations.size(); ++i)
+		{
+			if (locations[i].http_redirection.first != 0)
+			{
+				response.setStatus(locations[i].http_redirection.first);
+				response.setHeader("Location", locations[i].http_redirection.second);
+				return 0;
+			}
+		}
+	}
+
 	// Prepare response with custom error pages
 	std::map<int, std::string>           errorPages = _config.getErrorPages();
 	std::map<int, std::string>::iterator it;
