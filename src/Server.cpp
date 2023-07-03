@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "HttpStatus.hpp"
 
 Server::Server(void) : _serverSocket(0) {}
 
@@ -131,9 +132,23 @@ int Server::handleRequest(Connection &connection)
 	Config     &config = connection.config;
 	Response   &response = connection.response;
 	std::string serverRoot = config.getMainRoot();
-	std::string requestMethod = request.getMethod();
 	std::string requestPath = request.getResourcePath();
 	std::string fullPath = serverRoot + requestPath;
+
+	std::vector<location_t> locations = connection.config.getLocations(requestPath);
+	if (!locations.empty())
+	{
+		for (size_t i = 0; i < locations.size(); ++i)
+		{
+			std::string requestMethod = request.getMethod();
+			if (!utils::contains(locations[i].http_methods, requestMethod))
+			{
+				log.error("invalid http method");
+				response.setStatus(HttpStatus::NOT_IMPLEMENTED);
+				return 0;
+			}
+		}
+	}
 
 	// Prepare response with custom error pages
 	std::map<int, std::string>           errorPages = _config.getErrorPages();

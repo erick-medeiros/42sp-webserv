@@ -3,18 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/30 11:17:33 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/02 13:03:37 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
+#include <stdexcept>
 
 Config::Config(void)
     : _port(0), _clientBodySize(1024 * 1024), _mainRoot("."), _index("index.html")
 {
+	this->_allowedMethods.push_back("GET");
+	this->_allowedMethods.push_back("POST");
+	this->_allowedMethods.push_back("DELETE");
 }
 
 Config::~Config(void) {}
@@ -34,10 +38,12 @@ int Config::add(std::string label, std::string value)
 		return _setMainRoot(value);
 	if (label == "index")
 		return _setIndex(value);
-	if (label == "location")
-		return _setLocation(value);
+	if (label == "allowed_methods")
+		return _setAllowedMethods(value);
 	if (label == "location_http_methods")
 		return _setHttpMethods(value);
+	if (label == "location")
+		return _setLocation(value);
 	if (label == "location_http_redirection")
 		return _setHttpRedirection(value);
 	if (label == "location_root")
@@ -159,29 +165,57 @@ int Config::_setLocation(std::string &value)
 {
 	location_t location;
 	location.location = value;
+	location.http_methods.push_back("GET");
+	location.http_methods.push_back("POST");
+	location.http_methods.push_back("DELETE");
 	_locations.push_back(location);
 	return 0;
 }
 
 int Config::_setHttpMethods(std::string &value)
 {
-	if (_locations.size() == 0)
-		return 1;
-
-	std::stringstream                  ss(value);
-	std::vector<location_t>::reference location = _locations.back();
-
-	while (!ss.eof())
+	if (value.empty())
 	{
-		std::string str;
-		ss >> str;
-		str = trim(str);
-		if (str == "GET" || str == "POST" || str == "DELETE")
-			location.http_methods.push_back(str);
-		else
-			return 1;
+		return 1;
 	}
 
+	std::vector<location_t>::reference location = _locations.back();
+	std::stringstream                  ss(value);
+
+	std::vector<std::string> temp;
+	while (!ss.eof())
+	{
+		std::string verb;
+		ss >> verb;
+		verb = trim(verb);
+		if (!_isValidHttpVerb(verb) || !utils::contains(_allowedMethods, verb))
+		{
+			location.http_methods.clear();
+			return 1;
+		}
+
+		if (utils::contains(temp, verb))
+		{
+			continue;
+		}
+
+		temp.push_back(verb);
+	}
+
+	std::vector<std::string> methods;
+	for (size_t i = 0; i < temp.size(); ++i)
+	{
+		for (size_t j = 0; j < _allowedMethods.size(); ++j)
+		{
+			if (temp[i] == _allowedMethods[j])
+			{
+				methods.push_back(temp[i]);
+			}
+		}
+	}
+
+	location.http_methods.clear();
+	location.http_methods = methods;
 	return 0;
 }
 
@@ -251,6 +285,41 @@ int Config::_setCGI(std::string &value)
 	std::vector<location_t>::reference location = _locations.back();
 	location.cgi_pass = value;
 	return 0;
+}
+
+int Config::_setAllowedMethods(std::string &value)
+{
+	std::vector<std::string> methods;
+	std::stringstream        ss(value);
+
+	while (!ss.eof())
+	{
+		std::string httpVerb;
+		ss >> httpVerb;
+		httpVerb = trim(httpVerb);
+
+		if (httpVerb == "GET" || httpVerb == "POST" || httpVerb == "DELETE")
+		{
+			if (utils::contains(methods, httpVerb))
+			{
+				continue;
+			}
+			methods.push_back(httpVerb);
+		}
+		else
+		{
+			return 1;
+		}
+	}
+
+	this->_allowedMethods.clear();
+	this->_allowedMethods = methods;
+	return 0;
+}
+
+std::vector<std::string> const &Config::getAllowedMethods(void) const
+{
+	return _allowedMethods;
 }
 
 int Config::_setMainRoot(std::string &value)
@@ -404,6 +473,15 @@ static std::string extractFront(std::list<std::string> &lines)
 	return str;
 }
 
+int Config::_isValidHttpVerb(std::string const str) const
+{
+	if (str == "GET" || str == "POST" || str == "DELETE")
+	{
+		return 1;
+	}
+	return 0;
+}
+
 static std::list<labels_t> _getLabels(std::list<std::string> &lines)
 {
 	std::list<labels_t> configs;
@@ -467,8 +545,7 @@ static std::list<labels_t> _getLabels(std::list<std::string> &lines)
 std::vector<Config> Config::parseConfig(std::string &filedata)
 {
 	std::list<std::string> lines = _getLineFromFileData(filedata);
-
-	std::list<labels_t> configs = _getLabels(lines);
+	std::list<labels_t>    configs = _getLabels(lines);
 
 	std::vector<Config> data;
 
@@ -479,11 +556,9 @@ std::vector<Config> Config::parseConfig(std::string &filedata)
 
 		Config config;
 
-		for (labels_t::iterator label = server.begin(); label != server.end();
-		     label++)
+		labels_t::iterator label;
+		for (label = server.begin(); label != server.end(); label++)
 		{
-			// cout << "label : " << label->first << " - value : " << label->second
-			//      << endl;
 			config.add(label->first, label->second);
 		}
 
