@@ -48,7 +48,7 @@ void Request::parseStartLine(Config const &config)
 	std::string        method, uri, httpVersion;
 
 	iss >> method;
-	method = trim(method);
+	method = utils::trim(method);
 	if (!isValidMethod(method, config))
 	{
 		this->errorCode = HttpStatus::NOT_IMPLEMENTED;
@@ -57,12 +57,12 @@ void Request::parseStartLine(Config const &config)
 	}
 
 	iss >> uri;
-	uri = trim(uri);
+	uri = utils::trim(uri);
 	if (uri.empty())
 		throw std::runtime_error("missing request URL");
 
 	iss >> httpVersion;
-	httpVersion = trim(httpVersion);
+	httpVersion = utils::trim(httpVersion);
 	if (httpVersion.empty())
 		throw std::runtime_error("missing HTTP protocol version");
 	if (!isValidHttpVersion(httpVersion))
@@ -111,7 +111,7 @@ void Request::parseHeaders()
 
 	while (std::getline(iss, row))
 	{
-		row = trim(row);
+		row = utils::trim(row);
 		if (row.empty())
 		{
 			// End of headers section
@@ -128,9 +128,9 @@ void Request::parseHeaders()
 
 		std::string key = row.substr(0, pos);
 		std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-		key = trim(key);
+		key = utils::trim(key);
 		std::string value = row.substr(pos + 1);
-		value = trim(value);
+		value = utils::trim(value);
 
 		if (value.empty())
 		{

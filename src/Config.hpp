@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
+/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/01 18:24:46 by mi               ###   ########.fr       */
+/*   Updated: 2023/07/02 21:34:16 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <iostream>
 #include <list>
 #include <map>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -37,7 +38,7 @@ typedef struct
 	std::string              root;
 	std::string              directory_listing;
 	std::string              response_is_dir;
-	std::string              cgi_pass;
+	std::set<std::string>    cgi_pass;
 } location_t;
 
 typedef unsigned int uint_t;

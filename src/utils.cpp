@@ -12,7 +12,7 @@ static std::string &ltrim(std::string &s, const char *t)
 	return s;
 }
 
-std::string &trim(std::string &s)
+std::string &utils::trim(std::string &s)
 {
 	const char *ws = " \t\n\r\f\v";
 	return ltrim(rtrim(s, ws), ws);

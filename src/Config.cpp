@@ -3,15 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
+/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/02 13:03:37 by mi               ###   ########.fr       */
+/*   Updated: 2023/07/02 21:35:13 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
-#include <stdexcept>
 
 Config::Config(void)
     : _port(0), _clientBodySize(1024 * 1024), _mainRoot("."), _index("index.html")
@@ -187,7 +186,7 @@ int Config::_setHttpMethods(std::string &value)
 	{
 		std::string verb;
 		ss >> verb;
-		verb = trim(verb);
+		verb = utils::trim(verb);
 		if (!_isValidHttpVerb(verb) || !utils::contains(_allowedMethods, verb))
 		{
 			location.http_methods.clear();
@@ -280,10 +279,16 @@ int Config::_setResponseIsDir(std::string &value)
 
 int Config::_setCGI(std::string &value)
 {
-	if (value.find(" ") != std::string::npos)
-		return 1;
 	std::vector<location_t>::reference location = _locations.back();
-	location.cgi_pass = value;
+
+	std::istringstream iss(value);
+
+	std::string token;
+	while (iss >> token)
+	{
+		location.cgi_pass.insert(token);
+	}
+
 	return 0;
 }
 
@@ -296,7 +301,7 @@ int Config::_setAllowedMethods(std::string &value)
 	{
 		std::string httpVerb;
 		ss >> httpVerb;
-		httpVerb = trim(httpVerb);
+		httpVerb = utils::trim(httpVerb);
 
 		if (httpVerb == "GET" || httpVerb == "POST" || httpVerb == "DELETE")
 		{
@@ -390,7 +395,9 @@ std::vector<location_t> Config::getLocations(std::string path) const
 
 bool Config::hasCGI(std::string path) const
 {
-	std::string fileExtenstion = path.substr(path.find_last_of(".") + 1);
+	std::string fileExtenstion = "." + path.substr(path.find_last_of(".") + 1);
+
+	log.warning("!!! fileExtenstion: " + fileExtenstion);
 
 	// If there is no file extension, it is not a CGI
 	if (fileExtenstion.empty())
@@ -400,8 +407,9 @@ bool Config::hasCGI(std::string path) const
 	std::vector<location_t>::const_iterator it;
 	for (it = locations.begin(); it != locations.end(); ++it)
 	{
-		// If the file extension is among the CGI extensions, it is a CGI
-		if (it->cgi_pass.find(fileExtenstion) != std::string::npos)
+		log.warning("!!! it->location: " + it->location);
+
+		if (it->cgi_pass.find(fileExtenstion) != it->cgi_pass.end())
 			return true;
 	}
 	return false;
@@ -439,13 +447,13 @@ static std::list<std::string> _getLineFromFileData(std::string &filedata)
 	std::string line;
 	while (getline(ss, line))
 	{
-		line = trim(line);
+		line = utils::trim(line);
 		if (line.size() > 0)
 		{
 			if (line.size() > 1 && utils::end_with(line, "{"))
 			{
 				line.resize(line.size() - 1);
-				line = trim(line);
+				line = utils::trim(line);
 				lines.push_back(line);
 				lines.push_back("{");
 				continue;
@@ -462,7 +470,7 @@ static std::pair<std::string, std::string> getLabel(std::string &line)
 	std::istringstream                  ss(line);
 	ss >> content.first;
 	content.second = line.substr(content.first.size());
-	content.second = trim(content.second);
+	content.second = utils::trim(content.second);
 	return content;
 }
 

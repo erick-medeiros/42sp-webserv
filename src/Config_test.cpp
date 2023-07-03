@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config_test.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
+/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/02 01:10:11 by mi               ###   ########.fr       */
+/*   Updated: 2023/07/02 21:35:42 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -515,38 +515,29 @@ TEST_SUITE("location")
 
 		CHECK_EQ(config.add("location", "value"), 0);
 
-		CHECK_EQ(config.add("location_cgi_pass", "/bin"), 0);
+		CHECK_EQ(config.add("location_cgi_pass", ".py"), 0);
 
 		location_t const &location = config.getLocations()[0];
 
-		CHECK_EQ(location.cgi_pass, "/bin");
-
-		SUBCASE("error")
-		{
-			Config config;
-
-			CHECK_EQ(config.add("location", "value"), 0);
-
-			CHECK_EQ(config.add("location_cgi_pass", "/bin extra"), 1);
-		}
+		CHECK_NE(location.cgi_pass.find(".py"), location.cgi_pass.end());
 
 		SUBCASE("multiples")
 		{
 			Config config;
 
 			CHECK_EQ(config.add("location", "first"), 0);
-			CHECK_EQ(config.add("location_cgi_pass", "/php"), 0);
+			CHECK_EQ(config.add("location_cgi_pass", ".php"), 0);
 
 			CHECK_EQ(config.add("location", "second"), 0);
-			CHECK_EQ(config.add("location_cgi_pass", "/python"), 0);
+			CHECK_EQ(config.add("location_cgi_pass", ".py"), 0);
 
 			CHECK_EQ(config.getLocations().size(), 2);
 
 			location_t const &location_first = config.getLocations()[0];
 			location_t const &location_second = config.getLocations()[1];
 
-			CHECK_EQ(location_first.cgi_pass, "/php");
-			CHECK_EQ(location_second.cgi_pass, "/python");
+			CHECK_NE(location_first.cgi_pass.find(".php"), location.cgi_pass.end());
+			CHECK_NE(location_second.cgi_pass.find(".py"), location.cgi_pass.end());
 		}
 	}
 }
