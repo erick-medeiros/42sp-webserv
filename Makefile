@@ -23,8 +23,7 @@ TESTER_INTEGRATION=tests/integration.sh
 
 VALGRIND = valgrind -q --error-exitcode=1 \
 --leak-check=full --show-leak-kinds=all \
---trace-children=yes --track-origins=yes
---track-fds=yes
+--trace-children=yes --track-origins=yes --track-fds=yes
 
 FORMAT = which clang-format >/dev/null 2>&1 \
 && echo $^ | xargs clang-format -i || true
