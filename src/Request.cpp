@@ -13,11 +13,23 @@ void Request::parse(std::string const rawInput)
 	unparsed += rawInput;
 
 	if (!startLineParsed)
+	{
 		parseStartLine();
+		if (!startLineParsed)
+			return;
+	}
 	if (!headersParsed)
+	{
 		parseHeaders();
+		if (!headersParsed)
+			return;
+	}
 	if (!bodyParsed)
+	{
 		parseBody();
+		if (!bodyParsed)
+			return;
+	}
 }
 
 void Request::parseBody()
@@ -33,6 +45,11 @@ void Request::parseBody()
 		unparsed.erase(0, contentLength);
 	}
 	bodyParsed = true;
+}
+
+void Request::updateBody(std::string const &newBody)
+{
+	body = newBody;
 }
 
 void Request::parseStartLine()
@@ -155,8 +172,18 @@ void Request::parseHeaders()
 			}
 		}
 	}
-
 	unparsed = iss.str().substr(iss.tellg()); // Keep the remaining unparsed part
+}
+
+bool Request::isMultipart() const
+{
+	if (header.find("content-type") != header.end())
+	{
+		std::string value = header.at("content-type");
+		if (value.find("multipart/form-data") != std::string::npos)
+			return true;
+	}
+	return false;
 }
 
 std::map<std::string, std::string> Request::getStartLine(void) const

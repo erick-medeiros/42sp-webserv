@@ -10,9 +10,7 @@
 #include "log_utils.hpp"
 #include "utils.hpp"
 
-#define HTML_ROOT "." // TODO: Trocar pelo root_path passado na conf
-
-void Response::listDir(const std::string &path)
+void Response::listDir(const std::string &root, std::string path)
 {
 	DIR *dir;
 
@@ -21,6 +19,9 @@ void Response::listDir(const std::string &path)
 	std::string       fullFilePath, modifiedTime;
 	std::stringstream ss;
 
+	// Add trailing slash to path if not present
+	if (path[path.length() - 1] != '/')
+		path += '/';
 	// Build HTML
 	ss << "<html>"
 	   << "<head>"
@@ -34,7 +35,7 @@ void Response::listDir(const std::string &path)
 	   << "<tr><th>Name</th><th>Size</th><th>Date Modified</th></tr>";
 
 	// List files
-	std::string dirPath = HTML_ROOT + path;
+	std::string dirPath = root + path;
 	dir = opendir(dirPath.c_str());
 	while ((ent = readdir(dir)) != NULL)
 	{
@@ -56,8 +57,8 @@ void Response::listDir(const std::string &path)
 		}
 		else
 		{
-			ss << "<td><a href=\"" << path << "/" << ent->d_name << "\">"
-			   << ent->d_name << "</a></td>";
+			ss << "<td><a href=\"" << path << ent->d_name << "\">" << ent->d_name
+			   << "</a></td>";
 			ss << "<td>" << utils::formatSize(filestat.st_size) << "</td>";
 		}
 		ss << "<td>" << modifiedTime;
@@ -110,18 +111,8 @@ void Response::parse(const Request &request)
 {
 	if (request.getMethod() == "GET")
 	{
-		std::string path = request.getResourcePath();
-		if (utils::isDir(HTML_ROOT + path))
-		{
-			// Add trailing slash if not present in path
-			if (path[path.size() - 1] != '/')
-				path = path + "/";
-			listDir(path);
-		}
-		else
-			loadFile(path);
+		loadFile(request.getResourcePath());
 	}
-	// TODO: Implementar outros métodos além do GET
 }
 
 void Response::setCustomErrorPage(int statusCode, const std::string &path)

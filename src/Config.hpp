@@ -64,6 +64,7 @@ class Config
 	bool                              hasCGI(std::string path) const;
 	const std::string                &getMainRoot(void) const;
 	const std::string                &getIndex(void) const;
+	const std::string                &getUploadPath(void) const;
 
 	// Helpers
 	bool directoryListingEnabled(std::string path) const;
@@ -79,6 +80,7 @@ class Config
 	std::vector<location_t>    _locations;
 	std::string                _mainRoot;
 	std::string                _index;
+	std::string                _uploadPath;
 
 	int _setPort(std::string &);
 	int _setServerName(std::string &);
@@ -93,6 +95,7 @@ class Config
 	int _setCGI(std::string &);
 	int _setMainRoot(std::string &);
 	int _setIndex(std::string &);
+	int _setUploadPath(std::string &);
 };
 
 #endif /* CONFIG_HPP */

@@ -88,7 +88,7 @@ std::string Server::getRequestData(int clientSocket)
 	}
 	buff[bytesRead] = 0;
 	log.info("Request size " + utils::to_string(bytesRead));
-	return std::string(buff);
+	return std::string(buff, bytesRead);
 }
 
 int Server::getServerSocket()
@@ -119,7 +119,7 @@ static int loadIndex(const Config &config, Response &response, std::string &full
 		if (utils::isFile(path))
 		{
 			response.loadFile(path);
-			break;
+			return 1;
 		}
 	}
 	return 0;
@@ -143,6 +143,16 @@ int Server::handleRequest(Connection &connection)
 		response.setCustomErrorPage(it->first, it->second);
 	}
 
+	// If request is a multipart/form-data
+	if (request.isMultipart())
+	{
+		log.error("!!! Multipart !!!");
+		handleMultipart(connection);
+		response.setStatus(HttpStatus::SEE_OTHER);
+		response.setHeader("Location", requestPath);
+		return 0;
+	}
+
 	// Request asked for a path that does not exist
 	if (!utils::pathExists(fullPath))
 	{
@@ -160,25 +170,24 @@ int Server::handleRequest(Connection &connection)
 	}
 
 	// Request is a directory and autoindex is enabled
-
 	if (utils::isDir(fullPath))
 	{
-		loadIndex(config, response, fullPath);
-		if (requestPath != "/")
+		if (loadIndex(config, response, fullPath))
 		{
-			if (_config.directoryListingEnabled(requestPath))
-			{
-				response.listDir(requestPath);
-			}
-			else
-			{
-				response.setStatus(HttpStatus::NOT_FOUND);
-			}
+			return 0;
+		}
+		if (_config.directoryListingEnabled(requestPath))
+		{
+			response.listDir(_config.getMainRoot(), requestPath);
+		}
+		else
+		{
+			response.setStatus(HttpStatus::NOT_FOUND);
 		}
 	}
 
 	// Request is a regular file
-	else if (utils::isFile(fullPath))
+	if (utils::isFile(fullPath))
 	{
 		response.loadFile(fullPath);
 	}
@@ -190,6 +199,64 @@ int Server::handleRequest(Connection &connection)
 	}
 
 	return 0;
+}
+
+void Server::handleMultipart(Connection &connection)
+{
+	Request &request = connection.request;
+
+	std::string body = request.getBody();
+	std::string contentType = request.getHeaders()["content-type"];
+	std::string boundary =
+	    "--" + contentType.substr(contentType.find("boundary=") + 9);
+	std::string uploadPath = _config.getMainRoot() + _config.getUploadPath();
+
+	int result = mkdir(uploadPath.c_str(), 0777);
+	if (result == 0)
+	{
+		log.error("Directory created successfully!");
+	}
+	else
+	{
+		log.error("Failed to create directory!");
+	}
+
+	size_t pos = 0;
+	size_t endPos;
+	while ((pos = body.find(boundary, pos)) != std::string::npos)
+	{
+		pos += boundary.size();
+
+		if (body.substr(pos, 2) == "--")
+			break;
+		pos += 2;
+		endPos = body.find(boundary, pos);
+		if (endPos == std::string::npos)
+			endPos = body.size();
+		std::string part = body.substr(pos, endPos - pos);
+		if (part.find("filename=\"") != std::string::npos)
+		{
+			size_t      nameStart = part.find("filename=\"") + 10;
+			size_t      nameEnd = part.find("\"", nameStart);
+			std::string fileName = part.substr(nameStart, nameEnd - nameStart);
+			size_t      fileStart = part.find("\r\n\r\n") + 4;
+			size_t      fileEnd = part.rfind("\r\n");
+			std::string fileContent = part.substr(fileStart, fileEnd - fileStart);
+			std::string filePath = uploadPath + "/" + fileName;
+			std::string fileReference = "Content-Disposition: form-data; name=\"" +
+			                            fileName + "\"\r\n\r\n" + filePath + "\r\n";
+			std::ofstream file(filePath.c_str());
+			file << fileContent;
+			file.close();
+			body.replace(pos, endPos - pos, fileReference);
+			pos += fileReference.size();
+		}
+		else
+		{
+			pos = endPos;
+		}
+	}
+	request.updateBody(body);
 }
 
 // --- Helper functions ---

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "HttpStatus.hpp"
+#include "Logger.hpp"
 #include "log_utils.hpp"
 #include "utils.hpp"
 
@@ -63,7 +64,9 @@ class Request
 	bool isValidMethod(std::string const &requestMethod) const;
 	bool isValidHttpVersion(std::string &requestVersion) const;
 	bool isParsed(void) const;
+	bool isMultipart(void) const;
 	void setErrorCode(int errorCode);
+	void updateBody(std::string const &newBody);
 };
 
 std::ostream &operator<<(std::ostream &os, Request const &req);
