@@ -23,7 +23,8 @@ int main()
     "form field\r\n"
     "------WebKitFormBoundarypIKW5zDegYBqDSmB--\r\n";
 
-
+	std::cout << "Original body:\n" << body << "\n\n";
+	
 	std::string contentType = "multipart/form-data; "
 	                          "boundary=----WebKitFormBoundarypIKW5zDegYBqDSmB";
 	std::string boundary =
@@ -91,6 +92,7 @@ int main()
 	}
 
 	// Print the modified body
+	std::cout << "Modified body:\n";
 	std::cout << body << std::endl;
 
 	return 0;
