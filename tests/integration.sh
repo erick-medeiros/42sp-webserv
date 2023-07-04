@@ -3,11 +3,12 @@
 BIN=$(pwd)/webserv
 TEST_FOLDER=$(pwd)/tests/integration/
 DEBUG_LOG="$TEST_FOLDER"debug.log
+SHOW_TEST_NAME=0
 
 fail() {
 	EXITCODE=$1
 	cat $DEBUG_LOG
-	echo "FAIL! ❌"
+	echo "FAIL: $TESTNAME ❌"
 	rm $DEBUG_LOG
 	exit $EXITCODE
 }
@@ -20,7 +21,9 @@ success() {
 run() {
 	TEST=$1
 	TESTNAME="$(basename $(dirname $TEST))/$(basename $TEST)"
-	echo "TEST: $TESTNAME"
+	if [ $SHOW_TEST_NAME != 0 ]; then
+		echo "TEST: $TESTNAME"
+	fi
 	if [ ! -d $TEST ]; then
 		echo "ERROR: folder $TEST" >> $DEBUG_LOG
 		fail 1

@@ -19,6 +19,14 @@ def post(URL, body):
         print("Error requests.post: " + URL)
         exit(1)
 
+def delete(URL):
+    try:
+        response = requests.delete(URL)
+        return response
+    except:
+        print("Error requests.delete: " + URL)
+        exit(1)
+
 
 text_lorem_ipsum_663b = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris ac metus consequat, consectetur justo nec, tempus justo. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Duis lobortis lorem at urna ultrices aliquam. Nulla facilisi. Maecenas accumsan venenatis mauris, id pharetra urna bibendum a. Sed id felis vitae mi consequat finibus a et odio. Morbi accumsan hendrerit velit, id sollicitudin lorem. Sed aliquet libero ut purus bibendum consequat. Sed blandit eleifend dolor, in eleifend mauris laoreet vitae. Ut gravida justo quis metus bibendum tincidunt. Nunc euismod est sed risus viverra, at cursus sapien tincidunt."
 

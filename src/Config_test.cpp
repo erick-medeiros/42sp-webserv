@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/30 17:25:26 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/02 21:35:42 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,6 +198,103 @@ TEST_SUITE("client_max_body_size")
 	}
 }
 
+TEST_SUITE("allowed_methods")
+{
+	TEST_CASE("default")
+	{
+		Config config;
+
+		std::vector<std::string> allowedMethods = config.getAllowedMethods();
+
+		CHECK_EQ(allowedMethods.size(), 3);
+		CHECK_EQ(allowedMethods[0], "GET");
+		CHECK_EQ(allowedMethods[1], "POST");
+		CHECK_EQ(allowedMethods[2], "DELETE");
+	}
+
+	TEST_CASE("GET only")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("allowed_methods", "GET"), 0);
+
+		std::vector<std::string> allowedMethods = config.getAllowedMethods();
+
+		CHECK_EQ(allowedMethods.size(), 1);
+		CHECK_EQ(allowedMethods[0], "GET");
+	}
+
+	TEST_CASE("GET and POST")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("allowed_methods", "GET POST"), 0);
+
+		std::vector<std::string> allowedMethods = config.getAllowedMethods();
+
+		CHECK_EQ(allowedMethods.size(), 2);
+		CHECK_EQ(allowedMethods[0], "GET");
+		CHECK_EQ(allowedMethods[1], "POST");
+	}
+
+	TEST_CASE("all")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("allowed_methods", "GET POST DELETE"), 0);
+
+		std::vector<std::string> allowedMethods = config.getAllowedMethods();
+
+		CHECK_EQ(allowedMethods.size(), 3);
+		CHECK_EQ(allowedMethods[0], "GET");
+		CHECK_EQ(allowedMethods[1], "POST");
+		CHECK_EQ(allowedMethods[2], "DELETE");
+	}
+
+	TEST_CASE("duplicated method")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("allowed_methods", "GET GET"), 0);
+		std::vector<std::string> allowedMethods1 = config.getAllowedMethods();
+		CHECK_EQ(allowedMethods1.size(), 1);
+
+		CHECK_EQ(config.add("allowed_methods", "GET POST GET"), 0);
+		std::vector<std::string> allowedMethods2 = config.getAllowedMethods();
+		CHECK_EQ(allowedMethods2.size(), 2);
+
+		CHECK_EQ(config.add("allowed_methods", "GET POST DELETE GET GET POST"), 0);
+		std::vector<std::string> allowedMethods3 = config.getAllowedMethods();
+		CHECK_EQ(allowedMethods3.size(), 3);
+	}
+
+	TEST_CASE("empty")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("allowed_methods", ""), 1);
+	}
+
+	TEST_CASE("invalid HTTP method")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("allowed_methods", "FOO"), 1);
+	}
+
+	TEST_CASE("not required methods")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("allowed_methods", "OPTIONS"), 1);
+		CHECK_EQ(config.add("allowed_methods", "PUT"), 1);
+		CHECK_EQ(config.add("allowed_methods", "PATCH"), 1);
+		CHECK_EQ(config.add("allowed_methods", "GET POST DELETE OPTIONS"), 1);
+		CHECK_EQ(config.add("allowed_methods", "POST PUT GET DELETE OPTIONS"), 1);
+		CHECK_EQ(config.add("allowed_methods", "OPTIONS POST PUT GET DELETE"), 1);
+	}
+}
+
 TEST_SUITE("location")
 {
 	TEST_CASE("location")
@@ -216,12 +313,28 @@ TEST_SUITE("location")
 
 	TEST_CASE("http_methods")
 	{
-		SUBCASE("GET")
+		SUBCASE("default")
 		{
 			Config config;
 
+			CHECK_EQ(config.add("allowed_methods", "GET POST DELETE"), 0);
 			CHECK_EQ(config.add("location", "value"), 0);
 
+			std::vector<location_t>   locations = config.getLocations();
+			std::vector<std::string> &methods = locations[0].http_methods;
+
+			CHECK_EQ(methods.size(), 3);
+			CHECK_EQ(methods[0], "GET");
+			CHECK_EQ(methods[1], "POST");
+			CHECK_EQ(methods[2], "DELETE");
+		}
+
+		SUBCASE("GET only")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("allowed_methods", "GET POST DELETE"), 0);
+			CHECK_EQ(config.add("location", "value"), 0);
 			CHECK_EQ(config.add("location_http_methods", "GET"), 0);
 
 			std::vector<location_t>   locations = config.getLocations();
@@ -230,21 +343,117 @@ TEST_SUITE("location")
 			CHECK_EQ(methods.size(), 1);
 			CHECK_EQ(methods[0], "GET");
 		}
+
+		SUBCASE("POST and GET")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("allowed_methods", "GET POST DELETE"), 0);
+			CHECK_EQ(config.add("location", "value"), 0);
+			CHECK_EQ(config.add("location_http_methods", "POST GET"), 0);
+
+			std::vector<location_t>   locations = config.getLocations();
+			std::vector<std::string> &methods = locations[0].http_methods;
+
+			CHECK_EQ(methods.size(), 2);
+			CHECK_EQ(methods[0], "POST");
+			CHECK_EQ(methods[1], "GET");
+		}
+
 		SUBCASE("all")
 		{
 			Config config;
 
+			CHECK_EQ(config.add("allowed_methods", "GET POST DELETE"), 0);
 			CHECK_EQ(config.add("location", "value"), 0);
-
 			CHECK_EQ(config.add("location_http_methods", "GET POST DELETE"), 0);
 
 			std::vector<location_t>   locations = config.getLocations();
 			std::vector<std::string> &methods = locations[0].http_methods;
 
+			CHECK_EQ(methods.size(), 3);
 			CHECK_EQ(methods[0], "GET");
 			CHECK_EQ(methods[1], "POST");
 			CHECK_EQ(methods[2], "DELETE");
+		}
+
+		SUBCASE("duplicated method 1")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("allowed_methods", "GET POST DELETE"), 0);
+			CHECK_EQ(config.add("location", "value"), 0);
+			CHECK_EQ(config.add("location_http_methods", "GET GET"), 0);
+
+			std::vector<location_t>   locations = config.getLocations();
+			std::vector<std::string> &methods = locations[0].http_methods;
+
+			CHECK_EQ(methods.size(), 1);
+		}
+
+		SUBCASE("duplicated method 2")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("allowed_methods", "GET POST DELETE"), 0);
+			CHECK_EQ(config.add("location", "value"), 0);
+
+			std::string const testCase = "GET POST DELETE POST POST GET";
+			CHECK_EQ(config.add("location_http_methods", testCase), 0);
+
+			std::vector<location_t>   locations = config.getLocations();
+			std::vector<std::string> &methods = locations[0].http_methods;
+
 			CHECK_EQ(methods.size(), 3);
+		}
+
+		SUBCASE("empty")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("allowed_methods", "GET POST DELETE"), 0);
+			CHECK_EQ(config.add("location", "value"), 0);
+			CHECK_EQ(config.add("location_http_methods", ""), 1);
+		}
+
+		SUBCASE("invalid http verb")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("allowed_methods", "GET POST DELETE"), 0);
+			CHECK_EQ(config.add("location", "value"), 0);
+
+			CHECK_EQ(config.add("location_http_methods", "GETS"), 1);
+			CHECK_EQ(config.add("location_http_methods", "PUT"), 1);
+			CHECK_EQ(config.add("location_http_methods", "GET POST OPTIONS"), 1);
+			CHECK_EQ(config.add("location_http_methods", "POST GET DELET"), 1);
+		}
+
+		SUBCASE("not allowed method insertion 1")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("allowed_methods", "DELETE"), 0);
+			CHECK_EQ(config.add("location", "value"), 0);
+			CHECK_EQ(config.add("location_http_methods", "GET"), 1);
+		}
+
+		SUBCASE("not allowed method insertion 2")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("allowed_methods", "GET"), 0);
+			CHECK_EQ(config.add("location", "value"), 0);
+			CHECK_EQ(config.add("location_http_methods", "GET POST"), 1);
+		}
+
+		SUBCASE("not allowed method insertion 3")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("allowed_methods", "GET"), 0);
+			CHECK_EQ(config.add("location", "value"), 0);
+			CHECK_EQ(config.add("location_http_methods", "GET POST"), 1);
 		}
 	}
 

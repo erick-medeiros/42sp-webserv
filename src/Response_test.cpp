@@ -3,8 +3,9 @@
 
 TEST_CASE("Response class")
 {
+	Config  config;
 	Request req;
-	req.parse("GET /404 HTTP/1.1\r\n\r\n");
+	req.parse("GET /404 HTTP/1.1\r\n\r\n", config);
 	Response response;
 
 	SUBCASE("Setters and getters")

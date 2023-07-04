@@ -33,13 +33,15 @@ TEST_CASE("Client start line request")
 	{
 		if (tt[i].expected < 3)
 		{
+			Config  config;
 			Request req;
-			CHECK_THROWS_AS(req.parse(tt[i].request), std::runtime_error);
+			CHECK_THROWS_AS(req.parse(tt[i].request, config), std::runtime_error);
 		}
 		else
 		{
+			Config  config;
 			Request req;
-			req.parse(tt[i].request);
+			req.parse(tt[i].request, config);
 			map requestStartLine = req.getStartLine();
 
 			CHECK_EQ(requestStartLine.size(), tt[i].expected);
@@ -80,13 +82,15 @@ TEST_CASE("Client request headers")
 
 		if (tt[i].expected == -1)
 		{
+			Config  config;
 			Request req;
-			CHECK_THROWS_AS(req.parse(request), std::runtime_error);
+			CHECK_THROWS_AS(req.parse(request, config), std::runtime_error);
 		}
 		else
 		{
+			Config  config;
 			Request req;
-			req.parse(request);
+			req.parse(request, config);
 			map requestHeaders = req.getHeaders();
 
 			CHECK_EQ(requestHeaders.size(), tt[i].expected);
@@ -118,8 +122,9 @@ TEST_CASE("Client request body")
 	while (++i < n)
 	{
 		std::string const request = tt[i].startLine + tt[i].headers + tt[i].body;
+		Config            config;
 		Request           req;
-		req.parse(request);
+		req.parse(request, config);
 		std::string const requestBody = req.getBody();
 
 		CHECK_EQ(requestBody.size(), tt[i].expected);
@@ -148,8 +153,9 @@ TEST_CASE("getResourcePath")
 	while (++i < n)
 	{
 		std::string const request = tt[i].startLine;
+		Config            config;
 		Request           req;
-		req.parse(request);
+		req.parse(request, config);
 		std::string const requestPath = req.getResourcePath();
 
 		CHECK_EQ(requestPath, tt[i].expected);
@@ -179,8 +185,9 @@ TEST_CASE("getResourceQuery")
 	while (++i < n)
 	{
 		std::string const request = tt[i].startLine;
+		Config            config;
 		Request           req;
-		req.parse(request);
+		req.parse(request, config);
 		std::string const requestPath = req.getResourceQuery();
 
 		CHECK_EQ(requestPath, tt[i].expected);
@@ -209,8 +216,9 @@ TEST_CASE("getAllParams")
 	while (++i < n)
 	{
 		std::string const request = tt[i].startLine;
+		Config            config;
 		Request           req;
-		req.parse(request);
+		req.parse(request, config);
 		std::vector<std::string> const params = req.getAllParams();
 
 		CHECK_EQ(params.size(), tt[i].expected);
@@ -235,8 +243,9 @@ TEST_CASE("getMethod")
 	while (++i < n)
 	{
 		std::string const request = tt[i].startLine;
+		Config            config;
 		Request           req;
-		req.parse(request);
+		req.parse(request, config);
 		std::string const method = req.getMethod();
 
 		CHECK_EQ(method, tt[i].expected);
@@ -261,8 +270,9 @@ TEST_CASE("getUrl")
 	while (++i < n)
 	{
 		std::string const request = tt[i].startLine;
+		Config            config;
 		Request           req;
-		req.parse(request);
+		req.parse(request, config);
 		std::string const url = req.getUrl();
 
 		CHECK_EQ(url, tt[i].expected);
@@ -296,14 +306,16 @@ TEST_CASE("getHeaderValue")
 		std::string const request = tt[i].header;
 		if (tt[i].expectException)
 		{
+			Config  config;
 			Request req;
-			req.parse(request);
+			req.parse(request, config);
 			CHECK_THROWS_AS(req.getHeaderValue(tt[i].value), std::runtime_error);
 		}
 		else
 		{
+			Config  config;
 			Request req;
-			req.parse(request);
+			req.parse(request, config);
 			std::string const headerValue = req.getHeaderValue(tt[i].value);
 
 			CHECK_EQ(headerValue, tt[i].expected);
@@ -339,15 +351,17 @@ TEST_CASE("isValidMethod")
 		std::string const request = tt[i].header;
 		if (tt[i].expected == false)
 		{
+			Config  config;
 			Request req;
-			CHECK_THROWS_AS(req.parse(request), std::runtime_error);
+			CHECK_THROWS_AS(req.parse(request, config), std::runtime_error);
 		}
 		else
 		{
+			Config  config;
 			Request req;
-			req.parse(request);
+			req.parse(request, config);
 			std::string const requestMethod = req.getMethod();
-			bool              isValidMethod = req.isValidMethod(requestMethod);
+			bool isValidMethod = req.isValidMethod(requestMethod, config);
 
 			CHECK_EQ(isValidMethod, tt[i].expected);
 		}
@@ -374,16 +388,18 @@ TEST_CASE("isValidHttpVersion")
 		std::string const request = tt[i].header;
 		if (tt[i].expected == false)
 		{
+			Config  config;
 			Request req;
 
-			CHECK_THROWS_AS(req.parse(request), std::runtime_error);
+			CHECK_THROWS_AS(req.parse(request, config), std::runtime_error);
 		}
 		else
 		{
+			Config  config;
 			Request req;
-			req.parse(request);
+			req.parse(request, config);
 			std::string const requestMethod = req.getMethod();
-			bool              isValidMethod = req.isValidMethod(requestMethod);
+			bool isValidMethod = req.isValidMethod(requestMethod, config);
 
 			CHECK_EQ(isValidMethod, tt[i].expected);
 		}

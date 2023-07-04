@@ -10,17 +10,11 @@
 #include <stdexcept>
 #include <vector>
 
+#include "Config.hpp"
 #include "HttpStatus.hpp"
 #include "Logger.hpp"
 #include "log_utils.hpp"
 #include "utils.hpp"
-
-enum
-{
-	GET,
-	POST,
-	DELETE
-};
 
 enum
 {
@@ -39,7 +33,7 @@ class Request
 	std::string                        resourcePath;
 	std::string                        resourceQuery;
 	std::string                        unparsed;
-	void                               parseStartLine();
+	void                               parseStartLine(Config const &);
 	void                               parseHeaders();
 	void                               parseBody();
 	bool                               startLineParsed;
@@ -50,8 +44,8 @@ class Request
   public:
 	Request(void);
 	~Request(void);
-	void parse(std::string const rawRequest);
 
+	void parse(std::string const rawRequest, Config const &);
 	std::map<std::string, std::string> getStartLine(void) const;
 	std::map<std::string, std::string> getHeaders(void) const;
 	std::string                        getBody(void) const;
@@ -61,7 +55,7 @@ class Request
 	std::string                        getMethod(void) const;
 	std::string                        getUrl(void) const;
 	std::string                        getHeaderValue(std::string const) const;
-	bool isValidMethod(std::string const &requestMethod) const;
+	bool isValidMethod(std::string const &, Config const &) const;
 	bool isValidHttpVersion(std::string &requestVersion) const;
 	bool isParsed(void) const;
 	bool isMultipart(void) const;

@@ -8,16 +8,12 @@ Request::Request()
 
 Request::~Request(void){};
 
-void Request::parse(std::string const rawInput)
+void Request::parse(std::string const rawInput, Config const &config)
 {
 	unparsed += rawInput;
 
 	if (!startLineParsed)
-	{
-		parseStartLine();
-		if (!startLineParsed)
-			return;
-	}
+		parseStartLine(config);
 	if (!headersParsed)
 	{
 		parseHeaders();
@@ -52,7 +48,7 @@ void Request::updateBody(std::string const &newBody)
 	body = newBody;
 }
 
-void Request::parseStartLine()
+void Request::parseStartLine(Config const &config)
 {
 	// Only parse if we have received the full start-line, delimited by \r\n
 	std::size_t pos = unparsed.find("\r\n");
@@ -65,26 +61,23 @@ void Request::parseStartLine()
 	std::string        method, uri, httpVersion;
 
 	iss >> method;
-	iss >> uri;
-	iss >> httpVersion;
-
-	// trim the strings
 	method = utils::trim(method);
-	uri = utils::trim(uri);
-	httpVersion = utils::trim(httpVersion);
+	if (!isValidMethod(method, config))
+	{
+		this->errorCode = HttpStatus::NOT_IMPLEMENTED;
+		throw std::runtime_error(method + " is not a HTTP method allowed by your "
+		                                  "configuration");
+	}
 
-	if (method.empty())
-		throw std::runtime_error("missing HTTP request method");
+	iss >> uri;
+	uri = utils::trim(uri);
 	if (uri.empty())
 		throw std::runtime_error("missing request URL");
+
+	iss >> httpVersion;
+	httpVersion = utils::trim(httpVersion);
 	if (httpVersion.empty())
 		throw std::runtime_error("missing HTTP protocol version");
-	if (!isValidMethod(method))
-	{
-		this->errorCode = HttpStatus::
-		    NOT_IMPLEMENTED; // https://www.rfc-editor.org/rfc/rfc9112#section-3-4
-		throw std::runtime_error("invalid HTTP request method: " + method);
-	}
 	if (!isValidHttpVersion(httpVersion))
 	{
 		this->errorCode = HttpStatus::
@@ -262,26 +255,15 @@ std::string Request::getHeaderValue(std::string const headerValue) const
 	return "";
 };
 
-bool Request::isValidMethod(std::string const &requestMethod) const
+bool Request::isValidMethod(std::string const &requestMethod,
+                            Config const      &config) const
 {
-	int const         numberOfAvaibleMethods = 3;
-	std::string const methods[numberOfAvaibleMethods] = {"GET", "POST", "DELETE"};
-
-	int index = 0;
-	for (int i = 0; i < numberOfAvaibleMethods && requestMethod != methods[i]; ++i)
+	std::vector<std::string> allowedMethods = config.getAllowedMethods();
+	if (utils::contains(allowedMethods, requestMethod))
 	{
-		index++;
-	}
-
-	switch (index)
-	{
-	case GET:
-	case POST:
-	case DELETE:
 		return true;
-	default:
-		return false;
 	}
+	return false;
 }
 
 bool Request::isValidHttpVersion(std::string &requestVersion) const
