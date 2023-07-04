@@ -55,11 +55,11 @@ class Config
 
 	int add(std::string label, std::string value);
 
-	uint_t const	                 &getPort(void) const;
+	uint_t const                     &getPort(void) const;
 	std::vector<std::string> const   &getServerNames(void) const;
 	std::string const                &getErrorPage(int error);
 	std::map<int, std::string> const &getErrorPages(void) const;
-	size_t const	                 &getClientBodySize() const;
+	size_t const                     &getClientBodySize() const;
 	std::vector<location_t> const    &getLocations() const;
 	std::vector<location_t>           getLocations(std::string path) const;
 	bool                              hasCGI(std::string path) const;

@@ -126,6 +126,8 @@ static int loadIndex(const Config &config, Response &response, std::string &full
 	return 0;
 }
 
+static Cookie cookies;
+
 int Server::handleRequest(Connection &connection)
 {
 	Request    &request = connection.request;
@@ -158,6 +160,35 @@ int Server::handleRequest(Connection &connection)
 		response.setCustomErrorPage(it->first, it->second);
 	}
 
+	if (requestPath.find("/admin") != std::string::npos)
+	{
+		std::string        session = Cookie::getValueCookie(request, "session");
+		const std::string &value = cookies.get(session);
+		if (session == "" || value == "")
+		{
+			response.setHeader("Set-Cookie", "session= ; path=/; expires=-1");
+			response.setStatus(HttpStatus::FORBIDDEN);
+			return 0;
+		}
+		else
+		{
+			response.setHeader("Session-Value", value);
+		}
+	}
+
+	if (requestPath.find("/login") != std::string::npos &&
+	    request.getMethod() == "POST")
+	{
+		std::string SetCookieValue = Cookie::getUsername(request);
+		std::string session = cookies.generateSession();
+		cookies.set(session, SetCookieValue);
+		log.debug("create cookie: session " + session + " value " + SetCookieValue);
+		response.setHeader("Set-Cookie", "session=" + session + ";path=/");
+		response.setStatus(HttpStatus::SEE_OTHER);
+		response.setHeader("Location", "/html/examples/admin/index.html");
+		return 0;
+	}
+
 	// Request asked for a path that does not exist
 	if (!utils::pathExists(fullPath))
 	{
@@ -175,7 +206,6 @@ int Server::handleRequest(Connection &connection)
 	}
 
 	// Request is a directory and autoindex is enabled
-
 	if (utils::isDir(fullPath))
 	{
 		loadIndex(config, response, fullPath);

@@ -1,0 +1,42 @@
+<html>
+
+<head>
+	<title>Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+</head>
+
+<body>
+	<main>
+		<div class="container">
+			<nav>
+				<ul>
+					<h2>
+						<li><a href="../index.html" class="secondary">←</a></li>
+						<li>Admin 🔓</li>
+					</h2>
+				</ul>
+			</nav>
+			<article>
+				<h2>Welcome to the Admin session, <u id="session"></u></h2>
+			</article>
+		</div>
+	</main>
+
+	<script>
+		function getCookie(name) {
+			const value = `; ${document.cookie}`;
+			const parts = value.split(`; ${name}=`);
+			if (parts.length === 2) return parts.pop().split(';').shift();
+		}
+		const session = getCookie('session');
+		fetch("http://localhost:8080/html/examples/admin/index.html", {
+			headers: {
+				'Cookie': `session=${session}`
+			},
+		}).then(response => {
+            sessionValue = response.headers.get("Session-Value");
+            document.getElementById('session').innerHTML = sessionValue;
+		})
+	</script>
+</body>
+</html>

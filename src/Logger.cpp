@@ -6,13 +6,13 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/27 13:59:06 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/29 09:33:20 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/04 15:38:04 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Logger.hpp"
 
-e_log_level Logger::level = LOGGER_LEVEL_INFO;
+e_log_level Logger::level = LOGGER_LEVEL_DEBUG;
 bool        Logger::showColor = true;
 
 Logger::Logger() : _stream(std::cout) {}

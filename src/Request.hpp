@@ -57,6 +57,7 @@ class Request
 	bool isValidHttpVersion(std::string &requestVersion) const;
 	bool isParsed(void) const;
 	void setErrorCode(int errorCode);
+	bool hasCookies(void) const;
 };
 
 std::ostream &operator<<(std::ostream &os, Request const &req);

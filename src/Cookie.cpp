@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 14:50:36 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/09 15:57:44 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/04 15:48:42 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ std::string Cookie::getValueCookie(Request const &request, std::string const &ke
 
 	try
 	{
-		headerCookie = request.getHeaderValue("Cookie");
+		headerCookie = request.getHeaderValue("cookie");
 	}
 	catch (...)
 	{
@@ -73,7 +73,7 @@ std::string Cookie::getValueCookie(Request const &request, std::string const &ke
 
 std::string Cookie::getUsername(Request const &request)
 {
-	std::string        text(request.getResourceQuery());
+	std::string        text(request.getBody());
 	std::istringstream sstream(text);
 	std::string        word;
 

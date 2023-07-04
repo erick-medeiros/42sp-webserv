@@ -232,6 +232,14 @@ std::string Request::getHeaderValue(std::string const headerValue) const
 	return "";
 };
 
+bool Request::hasCookies(void) const
+{
+	std::map<std::string, std::string>::const_iterator it = header.find("cookie");
+	if (it == header.end())
+		return false;
+	return true;
+}
+
 bool Request::isValidMethod(std::string const &requestMethod,
                             Config const      &config) const
 {
