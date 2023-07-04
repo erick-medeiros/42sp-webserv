@@ -123,6 +123,11 @@ static int loadIndex(const Config &config, Response &response, std::string &full
 			return 1;
 		}
 	}
+	if (fullPath == config.getMainRoot() + "/")
+	{
+		response.setStatus(HttpStatus::OK);
+		return 1;
+	}
 	return 0;
 }
 
@@ -161,7 +166,6 @@ int Server::handleRequest(Connection &connection)
 	// If request is a multipart/form-data
 	if (request.isMultipart())
 	{
-		log.error("!!! Multipart !!!");
 		handleMultipart(connection);
 		response.setStatus(HttpStatus::SEE_OTHER);
 		response.setHeader("Location", requestPath);
@@ -184,13 +188,18 @@ int Server::handleRequest(Connection &connection)
 		return 0;
 	}
 
+	// Rquest body is too large
+	if (request.getBody().size() > _config.getClientBodySize())
+	{
+		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
+		return 0;
+	}
+
 	// Request is a directory and autoindex is enabled
 	if (utils::isDir(fullPath))
 	{
 		if (loadIndex(config, response, fullPath))
-		{
 			return 0;
-		}
 		if (_config.directoryListingEnabled(requestPath))
 		{
 			response.listDir(_config.getMainRoot(), requestPath);
@@ -207,12 +216,6 @@ int Server::handleRequest(Connection &connection)
 		response.loadFile(fullPath);
 	}
 
-	// Rquest body is too large
-	if (request.getBody().size() > _config.getClientBodySize())
-	{
-		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
-	}
-
 	return 0;
 }
 
@@ -226,15 +229,8 @@ void Server::handleMultipart(Connection &connection)
 	    "--" + contentType.substr(contentType.find("boundary=") + 9);
 	std::string uploadPath = _config.getMainRoot() + _config.getUploadPath();
 
-	int result = mkdir(uploadPath.c_str(), 0777);
-	if (result == 0)
-	{
-		log.error("Directory created successfully!");
-	}
-	else
-	{
-		log.error("Failed to create directory!");
-	}
+	if (!utils::pathExists(uploadPath))
+		mkdir(uploadPath.c_str(), 0777);
 
 	size_t pos = 0;
 	size_t endPos;

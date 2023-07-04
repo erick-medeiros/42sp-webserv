@@ -13,7 +13,11 @@ void Request::parse(std::string const rawInput, Config const &config)
 	unparsed += rawInput;
 
 	if (!startLineParsed)
+	{
 		parseStartLine(config);
+		if (!startLineParsed)
+			return;
+	}
 	if (!headersParsed)
 	{
 		parseHeaders();
