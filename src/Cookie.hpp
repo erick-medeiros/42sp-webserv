@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 14:50:36 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/05 12:10:42 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/05 15:27:26 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,19 +19,35 @@
 #include <sstream>
 #include <string>
 
+typedef struct
+{
+	std::string name;
+	std::string value;
+	std::string domain;
+	std::string path;
+	std::string expires;
+	std::string size;
+	bool        httpOnly;
+	bool        secure;
+	std::string samesite;
+	std::string partitionKey;
+	std::string priority;
+	bool        sessionValue;
+} t_cookie;
+
 class Cookie
 {
   public:
 	Cookie(void);
 	~Cookie(void);
 
-	std::string const &get(std::string &key);
-	void               set(std::string const &key, std::string const &value);
+	const t_cookie &get(const std::string &name, const std::string &key);
+	void            set(const std::string &key, t_cookie &cookie);
 
 	std::string generateSession(void) const;
 
   private:
-	std::map<std::string, std::string> _db;
+	std::map<std::string, std::map<std::string, t_cookie> /**/> _db;
 };
 
 #endif /* COOKIE_HPP */

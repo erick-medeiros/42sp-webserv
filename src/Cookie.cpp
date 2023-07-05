@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 14:50:36 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/05 12:14:05 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/05 13:31:14 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,14 @@ Cookie::Cookie(void)
 
 Cookie::~Cookie(void) {}
 
-std::string const &Cookie::get(std::string &key)
+const t_cookie &Cookie::get(const std::string &name, const std::string &key)
 {
-	return _db[key];
+	return _db[name][key];
 }
 
-void Cookie::set(std::string const &key, std::string const &value)
+void Cookie::set(const std::string &key, t_cookie &cookie)
 {
-	_db[key] = value;
+	_db[cookie.name][key] = cookie;
 }
 
 std::string Cookie::generateSession(void) const

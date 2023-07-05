@@ -6,13 +6,14 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/04 22:04:41 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/05 18:50:02 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
+#include "Cookie.hpp"
 #include "Logger.hpp"
 #include "utils.hpp"
 #include <cstddef>
@@ -39,9 +40,9 @@ typedef struct
 	std::string                          root;
 	std::string                          directory_listing;
 	std::string                          response_is_dir;
-	std::set<std::string>                required_cookie;
-	std::set<std::string>                set_cookie;
 	std::set<std::string>                cgi_pass;
+	std::set<std::string>                required_cookie;
+	std::vector<t_cookie>                set_cookie;
 } location_t;
 
 typedef unsigned int uint_t;
@@ -103,6 +104,7 @@ class Config
 	int _setIndex(std::string &);
 	int _setAllowedMethods(std::string &);
 	int _setRequiredCookie(std::string &);
+	int _setSetCookie(std::string &);
 	int _isValidHttpVerb(std::string const) const;
 	int _setUploadPath(std::string &);
 };
