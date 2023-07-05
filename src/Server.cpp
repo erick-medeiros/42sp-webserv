@@ -102,35 +102,6 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-static int loadIndex(const Config &config, Response &response, std::string &fullPath)
-{
-	std::istringstream       iss(config.getIndex());
-	std::vector<std::string> tokens;
-
-	std::string token;
-	while (iss >> token)
-	{
-		tokens.push_back(token);
-	}
-
-	for (std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end();
-	     it++)
-	{
-		std::string path = fullPath + *it;
-		if (utils::isFile(path))
-		{
-			response.loadFile(path);
-			return 1;
-		}
-	}
-	if (fullPath == config.getMainRoot() + "/")
-	{
-		response.setStatus(HttpStatus::OK);
-		return 1;
-	}
-	return 0;
-}
-
 int Server::handleRequest(Connection &connection)
 {
 	Request    &request = connection.request;
@@ -150,6 +121,19 @@ int Server::handleRequest(Connection &connection)
 			{
 				log.error("invalid http method");
 				response.setStatus(HttpStatus::NOT_IMPLEMENTED);
+				return 0;
+			}
+		}
+	}
+
+	if (!locations.empty())
+	{
+		for (size_t i = 0; i < locations.size(); ++i)
+		{
+			if (locations[i].http_redirection.first != 0)
+			{
+				response.setStatus(locations[i].http_redirection.first);
+				response.setHeader("Location", locations[i].http_redirection.second);
 				return 0;
 			}
 		}
@@ -198,15 +182,27 @@ int Server::handleRequest(Connection &connection)
 	// Request is a directory and autoindex is enabled
 	if (utils::isDir(fullPath))
 	{
-		if (loadIndex(config, response, fullPath))
-			return 0;
-		if (_config.directoryListingEnabled(requestPath))
+		for (std::set<std::string>::const_iterator index = config.getIndex().begin();
+		     index != config.getIndex().end(); index++)
 		{
-			response.listDir(_config.getMainRoot(), requestPath);
+			std::string path = fullPath + *index;
+			if (utils::isFile(path))
+			{
+				response.loadFile(path);
+				break;
+			}
 		}
-		else
+
+		if (requestPath != "/")
 		{
-			response.setStatus(HttpStatus::NOT_FOUND);
+			if (_config.directoryListingEnabled(requestPath))
+			{
+				response.listDir(serverRoot, requestPath);
+			}
+			else
+			{
+				response.setStatus(HttpStatus::NOT_FOUND);
+			}
 		}
 	}
 

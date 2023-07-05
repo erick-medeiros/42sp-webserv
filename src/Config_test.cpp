@@ -6,13 +6,14 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/02 21:35:42 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/04 21:35:51 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 #include "Logger.hpp"
 #include "doctest.h"
+#include "utils.hpp"
 #include <sys/types.h>
 
 TEST_SUITE("Class Config")
@@ -463,11 +464,48 @@ TEST_SUITE("location")
 
 		CHECK_EQ(config.add("location", "value"), 0);
 
-		CHECK_EQ(config.add("location_http_redirection", "redirect"), 0);
+		CHECK_EQ(config.add("location_http_redirection", "301 redirect"), 0);
 
 		std::vector<location_t> locations = config.getLocations();
 
-		CHECK_EQ(locations[0].http_redirection, "redirect");
+		CHECK_EQ(locations[0].http_redirection.first, 301);
+
+		CHECK_EQ(locations[0].http_redirection.second, "redirect");
+
+		SUBCASE("bad config")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "value"), 0);
+
+			CHECK_EQ(config.add("location_http_redirection", "299 redirect"), 1);
+			CHECK_EQ(config.add("location_http_redirection", "400 redirect"), 1);
+		}
+
+		SUBCASE("success config")
+		{
+			for (int i = 300; i < 400; i++)
+			{
+				Config config;
+
+				CHECK_EQ(config.add("location", "value"), 0);
+
+				std::string redirect = utils::to_string(i) + " redirect";
+
+				CHECK_EQ(config.add("location_http_redirection", redirect), 0);
+			}
+		}
+
+		SUBCASE("default")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "value"), 0);
+
+			location_t location = config.getLocations()[0];
+
+			CHECK_EQ(location.http_redirection.first, 0);
+		}
 	}
 
 	TEST_CASE("root")
@@ -562,19 +600,21 @@ TEST_SUITE("index")
 	TEST_CASE("default")
 	{
 		Config config;
-		CHECK_EQ(config.getIndex(), "index.html");
+		CHECK_NE(config.getIndex().find("index.html"), config.getIndex().end());
 	}
 	TEST_CASE("set and get")
 	{
 		Config config;
 		CHECK_EQ(config.add("index", "index.htm"), 0);
-		CHECK_EQ(config.getIndex(), "index.htm");
+		CHECK_NE(config.getIndex().find("index.htm"), config.getIndex().end());
 	}
 	TEST_CASE("multiples")
 	{
 		Config      config;
 		std::string index = "index.htm index.ht index.h";
 		CHECK_EQ(config.add("index", index), 0);
-		CHECK_EQ(config.getIndex(), index);
+		CHECK_NE(config.getIndex().find("index.htm"), config.getIndex().end());
+		CHECK_NE(config.getIndex().find("index.ht"), config.getIndex().end());
+		CHECK_NE(config.getIndex().find("index.h"), config.getIndex().end());
 	}
 }
