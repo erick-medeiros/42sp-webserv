@@ -159,7 +159,7 @@ int Server::handleRequest(Connection &connection)
 
 	if (requestPath.find("/admin") != std::string::npos)
 	{
-		std::string        session = Cookie::getValueCookie(request, "session");
+		std::string        session = request.getValueCookie("session");
 		const std::string &value = cookies.get(session);
 		if (session == "" || value == "")
 		{
@@ -176,7 +176,7 @@ int Server::handleRequest(Connection &connection)
 	if (requestPath.find("/login") != std::string::npos &&
 	    request.getMethod() == "POST")
 	{
-		std::string SetCookieValue = Cookie::getUsername(request);
+		std::string SetCookieValue = request.getNewCookieValue();
 		std::string session = cookies.generateSession();
 		cookies.set(session, SetCookieValue);
 		log.debug("create cookie: session " + session + " value " + SetCookieValue);

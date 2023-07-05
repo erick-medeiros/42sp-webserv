@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 14:50:36 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/04 15:48:42 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/05 12:14:05 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,56 +39,3 @@ std::string Cookie::generateSession(void) const
 		return generateSession();
 	return session;
 };
-
-// static
-
-std::string Cookie::getValueCookie(Request const &request, std::string const &key)
-{
-	std::string headerCookie;
-	std::string value;
-
-	try
-	{
-		headerCookie = request.getHeaderValue("cookie");
-	}
-	catch (...)
-	{
-		return "";
-	};
-
-	{
-		std::istringstream sstream(headerCookie);
-		std::string        word;
-		std::getline(sstream, word, '=');
-		if (word == key)
-		{
-			std::getline(sstream, word, '=');
-			return word;
-		}
-		return "";
-	}
-
-	return value;
-}
-
-std::string Cookie::getUsername(Request const &request)
-{
-	std::string        text(request.getBody());
-	std::istringstream sstream(text);
-	std::string        word;
-
-	while (std::getline(sstream, word, '&'))
-	{
-		std::istringstream sstream(word);
-		std::string        key;
-
-		std::getline(sstream, key, '=');
-		if (key == "username")
-		{
-			std::getline(sstream, key, '=');
-			return key;
-		}
-	}
-
-	return "";
-}

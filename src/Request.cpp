@@ -308,6 +308,57 @@ void Request::setErrorCode(int errorCode)
 	this->errorCode = errorCode;
 }
 
+std::string Request::getValueCookie(std::string const &key) const
+{
+	std::string headerCookie;
+	std::string value;
+
+	try
+	{
+		headerCookie = this->getHeaderValue("cookie");
+	}
+	catch (...)
+	{
+		return "";
+	};
+
+	{
+		std::istringstream sstream(headerCookie);
+		std::string        word;
+		std::getline(sstream, word, '=');
+		if (word == key)
+		{
+			std::getline(sstream, word, '=');
+			return word;
+		}
+		return "";
+	}
+
+	return value;
+}
+
+std::string Request::getNewCookieValue() const
+{
+	std::string        text(this->getBody());
+	std::istringstream sstream(text);
+	std::string        word;
+
+	while (std::getline(sstream, word, '&'))
+	{
+		std::istringstream sstream(word);
+		std::string        key;
+
+		std::getline(sstream, key, '=');
+		if (key == "username")
+		{
+			std::getline(sstream, key, '=');
+			return key;
+		}
+	}
+
+	return "";
+}
+
 std::ostream &operator<<(std::ostream &os, Request const &req)
 {
 	os << CYAN "========== START LINE ==========" RES << std::endl;

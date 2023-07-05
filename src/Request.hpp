@@ -61,6 +61,11 @@ class Request
 	void setErrorCode(int errorCode);
 	void updateBody(std::string const &newBody);
 	bool hasCookies(void) const;
+
+	// cookie {
+	std::string getValueCookie(std::string const &key) const;
+	std::string getNewCookieValue() const;
+	// } cookie
 };
 
 std::ostream &operator<<(std::ostream &os, Request const &req);
