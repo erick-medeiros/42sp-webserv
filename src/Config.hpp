@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/04 21:11:37 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/04 22:04:41 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 typedef std::pair<std::string, std::string> pair_string_t;
@@ -31,16 +32,16 @@ typedef std::list<pair_string_t>            labels_t;
 
 typedef struct
 {
-	std::string              location;
-	std::vector<std::string> allowed_methods;
-	std::vector<std::string> http_methods;
-	std::string              http_redirection;
-	std::string              root;
-	std::string              directory_listing;
-	std::string              response_is_dir;
-	std::set<std::string>    required_cookie;
-	std::set<std::string>    set_cookie;
-	std::set<std::string>    cgi_pass;
+	std::string                          location;
+	std::vector<std::string>             allowed_methods;
+	std::vector<std::string>             http_methods;
+	std::pair<unsigned int, std::string> http_redirection;
+	std::string                          root;
+	std::string                          directory_listing;
+	std::string                          response_is_dir;
+	std::set<std::string>                required_cookie;
+	std::set<std::string>                set_cookie;
+	std::set<std::string>                cgi_pass;
 } location_t;
 
 typedef unsigned int uint_t;
@@ -66,8 +67,9 @@ class Config
 	std::vector<location_t>           getLocations(std::string path) const;
 	bool                              hasCGI(std::string path) const;
 	const std::string                &getMainRoot(void) const;
-	const std::string                &getIndex(void) const;
+	const std::set<std::string>      &getIndex(void) const;
 	std::vector<std::string> const   &getAllowedMethods(void) const;
+	const std::string                &getUploadPath(void) const;
 
 	// Helpers
 	bool directoryListingEnabled(std::string path) const;
@@ -82,8 +84,9 @@ class Config
 	size_t                     _clientBodySize;
 	std::vector<location_t>    _locations;
 	std::string                _mainRoot;
-	std::string                _index;
+	std::set<std::string>      _index;
 	std::vector<std::string>   _allowedMethods;
+	std::string                _uploadPath;
 
 	int _setPort(std::string &);
 	int _setServerName(std::string &);
@@ -101,6 +104,7 @@ class Config
 	int _setAllowedMethods(std::string &);
 	int _setRequiredCookie(std::string &);
 	int _isValidHttpVerb(std::string const) const;
+	int _setUploadPath(std::string &);
 };
 
 #endif /* CONFIG_HPP */

@@ -6,18 +6,19 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/04 21:09:37 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/04 22:03:57 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 
 Config::Config(void)
-    : _port(0), _clientBodySize(1024 * 1024), _mainRoot("."), _index("index.html")
+    : _port(0), _clientBodySize(1024 * 1024), _mainRoot("."), _uploadPath("/uploads")
 {
 	this->_allowedMethods.push_back("GET");
 	this->_allowedMethods.push_back("POST");
 	this->_allowedMethods.push_back("DELETE");
+	_index.insert("index.html");
 }
 
 Config::~Config(void) {}
@@ -37,6 +38,8 @@ int Config::add(std::string label, std::string value)
 		return _setMainRoot(value);
 	if (label == "index")
 		return _setIndex(value);
+	if (label == "upload_path")
+		return _setUploadPath(value);
 	if (label == "allowed_methods")
 		return _setAllowedMethods(value);
 	if (label == "location_http_methods")
@@ -169,6 +172,7 @@ int Config::_setLocation(std::string &value)
 	location.http_methods.push_back("GET");
 	location.http_methods.push_back("POST");
 	location.http_methods.push_back("DELETE");
+	location.http_redirection.first = 0;
 	_locations.push_back(location);
 	return 0;
 }
@@ -227,7 +231,15 @@ int Config::_setHttpRedirection(std::string &value)
 	std::stringstream                  ss(value);
 	std::vector<location_t>::reference location = _locations.back();
 
-	location.http_redirection = value;
+	ss << value;
+
+	ss >> location.http_redirection.first;
+
+	if (location.http_redirection.first < 300 ||
+	    location.http_redirection.first > 399)
+		return 1;
+
+	ss >> location.http_redirection.second;
 
 	return 0;
 }
@@ -258,6 +270,9 @@ int Config::_setDirectoryListing(std::string &value)
 
 bool Config::directoryListingEnabled(std::string path) const
 {
+	// If path ends with a slash, remove it
+	if (path[path.size() - 1] == '/')
+		path = path.substr(0, path.size() - 1);
 	std::vector<location_t>::const_iterator it;
 	for (it = _locations.begin(); it != _locations.end(); ++it)
 	{
@@ -337,7 +352,22 @@ int Config::_setMainRoot(std::string &value)
 
 int Config::_setIndex(std::string &value)
 {
-	_index = value;
+	std::istringstream iss(value);
+
+	_index.clear();
+
+	std::string token;
+	while (iss >> token)
+	{
+		_index.insert(token);
+	}
+
+	return 0;
+}
+
+int Config::_setUploadPath(std::string &value)
+{
+	_uploadPath = value;
 	return 0;
 }
 
@@ -393,9 +423,14 @@ const std::string &Config::getMainRoot(void) const
 	return _mainRoot;
 }
 
-const std::string &Config::getIndex(void) const
+const std::set<std::string> &Config::getIndex(void) const
 {
 	return _index;
+}
+
+const std::string &Config::getUploadPath(void) const
+{
+	return _uploadPath;
 }
 
 // Return the locations that match the path
@@ -416,8 +451,6 @@ bool Config::hasCGI(std::string path) const
 {
 	std::string fileExtenstion = "." + path.substr(path.find_last_of(".") + 1);
 
-	log.warning("!!! fileExtenstion: " + fileExtenstion);
-
 	// If there is no file extension, it is not a CGI
 	if (fileExtenstion.empty())
 		return false;
@@ -426,8 +459,6 @@ bool Config::hasCGI(std::string path) const
 	std::vector<location_t>::const_iterator it;
 	for (it = locations.begin(); it != locations.end(); ++it)
 	{
-		log.warning("!!! it->location: " + it->location);
-
 		if (it->cgi_pass.find(fileExtenstion) != it->cgi_pass.end())
 			return true;
 	}
