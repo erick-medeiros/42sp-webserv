@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/03 09:32:55 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/04 21:31:58 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ class Config
 	std::vector<location_t>           getLocations(std::string path) const;
 	bool                              hasCGI(std::string path) const;
 	const std::string                &getMainRoot(void) const;
-	const std::string                &getIndex(void) const;
+	const std::set<std::string>      &getIndex(void) const;
 	std::vector<std::string> const   &getAllowedMethods(void) const;
 
 	// Helpers
@@ -81,7 +81,7 @@ class Config
 	size_t                     _clientBodySize;
 	std::vector<location_t>    _locations;
 	std::string                _mainRoot;
-	std::string                _index;
+	std::set<std::string>      _index;
 	std::vector<std::string>   _allowedMethods;
 
 	int _setPort(std::string &);

@@ -102,30 +102,6 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
-static int loadIndex(const Config &config, Response &response, std::string &fullPath)
-{
-	std::istringstream       iss(config.getIndex());
-	std::vector<std::string> tokens;
-
-	std::string token;
-	while (iss >> token)
-	{
-		tokens.push_back(token);
-	}
-
-	for (std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end();
-	     it++)
-	{
-		std::string path = fullPath + *it;
-		if (utils::isFile(path))
-		{
-			response.loadFile(path);
-			break;
-		}
-	}
-	return 0;
-}
-
 int Server::handleRequest(Connection &connection)
 {
 	Request    &request = connection.request;
@@ -191,7 +167,17 @@ int Server::handleRequest(Connection &connection)
 
 	if (utils::isDir(fullPath))
 	{
-		loadIndex(config, response, fullPath);
+		for (std::set<std::string>::const_iterator index = config.getIndex().begin();
+		     index != config.getIndex().end(); index++)
+		{
+			std::string path = fullPath + *index;
+			if (utils::isFile(path))
+			{
+				response.loadFile(path);
+				break;
+			}
+		}
+
 		if (requestPath != "/")
 		{
 			if (_config.directoryListingEnabled(requestPath))

@@ -6,18 +6,18 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/03 10:03:35 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/04 21:32:03 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 
-Config::Config(void)
-    : _port(0), _clientBodySize(1024 * 1024), _mainRoot("."), _index("index.html")
+Config::Config(void) : _port(0), _clientBodySize(1024 * 1024), _mainRoot(".")
 {
 	this->_allowedMethods.push_back("GET");
 	this->_allowedMethods.push_back("POST");
 	this->_allowedMethods.push_back("DELETE");
+	_index.insert("index.html");
 }
 
 Config::~Config(void) {}
@@ -344,7 +344,16 @@ int Config::_setMainRoot(std::string &value)
 
 int Config::_setIndex(std::string &value)
 {
-	_index = value;
+	std::istringstream iss(value);
+
+	_index.clear();
+
+	std::string token;
+	while (iss >> token)
+	{
+		_index.insert(token);
+	}
+
 	return 0;
 }
 
@@ -383,7 +392,7 @@ const std::string &Config::getMainRoot(void) const
 	return _mainRoot;
 }
 
-const std::string &Config::getIndex(void) const
+const std::set<std::string> &Config::getIndex(void) const
 {
 	return _index;
 }

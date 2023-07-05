@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/03 10:05:04 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/04 21:35:51 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -600,19 +600,21 @@ TEST_SUITE("index")
 	TEST_CASE("default")
 	{
 		Config config;
-		CHECK_EQ(config.getIndex(), "index.html");
+		CHECK_NE(config.getIndex().find("index.html"), config.getIndex().end());
 	}
 	TEST_CASE("set and get")
 	{
 		Config config;
 		CHECK_EQ(config.add("index", "index.htm"), 0);
-		CHECK_EQ(config.getIndex(), "index.htm");
+		CHECK_NE(config.getIndex().find("index.htm"), config.getIndex().end());
 	}
 	TEST_CASE("multiples")
 	{
 		Config      config;
 		std::string index = "index.htm index.ht index.h";
 		CHECK_EQ(config.add("index", index), 0);
-		CHECK_EQ(config.getIndex(), index);
+		CHECK_NE(config.getIndex().find("index.htm"), config.getIndex().end());
+		CHECK_NE(config.getIndex().find("index.ht"), config.getIndex().end());
+		CHECK_NE(config.getIndex().find("index.h"), config.getIndex().end());
 	}
 }
