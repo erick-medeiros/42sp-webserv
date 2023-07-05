@@ -137,6 +137,45 @@ int Server::handleRequest(Connection &connection)
 				response.setHeader("Location", locations[i].http_redirection.second);
 				return 0;
 			}
+			else if (locations[i].required_cookie.size() > 0)
+			{
+				std::set<std::string>::const_iterator it =
+				    locations[i].required_cookie.begin();
+				while (it != locations[i].required_cookie.end())
+				{
+					const std::string &nameCookie = *it;
+					std::string valueCookie = request.getValueCookie(nameCookie);
+					t_cookie    cookie = cookies.get(nameCookie, valueCookie);
+					if (valueCookie == "" || cookie.value == "")
+					{
+						response.setHeader("Set-Cookie", "session= ; path=/; "
+						                                 "expires=-1");
+						response.setStatus(HttpStatus::FORBIDDEN);
+						return 0;
+					}
+					else
+					{
+						response.setHeader("Session-Value", cookie.value);
+					}
+					it++;
+				}
+			}
+			else if (locations[i].set_cookie.size() > 0 &&
+			         request.getMethod() == "POST")
+			{
+				t_cookie    cookie;
+				std::string SetCookieValue = request.getNewCookieValue();
+				cookie.name = "session";
+				cookie.value = SetCookieValue;
+				std::string session = cookies.generateSession();
+				cookies.set(session, cookie);
+				log.debug("create cookie: session " + session + " value " +
+				          SetCookieValue);
+				response.setHeader("Set-Cookie", "session=" + session + ";path=/");
+				// response.setStatus(HttpStatus::SEE_OTHER);
+				// response.setHeader("Location", "/html/examples/admin/index.html");
+				// return 0;
+			}
 		}
 	}
 
@@ -154,35 +193,6 @@ int Server::handleRequest(Connection &connection)
 		handleMultipart(connection);
 		response.setStatus(HttpStatus::SEE_OTHER);
 		response.setHeader("Location", requestPath);
-		return 0;
-	}
-
-	if (requestPath.find("/admin") != std::string::npos)
-	{
-		std::string        session = request.getValueCookie("session");
-		const std::string &value = cookies.get(session);
-		if (session == "" || value == "")
-		{
-			response.setHeader("Set-Cookie", "session= ; path=/; expires=-1");
-			response.setStatus(HttpStatus::FORBIDDEN);
-			return 0;
-		}
-		else
-		{
-			response.setHeader("Session-Value", value);
-		}
-	}
-
-	if (requestPath.find("/login") != std::string::npos &&
-	    request.getMethod() == "POST")
-	{
-		std::string SetCookieValue = request.getNewCookieValue();
-		std::string session = cookies.generateSession();
-		cookies.set(session, SetCookieValue);
-		log.debug("create cookie: session " + session + " value " + SetCookieValue);
-		response.setHeader("Set-Cookie", "session=" + session + ";path=/");
-		response.setStatus(HttpStatus::SEE_OTHER);
-		response.setHeader("Location", "/html/examples/admin/index.html");
 		return 0;
 	}
 
@@ -212,18 +222,21 @@ int Server::handleRequest(Connection &connection)
 	// Request is a directory and autoindex is enabled
 	if (utils::isDir(fullPath))
 	{
+		bool notFound = true;
 		for (std::set<std::string>::const_iterator index = config.getIndex().begin();
 		     index != config.getIndex().end(); index++)
 		{
-			std::string path = fullPath + *index;
+			std::string path = utils::end_with(fullPath, "/") ?
+			                       fullPath + *index :
+			                       fullPath + "/" + *index;
 			if (utils::isFile(path))
 			{
 				response.loadFile(path);
+				notFound = false;
 				break;
 			}
 		}
-
-		if (requestPath != "/")
+		if (notFound && requestPath != "/")
 		{
 			if (_config.directoryListingEnabled(requestPath))
 			{

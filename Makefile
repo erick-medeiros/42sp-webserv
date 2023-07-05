@@ -47,7 +47,7 @@ clean:
 	$(RM) $(BUILD_DIR)/*
 
 fclean: clean
-	$(RM) $(NAME)
+	$(RM) $(NAME) *.out
 
 re: fclean all
 
