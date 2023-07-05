@@ -12,6 +12,7 @@
 
 #include "Config.hpp"
 #include "HttpStatus.hpp"
+#include "Logger.hpp"
 #include "utils.hpp"
 
 enum
@@ -56,7 +57,9 @@ class Request
 	bool isValidMethod(std::string const &, Config const &) const;
 	bool isValidHttpVersion(std::string &requestVersion) const;
 	bool isParsed(void) const;
+	bool isMultipart(void) const;
 	void setErrorCode(int errorCode);
+	void updateBody(std::string const &newBody);
 };
 
 std::ostream &operator<<(std::ostream &os, Request const &req);

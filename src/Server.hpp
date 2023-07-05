@@ -10,7 +10,8 @@
 #include <netinet/in.h> // sockaddr_in
 #include <sstream>      // stringstream
 #include <stdexcept>
-#include <string> // to_string
+#include <string>     // to_string
+#include <sys/stat.h> // mkdir
 #include <sys/wait.h>
 #include <unistd.h> // close
 #include <vector>
@@ -47,6 +48,7 @@ class Server
 	int    _serverSocket;
 
 	int         listenToPort(int port);
+	void        handleMultipart(Connection &connection);
 	sockaddr_in createServerAddress(int port);
 };
 

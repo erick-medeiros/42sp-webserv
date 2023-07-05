@@ -56,17 +56,18 @@ class Config
 
 	int add(std::string label, std::string value);
 
-	uint_t const	                 &getPort(void) const;
+	uint_t const                     &getPort(void) const;
 	std::vector<std::string> const   &getServerNames(void) const;
 	std::string const                &getErrorPage(int error);
 	std::map<int, std::string> const &getErrorPages(void) const;
-	size_t const	                 &getClientBodySize() const;
+	size_t const                     &getClientBodySize() const;
 	std::vector<location_t> const    &getLocations() const;
 	std::vector<location_t>           getLocations(std::string path) const;
 	bool                              hasCGI(std::string path) const;
 	const std::string                &getMainRoot(void) const;
 	const std::set<std::string>      &getIndex(void) const;
 	std::vector<std::string> const   &getAllowedMethods(void) const;
+	const std::string                &getUploadPath(void) const;
 
 	// Helpers
 	bool directoryListingEnabled(std::string path) const;
@@ -83,6 +84,7 @@ class Config
 	std::string                _mainRoot;
 	std::set<std::string>      _index;
 	std::vector<std::string>   _allowedMethods;
+	std::string                _uploadPath;
 
 	int _setPort(std::string &);
 	int _setServerName(std::string &);
@@ -99,6 +101,7 @@ class Config
 	int _setIndex(std::string &);
 	int _setAllowedMethods(std::string &);
 	int _isValidHttpVerb(std::string const) const;
+	int _setUploadPath(std::string &);
 };
 
 #endif /* CONFIG_HPP */

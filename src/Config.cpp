@@ -6,13 +6,14 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/04 21:32:03 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/04 21:49:08 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 
-Config::Config(void) : _port(0), _clientBodySize(1024 * 1024), _mainRoot(".")
+Config::Config(void)
+    : _port(0), _clientBodySize(1024 * 1024), _mainRoot("."), _uploadPath("/uploads")
 {
 	this->_allowedMethods.push_back("GET");
 	this->_allowedMethods.push_back("POST");
@@ -37,6 +38,8 @@ int Config::add(std::string label, std::string value)
 		return _setMainRoot(value);
 	if (label == "index")
 		return _setIndex(value);
+	if (label == "upload_path")
+		return _setUploadPath(value);
 	if (label == "allowed_methods")
 		return _setAllowedMethods(value);
 	if (label == "location_http_methods")
@@ -265,6 +268,9 @@ int Config::_setDirectoryListing(std::string &value)
 
 bool Config::directoryListingEnabled(std::string path) const
 {
+	// If path ends with a slash, remove it
+	if (path[path.size() - 1] == '/')
+		path = path.substr(0, path.size() - 1);
 	std::vector<location_t>::const_iterator it;
 	for (it = _locations.begin(); it != _locations.end(); ++it)
 	{
@@ -357,6 +363,12 @@ int Config::_setIndex(std::string &value)
 	return 0;
 }
 
+int Config::_setUploadPath(std::string &value)
+{
+	_uploadPath = value;
+	return 0;
+}
+
 uint_t const &Config::getPort(void) const
 {
 	return _port;
@@ -397,6 +409,11 @@ const std::set<std::string> &Config::getIndex(void) const
 	return _index;
 }
 
+const std::string &Config::getUploadPath(void) const
+{
+	return _uploadPath;
+}
+
 // Return the locations that match the path
 std::vector<location_t> Config::getLocations(std::string path) const
 {
@@ -415,8 +432,6 @@ bool Config::hasCGI(std::string path) const
 {
 	std::string fileExtenstion = "." + path.substr(path.find_last_of(".") + 1);
 
-	log.warning("!!! fileExtenstion: " + fileExtenstion);
-
 	// If there is no file extension, it is not a CGI
 	if (fileExtenstion.empty())
 		return false;
@@ -425,8 +440,6 @@ bool Config::hasCGI(std::string path) const
 	std::vector<location_t>::const_iterator it;
 	for (it = locations.begin(); it != locations.end(); ++it)
 	{
-		log.warning("!!! it->location: " + it->location);
-
 		if (it->cgi_pass.find(fileExtenstion) != it->cgi_pass.end())
 			return true;
 	}

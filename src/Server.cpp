@@ -89,7 +89,7 @@ std::string Server::getRequestData(int clientSocket)
 	}
 	buff[bytesRead] = 0;
 	log.info("Request size " + utils::to_string(bytesRead));
-	return std::string(buff);
+	return std::string(buff, bytesRead);
 }
 
 int Server::getServerSocket()
@@ -147,6 +147,15 @@ int Server::handleRequest(Connection &connection)
 		response.setCustomErrorPage(it->first, it->second);
 	}
 
+	// If request is a multipart/form-data
+	if (request.isMultipart())
+	{
+		handleMultipart(connection);
+		response.setStatus(HttpStatus::SEE_OTHER);
+		response.setHeader("Location", requestPath);
+		return 0;
+	}
+
 	// Request asked for a path that does not exist
 	if (!utils::pathExists(fullPath))
 	{
@@ -163,8 +172,14 @@ int Server::handleRequest(Connection &connection)
 		return 0;
 	}
 
-	// Request is a directory and autoindex is enabled
+	// Rquest body is too large
+	if (request.getBody().size() > _config.getClientBodySize())
+	{
+		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
+		return 0;
+	}
 
+	// Request is a directory and autoindex is enabled
 	if (utils::isDir(fullPath))
 	{
 		for (std::set<std::string>::const_iterator index = config.getIndex().begin();
@@ -182,7 +197,7 @@ int Server::handleRequest(Connection &connection)
 		{
 			if (_config.directoryListingEnabled(requestPath))
 			{
-				response.listDir(requestPath);
+				response.listDir(serverRoot, requestPath);
 			}
 			else
 			{
@@ -192,18 +207,63 @@ int Server::handleRequest(Connection &connection)
 	}
 
 	// Request is a regular file
-	else if (utils::isFile(fullPath))
+	if (utils::isFile(fullPath))
 	{
 		response.loadFile(fullPath);
 	}
 
-	// Rquest body is too large
-	if (request.getBody().size() > _config.getClientBodySize())
-	{
-		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
-	}
-
 	return 0;
+}
+
+void Server::handleMultipart(Connection &connection)
+{
+	Request &request = connection.request;
+
+	std::string body = request.getBody();
+	std::string contentType = request.getHeaders()["content-type"];
+	std::string boundary =
+	    "--" + contentType.substr(contentType.find("boundary=") + 9);
+	std::string uploadPath = _config.getMainRoot() + _config.getUploadPath();
+
+	if (!utils::pathExists(uploadPath))
+		mkdir(uploadPath.c_str(), 0777);
+
+	size_t pos = 0;
+	size_t endPos;
+	while ((pos = body.find(boundary, pos)) != std::string::npos)
+	{
+		pos += boundary.size();
+
+		if (body.substr(pos, 2) == "--")
+			break;
+		pos += 2;
+		endPos = body.find(boundary, pos);
+		if (endPos == std::string::npos)
+			endPos = body.size();
+		std::string part = body.substr(pos, endPos - pos);
+		if (part.find("filename=\"") != std::string::npos)
+		{
+			size_t      nameStart = part.find("filename=\"") + 10;
+			size_t      nameEnd = part.find("\"", nameStart);
+			std::string fileName = part.substr(nameStart, nameEnd - nameStart);
+			size_t      fileStart = part.find("\r\n\r\n") + 4;
+			size_t      fileEnd = part.rfind("\r\n");
+			std::string fileContent = part.substr(fileStart, fileEnd - fileStart);
+			std::string filePath = uploadPath + "/" + fileName;
+			std::string fileReference = "Content-Disposition: form-data; name=\"" +
+			                            fileName + "\"\r\n\r\n" + filePath + "\r\n";
+			std::ofstream file(filePath.c_str());
+			file << fileContent;
+			file.close();
+			body.replace(pos, endPos - pos, fileReference);
+			pos += fileReference.size();
+		}
+		else
+		{
+			pos = endPos;
+		}
+	}
+	request.updateBody(body);
 }
 
 // --- Helper functions ---
