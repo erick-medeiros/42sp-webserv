@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/02 21:35:42 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/04 21:10:15 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -539,6 +539,19 @@ TEST_SUITE("location")
 			CHECK_NE(location_first.cgi_pass.find(".php"), location.cgi_pass.end());
 			CHECK_NE(location_second.cgi_pass.find(".py"), location.cgi_pass.end());
 		}
+	}
+
+	TEST_CASE("required_cookie")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("location", "/"), 0);
+		CHECK_EQ(config.add("location_required_cookie", "session"), 0);
+
+		location_t const &location = config.getLocations()[0];
+
+		CHECK_NE(location.required_cookie.find("session"),
+		         location.required_cookie.end());
 	}
 }
 

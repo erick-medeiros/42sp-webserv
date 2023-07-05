@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/02 21:34:16 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/04 21:11:37 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ typedef struct
 	std::string              root;
 	std::string              directory_listing;
 	std::string              response_is_dir;
+	std::set<std::string>    required_cookie;
+	std::set<std::string>    set_cookie;
 	std::set<std::string>    cgi_pass;
 } location_t;
 
@@ -55,11 +57,11 @@ class Config
 
 	int add(std::string label, std::string value);
 
-	uint_t const                     &getPort(void) const;
+	const uint_t                     &getPort(void) const;
 	std::vector<std::string> const   &getServerNames(void) const;
 	std::string const                &getErrorPage(int error);
 	std::map<int, std::string> const &getErrorPages(void) const;
-	size_t const                     &getClientBodySize() const;
+	const size_t                     &getClientBodySize() const;
 	std::vector<location_t> const    &getLocations() const;
 	std::vector<location_t>           getLocations(std::string path) const;
 	bool                              hasCGI(std::string path) const;
@@ -97,6 +99,7 @@ class Config
 	int _setMainRoot(std::string &);
 	int _setIndex(std::string &);
 	int _setAllowedMethods(std::string &);
+	int _setRequiredCookie(std::string &);
 	int _isValidHttpVerb(std::string const) const;
 };
 

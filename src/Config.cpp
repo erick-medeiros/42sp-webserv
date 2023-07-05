@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/02 21:35:13 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/04 21:09:37 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,8 @@ int Config::add(std::string label, std::string value)
 		return _setResponseIsDir(value);
 	if (label == "location_cgi_pass")
 		return _setCGI(value);
+	if (label == "location_required_cookie")
+		return _setRequiredCookie(value);
 	log.error("config label not match: " + label);
 	return 1;
 }
@@ -336,6 +338,23 @@ int Config::_setMainRoot(std::string &value)
 int Config::_setIndex(std::string &value)
 {
 	_index = value;
+	return 0;
+}
+
+int Config::_setRequiredCookie(std::string &value)
+{
+	std::vector<location_t>::reference location = _locations.back();
+
+	std::stringstream ss(value);
+
+	while (!ss.eof())
+	{
+		std::string value;
+		ss >> value;
+		value = utils::trim(value);
+		location.required_cookie.insert(value);
+	}
+
 	return 0;
 }
 
