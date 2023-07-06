@@ -160,18 +160,29 @@ int Server::handleRequest(Connection &connection)
 					it++;
 				}
 			}
-			else if (locations[i].set_cookie.size() > 0 &&
-			         request.getMethod() == "POST")
+			else if (locations[i].set_cookie.size() > 0)
 			{
-				t_cookie    cookie;
-				std::string SetCookieValue = request.getNewCookieValue();
-				cookie.name = "session";
-				cookie.value = SetCookieValue;
-				std::string session = cookies.generateSession();
-				cookies.set(session, cookie);
-				log.debug("create cookie: session " + session + " value " +
-				          SetCookieValue);
-				response.setHeader("Set-Cookie", "session=" + session + ";path=/");
+				std::vector<t_cookie>::const_iterator it =
+				    locations[i].set_cookie.begin();
+				while (it != locations[i].set_cookie.end())
+				{
+					const std::string &nameCookie = it->name;
+					t_cookie           cookie;
+					std::string SetCookieValue = request.getValueCookie(nameCookie);
+
+					if (SetCookieValue == "")
+						continue;
+
+					cookie.name = nameCookie;
+					cookie.value = SetCookieValue;
+					std::string session = cookies.generateSession();
+					cookies.set(session, cookie);
+					log.debug("create cookie: " + nameCookie + " " + session +
+					          " value " + SetCookieValue);
+					response.setHeader("Set-Cookie",
+					                   "session=" + session + ";path=/");
+					it++;
+				}
 				// response.setStatus(HttpStatus::SEE_OTHER);
 				// response.setHeader("Location", "/html/examples/admin/index.html");
 				// return 0;
