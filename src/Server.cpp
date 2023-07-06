@@ -188,8 +188,7 @@ int Server::handleRequest(Connection &connection)
 
 				std::string url = locations[i].http_redirection.second;
 
-				url.replace(url.find("$port"), 5,
-				            utils::to_string(config.getPort()));
+				utils::replace(url, "$port", config.getPort());
 
 				response.setHeader("Location", url);
 				return 0;

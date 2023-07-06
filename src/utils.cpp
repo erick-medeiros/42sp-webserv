@@ -98,3 +98,11 @@ bool utils::contains(std::vector<std::string> &collection, std::string const &ve
 	}
 	return false;
 }
+
+int utils::replace(std::string &str, const std::string &term, int value)
+{
+	std::string::size_type start = str.find(term);
+	if (start != std::string::npos)
+		str.replace(start, term.size(), utils::to_string(value));
+	return 0;
+}
