@@ -161,25 +161,34 @@ int Server::handleRequest(Connection &connection)
 				         locations[i].set_cookie.begin();
 				     it != locations[i].set_cookie.end(); it++)
 				{
-					const std::string &nameCookie = it->name;
-					t_cookie           cookie;
+					t_cookie cookie = *it;
 
-					std::string SetCookieValue = request.getParam(nameCookie);
-
-					if (SetCookieValue == "")
+					if (it->sessionValue)
 					{
-						redirect = false;
-						continue;
+						std::string SetCookieValue = request.getParam(cookie.name);
+
+						log.info("SetCookieValue: " + SetCookieValue);
+
+						if (SetCookieValue == "")
+						{
+							redirect = false;
+							continue;
+						}
+
+						std::string session = cookies.generateSession();
+						cookie.value = SetCookieValue;
+						cookies.set(session, cookie);
+						log.debug("create cookie: " + cookie.name + " " + session +
+						          " value " + cookie.value);
+						cookie.value = session;
 					}
 
-					cookie.name = nameCookie;
-					cookie.value = SetCookieValue;
-					std::string session = cookies.generateSession();
-					cookies.set(session, cookie);
-					log.debug("create cookie: " + nameCookie + " " + session +
-					          " value " + SetCookieValue);
-					response.setHeader("Set-Cookie",
-					                   "session=" + session + ";path=/");
+					std::string setCookieHeader = cookie.name + "=" + cookie.value;
+
+					// if (cookie.path.size() > 0)
+					// 	setCookieHeader += ";path=" + cookie.path;
+
+					response.setHeader("Set-Cookie", setCookieHeader);
 				}
 			}
 			if (locations[i].http_redirection.first != 0 && redirect)
