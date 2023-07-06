@@ -60,6 +60,14 @@ class Request
 	bool isMultipart(void) const;
 	void setErrorCode(int errorCode);
 	void updateBody(std::string const &newBody);
+	bool hasCookies(void) const;
+
+	// cookie {
+	std::string getValueCookie(std::string const &key) const;
+	std::string getNewCookieValue() const;
+	// } cookie
+
+	std::string getParam(const std::string &name) const;
 };
 
 std::ostream &operator<<(std::ostream &os, Request const &req);

@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/04 21:35:51 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/05 17:57:39 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -576,6 +576,96 @@ TEST_SUITE("location")
 
 			CHECK_NE(location_first.cgi_pass.find(".php"), location.cgi_pass.end());
 			CHECK_NE(location_second.cgi_pass.find(".py"), location.cgi_pass.end());
+		}
+	}
+
+	TEST_CASE("required_cookie")
+	{
+		Config config;
+
+		CHECK_EQ(config.add("location", "/"), 0);
+		CHECK_EQ(config.add("location_required_cookie", "session"), 0);
+
+		location_t const &location = config.getLocations()[0];
+
+		CHECK_NE(location.required_cookie.find("session"),
+		         location.required_cookie.end());
+	}
+
+	TEST_CASE("set_cookie")
+	{
+		SUBCASE("name")
+		{
+			Config config;
+
+			std::string name = "test";
+
+			CHECK_EQ(config.add("location", "/"), 0);
+			CHECK_EQ(config.add("location_set_cookie", "name=\"" + name + "\""), 0);
+			const t_cookie &cookie = *config.getLocations()[0].set_cookie.begin();
+			CHECK_EQ(cookie.name, name);
+		}
+
+		SUBCASE("value")
+		{
+			Config config;
+
+			std::string value = "test";
+
+			CHECK_EQ(config.add("location", "/"), 0);
+			CHECK_EQ(config.add("location_set_cookie", "value=\"" + value + "\""),
+			         1);
+			CHECK_EQ(config.add("location_set_cookie",
+			                    "name=\"name\" value=\"" + value + "\""),
+			         0);
+			const t_cookie &cookie = *config.getLocations()[0].set_cookie.begin();
+			CHECK_EQ(cookie.value, value);
+			CHECK_EQ(cookie.name, "name");
+		}
+
+		SUBCASE("value")
+		{
+			Config config;
+
+			std::string value = "test";
+
+			CHECK_EQ(config.add("location", "/"), 0);
+			CHECK_EQ(config.add("location_set_cookie", "value=\"" + value + "\""),
+			         1);
+			CHECK_EQ(config.add("location_set_cookie",
+			                    "name=\"name\" value=\"" + value + "\""),
+			         0);
+			const t_cookie &cookie = *config.getLocations()[0].set_cookie.begin();
+			CHECK_EQ(cookie.value, value);
+			CHECK_EQ(cookie.name, "name");
+		}
+
+		SUBCASE("session_value")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "/"), 0);
+
+			CHECK_EQ(
+			    config.add("location_set_cookie", "name=\"name\" session_value"), 0);
+
+			const t_cookie &cookie = *config.getLocations()[0].set_cookie.begin();
+
+			CHECK(cookie.sessionValue);
+
+			SUBCASE("default")
+			{
+				Config config;
+
+				CHECK_EQ(config.add("location", "/"), 0);
+
+				CHECK_EQ(config.add("location_set_cookie", "name=\"name\" "), 0);
+
+				const t_cookie &cookie =
+				    *config.getLocations()[0].set_cookie.begin();
+
+				CHECK_FALSE(cookie.sessionValue);
+			}
 		}
 	}
 }

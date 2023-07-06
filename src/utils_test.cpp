@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/27 08:27:32 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/27 08:41:16 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/06 14:35:24 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,5 +46,15 @@ TEST_SUITE("utils::end_with")
 	TEST_CASE("no start")
 	{
 		CHECK_FALSE(utils::end_with("world", "lda"));
+	}
+}
+
+TEST_SUITE("utils::replace")
+{
+	TEST_CASE("int")
+	{
+		std::string str = "born$strcode";
+		CHECK_EQ(utils::replace(str, "$str", 2), 0);
+		CHECK_EQ(str, "born2code");
 	}
 }

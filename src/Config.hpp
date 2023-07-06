@@ -6,13 +6,14 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/04 21:31:58 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/05 18:50:02 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
+#include "Cookie.hpp"
 #include "Logger.hpp"
 #include "utils.hpp"
 #include <cstddef>
@@ -40,6 +41,8 @@ typedef struct
 	std::string                          directory_listing;
 	std::string                          response_is_dir;
 	std::set<std::string>                cgi_pass;
+	std::set<std::string>                required_cookie;
+	std::vector<t_cookie>                set_cookie;
 } location_t;
 
 typedef unsigned int uint_t;
@@ -56,11 +59,11 @@ class Config
 
 	int add(std::string label, std::string value);
 
-	uint_t const                     &getPort(void) const;
+	const uint_t                     &getPort(void) const;
 	std::vector<std::string> const   &getServerNames(void) const;
 	std::string const                &getErrorPage(int error);
 	std::map<int, std::string> const &getErrorPages(void) const;
-	size_t const                     &getClientBodySize() const;
+	const size_t                     &getClientBodySize() const;
 	std::vector<location_t> const    &getLocations() const;
 	std::vector<location_t>           getLocations(std::string path) const;
 	bool                              hasCGI(std::string path) const;
@@ -100,6 +103,8 @@ class Config
 	int _setMainRoot(std::string &);
 	int _setIndex(std::string &);
 	int _setAllowedMethods(std::string &);
+	int _setRequiredCookie(std::string &);
+	int _setSetCookie(std::string &);
 	int _isValidHttpVerb(std::string const) const;
 	int _setUploadPath(std::string &);
 };

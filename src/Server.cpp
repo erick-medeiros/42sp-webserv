@@ -1,5 +1,4 @@
 #include "Server.hpp"
-#include "HttpStatus.hpp"
 
 Server::Server(void) : _serverSocket(0) {}
 
@@ -102,6 +101,8 @@ Config &Server::getConfig(void)
 	return _config;
 }
 
+static Cookie cookies;
+
 int Server::handleRequest(Connection &connection)
 {
 	Request    &request = connection.request;
@@ -130,10 +131,75 @@ int Server::handleRequest(Connection &connection)
 	{
 		for (size_t i = 0; i < locations.size(); ++i)
 		{
-			if (locations[i].http_redirection.first != 0)
+			bool redirect = true;
+			if (locations[i].required_cookie.size() > 0)
+			{
+				std::set<std::string>::const_iterator it =
+				    locations[i].required_cookie.begin();
+				while (it != locations[i].required_cookie.end())
+				{
+					const std::string &nameCookie = *it;
+					std::string valueCookie = request.getValueCookie(nameCookie);
+					t_cookie    cookie = cookies.get(nameCookie, valueCookie);
+					if (valueCookie == "" || cookie.value == "")
+					{
+						response.setHeader("Set-Cookie", nameCookie + "= ; path=/; "
+						                                              "expires=-1");
+						response.setStatus(HttpStatus::FORBIDDEN);
+						return 0;
+					}
+					else
+					{
+						response.setHeader("Cookie-" + nameCookie, cookie.value);
+					}
+					it++;
+				}
+			}
+			else if (locations[i].set_cookie.size() > 0)
+			{
+				for (std::vector<t_cookie>::const_iterator it =
+				         locations[i].set_cookie.begin();
+				     it != locations[i].set_cookie.end(); it++)
+				{
+					t_cookie cookie = *it;
+
+					if (it->sessionValue)
+					{
+						std::string SetCookieValue = request.getParam(cookie.name);
+
+						log.info("SetCookieValue: " + SetCookieValue);
+
+						if (SetCookieValue == "")
+						{
+							redirect = false;
+							continue;
+						}
+
+						std::string session = cookies.generateSession();
+						cookie.value = SetCookieValue;
+						cookies.set(session, cookie);
+						log.debug("create cookie: " + cookie.name + " " + session +
+						          " value " + cookie.value);
+						cookie.value = session;
+					}
+
+					std::string setCookieHeader = cookie.name + "=" + cookie.value;
+
+					// if (cookie.path.size() > 0)
+					// 	setCookieHeader += ";path=" + cookie.path;
+
+					response.setHeader("Set-Cookie", setCookieHeader);
+				}
+			}
+			if (locations[i].http_redirection.first != 0 && redirect)
 			{
 				response.setStatus(locations[i].http_redirection.first);
-				response.setHeader("Location", locations[i].http_redirection.second);
+
+				std::string url = locations[i].http_redirection.second;
+
+				utils::replace(url, "$port", config.getPort());
+
+				response.setHeader("Location", url);
 				return 0;
 			}
 		}
@@ -182,18 +248,21 @@ int Server::handleRequest(Connection &connection)
 	// Request is a directory and autoindex is enabled
 	if (utils::isDir(fullPath))
 	{
+		bool notFound = true;
 		for (std::set<std::string>::const_iterator index = config.getIndex().begin();
 		     index != config.getIndex().end(); index++)
 		{
-			std::string path = fullPath + *index;
+			std::string path = utils::end_with(fullPath, "/") ?
+			                       fullPath + *index :
+			                       fullPath + "/" + *index;
 			if (utils::isFile(path))
 			{
 				response.loadFile(path);
+				notFound = false;
 				break;
 			}
 		}
-
-		if (requestPath != "/")
+		if (notFound && requestPath != "/")
 		{
 			if (_config.directoryListingEnabled(requestPath))
 			{
