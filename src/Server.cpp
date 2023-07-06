@@ -148,23 +148,23 @@ int Server::handleRequest(Connection &connection)
 					t_cookie    cookie = cookies.get(nameCookie, valueCookie);
 					if (valueCookie == "" || cookie.value == "")
 					{
-						response.setHeader("Set-Cookie", "session= ; path=/; "
-						                                 "expires=-1");
+						response.setHeader("Set-Cookie", nameCookie + "= ; path=/; "
+						                                              "expires=-1");
 						response.setStatus(HttpStatus::FORBIDDEN);
 						return 0;
 					}
 					else
 					{
-						response.setHeader("Session-Value", cookie.value);
+						response.setHeader("Cookie-" + nameCookie, cookie.value);
 					}
 					it++;
 				}
 			}
 			else if (locations[i].set_cookie.size() > 0)
 			{
-				std::vector<t_cookie>::const_iterator it =
-				    locations[i].set_cookie.begin();
-				while (it != locations[i].set_cookie.end())
+				for (std::vector<t_cookie>::const_iterator it =
+				         locations[i].set_cookie.begin();
+				     it != locations[i].set_cookie.end(); it++)
 				{
 					const std::string &nameCookie = it->name;
 					t_cookie           cookie;
@@ -181,7 +181,6 @@ int Server::handleRequest(Connection &connection)
 					          " value " + SetCookieValue);
 					response.setHeader("Set-Cookie",
 					                   "session=" + session + ";path=/");
-					it++;
 				}
 				// response.setStatus(HttpStatus::SEE_OTHER);
 				// response.setHeader("Location", "/html/examples/admin/index.html");

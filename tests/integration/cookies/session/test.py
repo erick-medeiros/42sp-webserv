@@ -27,6 +27,6 @@ response = integration.get_with_cookie(URL_ADMIN, cookies)
 
 assert response.status_code == 200
 
-session_value = response.headers.get("Session-Value")
+session_value = response.headers.get("Cookie-session")
 
 assert session_value == VALUE
