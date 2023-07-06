@@ -66,6 +66,8 @@ class Request
 	std::string getValueCookie(std::string const &key) const;
 	std::string getNewCookieValue() const;
 	// } cookie
+
+	std::string getParam(const std::string &name) const;
 };
 
 std::ostream &operator<<(std::ostream &os, Request const &req);

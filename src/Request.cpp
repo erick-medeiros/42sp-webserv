@@ -337,6 +337,23 @@ std::string Request::getValueCookie(std::string const &key) const
 	return value;
 }
 
+std::string Request::getParam(const std::string &field) const
+{
+	std::istringstream ss(this->getResourceQuery());
+
+	std::string token;
+
+	while (std::getline(ss, token, '&'))
+	{
+		if (utils::start_with(token, field))
+		{
+			return token.substr(field.size() + 1);
+		}
+	}
+
+	return "";
+}
+
 std::ostream &operator<<(std::ostream &os, Request const &req)
 {
 	os << CYAN "========== START LINE ==========" RES << std::endl;

@@ -168,7 +168,8 @@ int Server::handleRequest(Connection &connection)
 				{
 					const std::string &nameCookie = it->name;
 					t_cookie           cookie;
-					std::string SetCookieValue = request.getValueCookie(nameCookie);
+
+					std::string SetCookieValue = request.getParam(nameCookie);
 
 					if (SetCookieValue == "")
 						continue;

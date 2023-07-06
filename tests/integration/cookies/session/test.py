@@ -11,9 +11,9 @@ response = integration.get(URL_ADMIN)
 
 assert response.status_code == 403
 
-cookies = {"session": VALUE}
+params = {"session": VALUE}
 
-response = integration.get_with_cookie(URL_LOGIN, cookies)
+response = integration.get_params(URL_LOGIN, params)
 
 assert response.status_code == 200
 
