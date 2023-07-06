@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/05 18:50:02 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/06 17:51:41 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,11 +59,12 @@ class Config
 
 	int add(std::string label, std::string value);
 
-	const uint_t                     &getPort(void) const;
+	const uint_t &getPort(void) const;
+	const size_t &getClientBodySize() const;
+
 	std::vector<std::string> const   &getServerNames(void) const;
 	std::string const                &getErrorPage(int error);
 	std::map<int, std::string> const &getErrorPages(void) const;
-	const size_t                     &getClientBodySize() const;
 	std::vector<location_t> const    &getLocations() const;
 	std::vector<location_t>           getLocations(std::string path) const;
 	bool                              hasCGI(std::string path) const;

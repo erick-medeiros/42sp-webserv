@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/05 18:00:31 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/06 19:47:26 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -397,26 +397,36 @@ int Config::_setSetCookie(std::string &value)
 	t_cookie cookie;
 
 	cookie.sessionValue = false;
+	cookie.name = "";
+	cookie.value = "";
+	cookie.expires = "";
 
 	while (!ss.eof())
 	{
-		std::string value;
-		ss >> value;
-		value = utils::trim(value);
+		std::string label;
+		ss >> label;
+		label = utils::trim(label);
 
-		if (utils::start_with(value, "name=\"") && utils::end_with(value, "\""))
+		if (utils::start_with(label, "name=\"") && utils::end_with(label, "\""))
 		{
-			cookie.name = value.substr(6, value.size() - 7);
+			cookie.name = label.substr(6, label.size() - 7);
 		}
-		else if (utils::start_with(value, "value=\"") &&
-		         utils::end_with(value, "\""))
+		else if (utils::start_with(label, "value=\"") &&
+		         utils::end_with(label, "\""))
 		{
-			cookie.value = value.substr(7, value.size() - 8);
+			cookie.value = label.substr(7, label.size() - 8);
 		}
-		else if (value == "session_value")
+		else if (label == "session_value")
 		{
 			cookie.sessionValue = true;
 		}
+		else if (utils::start_with(label, "expires=\"") &&
+		         utils::end_with(label, "\""))
+		{
+			cookie.expires = label.substr(9, label.size() - 10);
+		}
+		else
+			log.error("Config cookie value: " + label);
 	}
 
 	if (cookie.name.size() == 0)

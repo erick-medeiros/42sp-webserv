@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/27 08:27:32 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/06 14:35:24 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/06 18:56:42 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,5 +56,14 @@ TEST_SUITE("utils::replace")
 		std::string str = "born$strcode";
 		CHECK_EQ(utils::replace(str, "$str", 2), 0);
 		CHECK_EQ(str, "born2code");
+	}
+}
+
+TEST_SUITE("utils::countChars")
+{
+	TEST_CASE("test")
+	{
+		CHECK_EQ(utils::countChars("123", '1'), 1);
+		CHECK_EQ(utils::countChars("1233", '3'), 2);
 	}
 }

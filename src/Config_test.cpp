@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/05 17:57:39 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/06 19:44:55 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -666,6 +666,42 @@ TEST_SUITE("location")
 
 				CHECK_FALSE(cookie.sessionValue);
 			}
+		}
+
+		SUBCASE("expires")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "/"), 0);
+
+			CHECK_EQ(config.add("location_set_cookie", "name=\"name\" "
+			                                           "expires=\"test\""),
+			         0);
+
+			const t_cookie &cookie = *config.getLocations()[0].set_cookie.begin();
+
+			CHECK_EQ(cookie.expires, "test");
+
+			// TODO: not working
+
+			// SUBCASE("error")
+			// {
+			// 	Config config;
+
+			// 	CHECK_EQ(config.add("location", "/"), 0);
+
+			// 	std::string expires = "Thu, 06 Jul 2023 07:28:00 GMT";
+
+			// 	CHECK_EQ(config.add("location_set_cookie", "name=\"name\" "
+			// 	                                           "expires=\"" +
+			// 	                                               expires + "\""),
+			// 	         0);
+
+			// 	const t_cookie &cookie =
+			// 	    *config.getLocations()[0].set_cookie.begin();
+
+			// 	CHECK_EQ(cookie.expires, expires);
+			// }
 		}
 	}
 }

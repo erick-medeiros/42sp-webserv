@@ -106,3 +106,16 @@ int utils::replace(std::string &str, const std::string &term, int value)
 		str.replace(start, term.size(), utils::to_string(value));
 	return 0;
 }
+
+int utils::countChars(const std::string &str, char character)
+{
+	int count = 0;
+	for (std::string::size_type i = 0; i < str.length(); ++i)
+	{
+		if (str[i] == character)
+		{
+			count++;
+		}
+	}
+	return count;
+}
