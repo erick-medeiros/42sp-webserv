@@ -131,13 +131,8 @@ int Server::handleRequest(Connection &connection)
 	{
 		for (size_t i = 0; i < locations.size(); ++i)
 		{
-			if (locations[i].http_redirection.first != 0)
-			{
-				response.setStatus(locations[i].http_redirection.first);
-				response.setHeader("Location", locations[i].http_redirection.second);
-				return 0;
-			}
-			else if (locations[i].required_cookie.size() > 0)
+			bool redirect = true;
+			if (locations[i].required_cookie.size() > 0)
 			{
 				std::set<std::string>::const_iterator it =
 				    locations[i].required_cookie.begin();
@@ -172,7 +167,10 @@ int Server::handleRequest(Connection &connection)
 					std::string SetCookieValue = request.getParam(nameCookie);
 
 					if (SetCookieValue == "")
+					{
+						redirect = false;
 						continue;
+					}
 
 					cookie.name = nameCookie;
 					cookie.value = SetCookieValue;
@@ -183,9 +181,12 @@ int Server::handleRequest(Connection &connection)
 					response.setHeader("Set-Cookie",
 					                   "session=" + session + ";path=/");
 				}
-				// response.setStatus(HttpStatus::SEE_OTHER);
-				// response.setHeader("Location", "/html/examples/admin/index.html");
-				// return 0;
+			}
+			if (locations[i].http_redirection.first != 0 && redirect)
+			{
+				response.setStatus(locations[i].http_redirection.first);
+				response.setHeader("Location", locations[i].http_redirection.second);
+				return 0;
 			}
 		}
 	}

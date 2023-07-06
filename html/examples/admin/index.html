@@ -34,7 +34,7 @@
 				'Cookie': `session=${session}`
 			},
 		}).then(response => {
-            sessionValue = response.headers.get("Session-Value");
+            sessionValue = response.headers.get("Cookie-session");
             document.getElementById('session').innerHTML = sessionValue;
 		})
 	</script>
