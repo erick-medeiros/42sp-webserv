@@ -185,7 +185,13 @@ int Server::handleRequest(Connection &connection)
 			if (locations[i].http_redirection.first != 0 && redirect)
 			{
 				response.setStatus(locations[i].http_redirection.first);
-				response.setHeader("Location", locations[i].http_redirection.second);
+
+				std::string url = locations[i].http_redirection.second;
+
+				url.replace(url.find("$port"), 5,
+				            utils::to_string(config.getPort()));
+
+				response.setHeader("Location", url);
 				return 0;
 			}
 		}
