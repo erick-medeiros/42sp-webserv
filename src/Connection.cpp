@@ -60,5 +60,11 @@ int Connection::sendHttpResponse()
 	{
 		throw std::runtime_error("Error sending response");
 	}
+	if (response.getStatusCode() == HttpStatus::PAYLOAD_TOO_LARGE)
+	{
+		// Give some time to the client to read the response 
+		// before closing the connection
+		sleep(0.5);
+	}
 	return 0;
 }
