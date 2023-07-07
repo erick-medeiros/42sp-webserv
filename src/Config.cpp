@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/04 21:49:08 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/05 18:00:31 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,10 @@ int Config::add(std::string label, std::string value)
 		return _setResponseIsDir(value);
 	if (label == "location_cgi_pass")
 		return _setCGI(value);
+	if (label == "location_required_cookie")
+		return _setRequiredCookie(value);
+	if (label == "location_set_cookie")
+		return _setSetCookie(value);
 	log.error("config label not match: " + label);
 	return 1;
 }
@@ -366,6 +370,62 @@ int Config::_setIndex(std::string &value)
 int Config::_setUploadPath(std::string &value)
 {
 	_uploadPath = value;
+	return 0;
+}
+
+int Config::_setRequiredCookie(std::string &value)
+{
+	std::vector<location_t>::reference location = _locations.back();
+
+	std::stringstream ss(value);
+
+	while (!ss.eof())
+	{
+		std::string value;
+		ss >> value;
+		value = utils::trim(value);
+		location.required_cookie.insert(value);
+	}
+
+	return 0;
+}
+
+int Config::_setSetCookie(std::string &value)
+{
+	std::stringstream ss(value);
+
+	t_cookie cookie;
+
+	cookie.sessionValue = false;
+
+	while (!ss.eof())
+	{
+		std::string value;
+		ss >> value;
+		value = utils::trim(value);
+
+		if (utils::start_with(value, "name=\"") && utils::end_with(value, "\""))
+		{
+			cookie.name = value.substr(6, value.size() - 7);
+		}
+		else if (utils::start_with(value, "value=\"") &&
+		         utils::end_with(value, "\""))
+		{
+			cookie.value = value.substr(7, value.size() - 8);
+		}
+		else if (value == "session_value")
+		{
+			cookie.sessionValue = true;
+		}
+	}
+
+	if (cookie.name.size() == 0)
+		return 1;
+
+	std::vector<location_t>::reference location = _locations.back();
+
+	location.set_cookie.push_back(cookie);
+
 	return 0;
 }
 

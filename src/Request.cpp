@@ -272,6 +272,14 @@ std::string Request::getHeaderValue(std::string const headerValue) const
 	return "";
 };
 
+bool Request::hasCookies(void) const
+{
+	std::map<std::string, std::string>::const_iterator it = header.find("cookie");
+	if (it == header.end())
+		return false;
+	return true;
+}
+
 bool Request::isValidMethod(std::string const &requestMethod,
                             Config const      &config) const
 {
@@ -315,6 +323,52 @@ bool Request::isParsed(void) const
 void Request::setErrorCode(int errorCode)
 {
 	this->errorCode = errorCode;
+}
+
+std::string Request::getValueCookie(std::string const &key) const
+{
+	std::string headerCookie;
+	std::string value;
+
+	try
+	{
+		headerCookie = this->getHeaderValue("cookie");
+	}
+	catch (...)
+	{
+		return "";
+	};
+
+	{
+		std::istringstream sstream(headerCookie);
+		std::string        word;
+		std::getline(sstream, word, '=');
+		if (word == key)
+		{
+			std::getline(sstream, word, '=');
+			return word;
+		}
+		return "";
+	}
+
+	return value;
+}
+
+std::string Request::getParam(const std::string &field) const
+{
+	std::istringstream ss(this->getResourceQuery());
+
+	std::string token;
+
+	while (std::getline(ss, token, '&'))
+	{
+		if (utils::start_with(token, field))
+		{
+			return token.substr(field.size() + 1);
+		}
+	}
+
+	return "";
 }
 
 int Request::getErrorCode(void) const

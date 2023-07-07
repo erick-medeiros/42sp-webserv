@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 14:50:36 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/06/09 17:49:54 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/05 15:21:01 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,22 @@ TEST_SUITE("Class Cookie")
 	}
 	TEST_CASE("set and get")
 	{
-		Cookie      cookie;
-		std::string key("test");
+		Cookie      cookies;
+		std::string key1("test1");
 		std::string key2("test2");
 
-		cookie.set(key, "123");
-		CHECK_EQ(cookie.get(key), "123");
-		cookie.set(key2, "hello");
-		CHECK_EQ(cookie.get(key2), "hello");
-		cookie.set(key, "1234");
-		CHECK_EQ(cookie.get(key), "1234");
+		t_cookie cookie1;
+		cookie1.name = "name1";
+		cookie1.value = "123";
+
+		cookies.set(key1, cookie1);
+		CHECK_EQ(cookies.get(cookie1.name, key1).value, cookie1.value);
+
+		t_cookie cookie2;
+		cookie2.name = "name2";
+		cookie2.value = "hello";
+
+		cookies.set(key2, cookie2);
+		CHECK_EQ(cookies.get(cookie2.name, key2).value, cookie2.value);
 	}
 }

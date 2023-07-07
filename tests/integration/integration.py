@@ -10,6 +10,21 @@ def get(URL):
         print("Error requests.get: " + URL)
         exit(1)
 
+def get_with_cookie(URL, cookies):
+    try:
+        response = requests.get(URL, cookies=cookies)
+        return response
+    except:
+        print("Error requests.get: " + URL)
+        exit(1)
+
+def get_params(URL, params):
+    try:
+        response = requests.get(URL, params=params)
+        return response
+    except:
+        print("Error requests.get (with params): " + URL)
+        exit(1)
 
 def post(URL, body):
     try:
