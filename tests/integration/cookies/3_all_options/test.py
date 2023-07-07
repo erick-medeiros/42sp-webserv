@@ -23,3 +23,9 @@ for cookie in response.cookies:
 		except:
 			print("no httponly")
 			exit(1)
+		# samesite
+		try:
+			assert cookie._rest['samesite'] == "lax"
+		except:
+			print("no samesite")
+			exit(1)

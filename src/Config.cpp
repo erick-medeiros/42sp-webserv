@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/07 19:25:39 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/07 20:11:46 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -402,12 +402,16 @@ int Config::_setSetCookie(std::string &value)
 	cookie.expires = "";
 	cookie.secure = false;
 	cookie.httpOnly = false;
+	cookie.samesite = "";
 
 	while (!ss.eof())
 	{
 		std::string label;
 		ss >> label;
 		label = utils::trim(label);
+
+		if (label.size() == 0)
+			continue;
 
 		if (utils::start_with(label, "name=\"") && utils::end_with(label, "\""))
 		{
@@ -435,6 +439,15 @@ int Config::_setSetCookie(std::string &value)
 		{
 			cookie.httpOnly = true;
 		}
+		else if (utils::start_with(label, "samesite="))
+		{
+			cookie.samesite = label.substr(9, label.size() - 9);
+			if (cookie.samesite != "strict" && cookie.samesite != "lax" &&
+			    cookie.samesite != "none")
+				return 1;
+		}
+		else
+			return 1;
 	}
 
 	if (cookie.name.size() == 0)
