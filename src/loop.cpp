@@ -121,9 +121,9 @@ int loop(std::string path_config)
 				{
 					std::string rawRequest = Server::getRequestData(connection->fd);
 					connection->request.parse(rawRequest, connection->config);
-					std::cout << connection->request << std::endl;
 					if (connection->request.isParsed())
 					{
+						std::cout << connection->request << std::endl;
 						epoll_data_t data = {channel};
 						epoll.modify(connection->fd, data, EPOLLOUT);
 					}

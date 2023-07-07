@@ -25,7 +25,7 @@ class Request
 {
   private:
 	int                                errorCode;
-	int                                contentLength;
+	size_t                             contentLength;
 	std::map<std::string, std::string> startLine;
 	std::map<std::string, std::string> header;
 	std::string                        body;
@@ -34,7 +34,7 @@ class Request
 	std::string                        unparsed;
 	void                               parseStartLine(Config const &);
 	void                               parseHeaders();
-	void                               parseBody();
+	void                               parseBody(Config const &config);
 	bool                               startLineParsed;
 	bool                               headersParsed;
 	bool                               URIParsed;
@@ -54,6 +54,7 @@ class Request
 	std::string                        getMethod(void) const;
 	std::string                        getUrl(void) const;
 	std::string                        getHeaderValue(std::string const) const;
+	int                                getErrorCode(void) const;
 	bool isValidMethod(std::string const &, Config const &) const;
 	bool isValidHttpVersion(std::string &requestVersion) const;
 	bool isParsed(void) const;

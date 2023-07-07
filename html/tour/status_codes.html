@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Status Codes</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+</head>
+
+<body>
+    <main class="container">
+        <nav>
+            <ul>
+                <h2>
+                    <li><a href="index.html" class="secondary">←</a></li>
+                    <li>Status Codes 🚦</li>
+                </h2>
+            </ul>
+        </nav>
+        <div class="grid">
+            <form target="iframe" action="http://localhost:8080/" method="GET">
+                <input type="submit" value="Normal page">
+            </form>
+            <form target="iframe" action="http://localhost:8080/missing_page" method="GET">
+                <input type="submit" value="Missing page">
+            </form>
+            <form target="iframe" action="http://localhost:8080/" method="POST"
+                onsubmit="generateLargeText(event, this)">
+                <input type="submit" value="Huge request body">
+            </form>
+        </div>
+
+        <article style="text-align: center">
+            <iframe name="iframe" width="100%"></iframe>
+        </article>
+    </main>
+
+    <script>
+        // Remove aria-busy="true" from article when iframe is loaded
+        const iframe = document.querySelector("iframe");
+        iframe.addEventListener("load", () => {
+            const article = document.querySelector("article");
+            article.removeAttribute("aria-busy");
+        });
+
+        function generateLargeText(event, form) {
+            event.preventDefault();
+
+            // Add  aria-busy="true" to article 
+            const article = document.querySelector("article");
+            article.setAttribute("aria-busy", "true");
+
+            // Generate a large text string
+            const largeText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ";
+            const iterations = 20000;
+            let text = "";
+            for (let i = 0; i < iterations; i++) {
+                text += largeText;
+            }
+
+            // Create a hidden input field and set the generated text as its value
+            const hiddenInput = document.createElement("input");
+            hiddenInput.type = "hidden";
+            hiddenInput.name = "requestBody";
+            hiddenInput.value = text;
+
+            // Append the hidden input field to the form
+            form.appendChild(hiddenInput);
+
+            // Submit the form
+            form.submit();
+            console.log("Submitted form");
+        }
+    </script>
+</body>
+
+</html>

@@ -1,4 +1,5 @@
 #include "Request.hpp"
+#include <unistd.h>
 
 Request::Request()
     : errorCode(0), contentLength(0), startLineParsed(false), headersParsed(false),
@@ -18,6 +19,14 @@ void Request::parse(std::string const rawInput, Config const &config)
 		if (!startLineParsed)
 			return;
 	}
+	log.error("contentLength: " + utils::to_string(contentLength));
+	log.error("unparsed.size(): " + utils::to_string(unparsed.size()));
+	log.error("getClientBodySize: " + utils::to_string(config.getClientBodySize()));
+	if (contentLength > config.getClientBodySize())
+	{
+		errorCode = HttpStatus::PAYLOAD_TOO_LARGE;
+		return;
+	}
 	if (!headersParsed)
 	{
 		parseHeaders();
@@ -26,19 +35,24 @@ void Request::parse(std::string const rawInput, Config const &config)
 	}
 	if (!bodyParsed)
 	{
-		parseBody();
+		parseBody(config);
 		if (!bodyParsed)
 			return;
 	}
 }
 
-void Request::parseBody()
+void Request::parseBody(Config const &config)
 {
 	// https://www.rfc-editor.org/rfc/rfc9112.html#section-6-4
 	if (contentLength > 0)
 	{
+		if (unparsed.size() > config.getClientBodySize())
+		{
+			errorCode = HttpStatus::PAYLOAD_TOO_LARGE;
+			return;
+		}
 		// Wait until unparsed has enough data to parse the body
-		if (unparsed.size() < static_cast<size_t>(contentLength))
+		if (unparsed.size() < contentLength)
 			return;
 
 		body = unparsed.substr(0, contentLength);
@@ -69,8 +83,7 @@ void Request::parseStartLine(Config const &config)
 	if (!isValidMethod(method, config))
 	{
 		this->errorCode = HttpStatus::NOT_IMPLEMENTED;
-		throw std::runtime_error(method + " is not a HTTP method allowed by your "
-		                                  "configuration");
+		return;
 	}
 
 	iss >> uri;
@@ -162,7 +175,7 @@ void Request::parseHeaders()
 		{
 			std::istringstream iss(value);
 			iss >> contentLength;
-			if (iss.fail() || contentLength < 0)
+			if (iss.fail())
 			{
 				errorCode = HttpStatus::BAD_REQUEST;
 				throw std::runtime_error("invalid Content-Length value: " + value);
@@ -292,12 +305,21 @@ bool Request::isValidHttpVersion(std::string &requestVersion) const
 
 bool Request::isParsed(void) const
 {
+	if (this->errorCode != 0)
+	{
+		return true;
+	}
 	return this->startLineParsed && this->headersParsed && this->bodyParsed;
 }
 
 void Request::setErrorCode(int errorCode)
 {
 	this->errorCode = errorCode;
+}
+
+int Request::getErrorCode(void) const
+{
+	return this->errorCode;
 }
 
 std::ostream &operator<<(std::ostream &os, Request const &req)
