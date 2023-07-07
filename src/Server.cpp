@@ -150,8 +150,6 @@ int Server::handleRequest(Connection &connection)
 					t_cookie    cookie = cookies.get(nameCookie, valueCookie);
 					if (valueCookie == "" || cookie.value == "")
 					{
-						response.setHeader("Set-Cookie", nameCookie + "= ; path=/; "
-						                                              "expires=-1");
 						response.setStatus(HttpStatus::FORBIDDEN);
 						return 0;
 					}
