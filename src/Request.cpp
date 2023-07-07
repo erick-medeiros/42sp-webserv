@@ -19,9 +19,6 @@ void Request::parse(std::string const rawInput, Config const &config)
 		if (!startLineParsed)
 			return;
 	}
-	log.error("contentLength: " + utils::to_string(contentLength));
-	log.error("unparsed.size(): " + utils::to_string(unparsed.size()));
-	log.error("getClientBodySize: " + utils::to_string(config.getClientBodySize()));
 	if (contentLength > config.getClientBodySize())
 	{
 		errorCode = HttpStatus::PAYLOAD_TOO_LARGE;
