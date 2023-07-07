@@ -15,4 +15,11 @@ assert response.cookies.get(NAME) == VALUE
 
 for cookie in response.cookies:
 	if (cookie.name == NAME):
+		# secure
 		assert cookie.secure
+		# httponly
+		try:
+			cookie._rest['httponly']
+		except:
+			print("no httponly")
+			exit(1)

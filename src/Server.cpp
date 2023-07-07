@@ -191,6 +191,8 @@ int Server::handleRequest(Connection &connection)
 
 					if (cookie.secure)
 						setCookieHeader += "; secure";
+					if (cookie.httpOnly)
+						setCookieHeader += "; httponly";
 
 					// if (cookie.path.size() > 0)
 					// 	setCookieHeader += ";path=" + cookie.path;

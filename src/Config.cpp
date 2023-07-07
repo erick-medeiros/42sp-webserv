@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/06 19:51:22 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/07 19:25:39 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -401,6 +401,7 @@ int Config::_setSetCookie(std::string &value)
 	cookie.value = "";
 	cookie.expires = "";
 	cookie.secure = false;
+	cookie.httpOnly = false;
 
 	while (!ss.eof())
 	{
@@ -429,6 +430,10 @@ int Config::_setSetCookie(std::string &value)
 		else if (label == "secure")
 		{
 			cookie.secure = true;
+		}
+		else if (label == "httponly")
+		{
+			cookie.httpOnly = true;
 		}
 	}
 
