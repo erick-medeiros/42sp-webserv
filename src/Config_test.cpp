@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/06 19:44:55 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/06 19:52:17 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -702,6 +702,19 @@ TEST_SUITE("location")
 
 			// 	CHECK_EQ(cookie.expires, expires);
 			// }
+		}
+
+		SUBCASE("secure")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "/"), 0);
+
+			CHECK_EQ(config.add("location_set_cookie", "name=\"name\" secure"), 0);
+
+			const t_cookie &cookie = *config.getLocations()[0].set_cookie.begin();
+
+			CHECK(cookie.secure);
 		}
 	}
 }

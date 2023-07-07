@@ -155,7 +155,7 @@ int Server::handleRequest(Connection &connection)
 					it++;
 				}
 			}
-			else if (locations[i].set_cookie.size() > 0)
+			if (locations[i].set_cookie.size() > 0)
 			{
 				for (std::vector<t_cookie>::const_iterator it =
 				         locations[i].set_cookie.begin();
@@ -184,6 +184,13 @@ int Server::handleRequest(Connection &connection)
 					}
 
 					std::string setCookieHeader = cookie.name + "=" + cookie.value;
+
+					// log.debug("cookie.expires " + cookie.expires);
+					// if (cookie.expires.size() > 0)
+					// 	setCookieHeader += ";expires=" + cookie.expires;
+
+					if (cookie.secure)
+						setCookieHeader += "; secure";
 
 					// if (cookie.path.size() > 0)
 					// 	setCookieHeader += ";path=" + cookie.path;
