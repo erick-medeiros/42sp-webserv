@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 09:26:18 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/02 21:50:30 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/08 10:39:28 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,9 +62,9 @@ int Connection::sendHttpResponse()
 	}
 	if (response.getStatusCode() == HttpStatus::PAYLOAD_TOO_LARGE)
 	{
-		// Give some time to the client to read the response 
+		// Give some time to the client to read the response
 		// before closing the connection
-		sleep(0.5);
+		sleep(1);
 	}
 	return 0;
 }
