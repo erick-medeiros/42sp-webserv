@@ -6,7 +6,7 @@
 /*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/08 12:12:45 by mi               ###   ########.fr       */
+/*   Updated: 2023/07/08 12:58:09 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ int Config::add(std::string label, std::string value)
 
 bool Config::isValid(void) const
 {
-	// if (_port == DEFAULT_PORT)
+	// if (_port == 0)
 	// 	return false;
 	return true;
 }
@@ -198,6 +198,7 @@ int Config::_setHttpMethods(std::string &value)
 		verb = utils::trim(verb);
 		if (!_isValidHttpVerb(verb) || !utils::contains(_allowedMethods, verb))
 		{
+			log.error("invalid method: " + verb);
 			location.http_methods.clear();
 			return 1;
 		}
@@ -559,7 +560,8 @@ std::string Config::readFile(const std::string &filename)
 
 static void _panic(std::string err)
 {
-	throw std::runtime_error("Panic: " + err);
+	log.error(err);
+	throw std::runtime_error("");
 }
 
 static std::list<std::string> _getLineFromFileData(std::string &filedata)
@@ -632,9 +634,9 @@ static std::list<labels_t> _getLabels(std::list<std::string> &lines)
 		if (!populateServer)
 		{
 			if (extractFront(lines) != "server")
-				_panic("1");
+				_panic("Invalid config: no server");
 			if (extractFront(lines) != "{")
-				_panic("2");
+				_panic("Invalid config: no {");
 			populateServer = true;
 			continue;
 		}
@@ -645,7 +647,7 @@ static std::list<labels_t> _getLabels(std::list<std::string> &lines)
 		{
 			config.push_back(getLabel(line));
 			if (extractFront(lines) != "{")
-				_panic("3");
+				_panic("Invalid config: no location {");
 			while (!lines.empty())
 			{
 				std::string line = extractFront(lines);
@@ -669,7 +671,7 @@ static std::list<labels_t> _getLabels(std::list<std::string> &lines)
 		config.push_back(getLabel(line));
 	}
 	if (populateServer)
-		_panic("4");
+		_panic("Invalid config: no server");
 	return configs;
 }
 
@@ -689,7 +691,10 @@ std::vector<Config> Config::parseConfig(std::string &filedata)
 		labels_t::iterator label;
 		for (label = server.begin(); label != server.end(); label++)
 		{
-			config.add(label->first, label->second);
+			if (config.add(label->first, label->second) == FAILURE)
+			{
+				_panic("Invalid server configuration");
+			}
 		}
 
 		data.push_back(config);
