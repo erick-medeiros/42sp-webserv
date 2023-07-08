@@ -20,6 +20,7 @@ SRC_TEST = $(addprefix $(SRC_DIR)/, $(FILE_TEST))
 OBJ_TEST = $(addprefix $(BUILD_DIR)/, $(notdir $(FILE_TEST:.cpp=.o)))
 
 TESTER_INTEGRATION=tests/integration.sh
+TESTER_BAD_CONFIG=tests/run_bad_config.sh
 
 VALGRIND = valgrind -q --error-exitcode=1 \
 --leak-check=full --show-leak-kinds=all \
@@ -63,6 +64,7 @@ tests: $(TESTER)
 
 # Optional: make tests-integration TEST_NAME=your_test_name
 tests-integration: $(NAME)
+	sh $(TESTER_BAD_CONFIG)
 	sh $(TESTER_INTEGRATION) $(TEST_NAME)
 
 retests: fclean tests
