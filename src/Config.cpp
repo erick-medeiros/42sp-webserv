@@ -3,17 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/07 20:11:46 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/08 12:58:09 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 
 Config::Config(void)
-    : _port(0), _clientBodySize(1024 * 1024), _mainRoot("."), _uploadPath("/uploads")
+    : _port(DEFAULT_PORT), _clientBodySize(1024 * 1024), _mainRoot("."),
+      _uploadPath("/uploads")
 {
 	this->_allowedMethods.push_back("GET");
 	this->_allowedMethods.push_back("POST");
@@ -66,8 +67,8 @@ int Config::add(std::string label, std::string value)
 
 bool Config::isValid(void) const
 {
-	if (_port == 0)
-		return false;
+	// if (_port == 0)
+	// 	return false;
 	return true;
 }
 
@@ -76,11 +77,11 @@ int Config::_setPort(std::string &value)
 	std::stringstream ss(value);
 	int               port;
 
-	if (_port != 0)
-	{
-		log.error("port: exist");
-		return FAILURE;
-	}
+	// if (_port != 0)
+	// {
+	// 	log.error("port: exist");
+	// 	return FAILURE;
+	// }
 
 	ss >> port;
 
@@ -197,6 +198,7 @@ int Config::_setHttpMethods(std::string &value)
 		verb = utils::trim(verb);
 		if (!_isValidHttpVerb(verb) || !utils::contains(_allowedMethods, verb))
 		{
+			log.error("invalid method: " + verb);
 			location.http_methods.clear();
 			return 1;
 		}
@@ -558,7 +560,8 @@ std::string Config::readFile(const std::string &filename)
 
 static void _panic(std::string err)
 {
-	throw std::runtime_error("Panic: " + err);
+	log.error(err);
+	throw std::runtime_error("");
 }
 
 static std::list<std::string> _getLineFromFileData(std::string &filedata)
@@ -631,9 +634,9 @@ static std::list<labels_t> _getLabels(std::list<std::string> &lines)
 		if (!populateServer)
 		{
 			if (extractFront(lines) != "server")
-				_panic("1");
+				_panic("Invalid config: no server");
 			if (extractFront(lines) != "{")
-				_panic("2");
+				_panic("Invalid config: no {");
 			populateServer = true;
 			continue;
 		}
@@ -644,7 +647,7 @@ static std::list<labels_t> _getLabels(std::list<std::string> &lines)
 		{
 			config.push_back(getLabel(line));
 			if (extractFront(lines) != "{")
-				_panic("3");
+				_panic("Invalid config: no location {");
 			while (!lines.empty())
 			{
 				std::string line = extractFront(lines);
@@ -668,7 +671,7 @@ static std::list<labels_t> _getLabels(std::list<std::string> &lines)
 		config.push_back(getLabel(line));
 	}
 	if (populateServer)
-		_panic("4");
+		_panic("Invalid config: no server");
 	return configs;
 }
 
@@ -681,7 +684,6 @@ std::vector<Config> Config::parseConfig(std::string &filedata)
 
 	for (std::list<labels_t>::iterator i = configs.begin(); i != configs.end(); i++)
 	{
-		std::cout << "--- server ---" << std::endl;
 		labels_t &server = *i;
 
 		Config config;
@@ -689,7 +691,10 @@ std::vector<Config> Config::parseConfig(std::string &filedata)
 		labels_t::iterator label;
 		for (label = server.begin(); label != server.end(); label++)
 		{
-			config.add(label->first, label->second);
+			if (config.add(label->first, label->second) == FAILURE)
+			{
+				_panic("Invalid server configuration");
+			}
 		}
 
 		data.push_back(config);

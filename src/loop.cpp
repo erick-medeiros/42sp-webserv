@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   loop.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/16 10:55:41 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/04 15:44:29 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/08 12:58:11 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,12 +47,21 @@ int loop(std::string path_config)
 	std::signal(SIGINT, shutdown);
 	std::signal(SIGQUIT, shutdown);
 
-	std::string         file = Config::readFile(path_config);
-	std::vector<Config> configs = Config::parseConfig(file);
-	Server              servers[configs.size()];
-	EpollWrapper        epoll(MAX_EVENTS * configs.size());
-	Cookie              cookies;
-	channel_t           channelServers[configs.size()];
+	std::string         file;
+	std::vector<Config> configs;
+	try
+	{
+		file = Config::readFile(path_config);
+		configs = Config::parseConfig(file);
+	}
+	catch (...)
+	{
+		return (1);
+	}
+	Server       servers[configs.size()];
+	EpollWrapper epoll(MAX_EVENTS * configs.size());
+	Cookie       cookies;
+	channel_t    channelServers[configs.size()];
 
 	size_t i = 0;
 	while (i < configs.size())

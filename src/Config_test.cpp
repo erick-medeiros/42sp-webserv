@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config_test.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/07 20:08:28 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/08 12:15:29 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,8 @@ TEST_SUITE("Class Config")
 	TEST_CASE("valid config")
 	{
 		Config config;
-		CHECK_FALSE(config.isValid());
-		CHECK_EQ(config.add("port", "8080"), 0);
+		// CHECK_FALSE(config.isValid());
+		// CHECK_EQ(config.add("port", "8080"), 0);
 		CHECK(config.isValid());
 	}
 }
@@ -55,7 +55,7 @@ TEST_SUITE("ports")
 		CHECK_EQ(config.add("port", "8080 8090 9000"), 1);
 		freopen("/dev/tty", "w", stderr);
 		uint_t const &port = config.getPort();
-		CHECK_EQ(port, 0);
+		CHECK_EQ(port, DEFAULT_PORT);
 	}
 	TEST_CASE("limits")
 	{
@@ -65,7 +65,7 @@ TEST_SUITE("ports")
 		CHECK_EQ(config.add("port", "49152"), 1);
 		freopen("/dev/tty", "w", stderr);
 		uint_t const &port = config.getPort();
-		CHECK_EQ(port, 0);
+		CHECK_EQ(port, DEFAULT_PORT);
 		SUBCASE("min")
 		{
 			Config config;
