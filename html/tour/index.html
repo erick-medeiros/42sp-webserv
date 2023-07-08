@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Webserv Tour</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1em;
+        }
+
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <h1>Webserv Tour</h1>
+        <div class="grid">
+            <a role="button" href="/tour/status_codes.html">Status Codes 🚦</a>
+            <a role="button" href="/tour/methods.html">Methods 📬</a>
+            <a role="button" href="/tour/uploads.html">Uploads 📤</a>
+            <a role="button" href="/cgi-bin">CGI 🐍</a>
+            <a role="button" href="/tour/admin">Admin 🔒</a>
+            <a role="button" href="/tour/login.html">Login 🔑</a>
+        </div>
+    </main>
+</body>

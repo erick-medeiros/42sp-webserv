@@ -88,7 +88,9 @@ void Response::addContentType(const std::string &fileExtenstion)
 	else if (fileExtenstion == "js")
 		setHeader("Content-Type", "text/javascript; charset=UTF-8");
 	else if (fileExtenstion == "jpg" || fileExtenstion == "jpeg")
-		setHeader("Content-Type", "image/jpeg; charset=UTF-8");
+		setHeader("Content-Type", "image/jpeg");
+	else if (fileExtenstion == "png")
+		setHeader("Content-Type", "image/png");
 	else if (fileExtenstion == "ico")
 		setHeader("Content-Type", "image/x-icon");
 	else if (fileExtenstion == "txt")
@@ -113,6 +115,8 @@ void Response::setCustomErrorPage(int statusCode, const std::string &path)
 void Response::createErrorPage()
 {
 	std::stringstream ss;
+
+	setHeader("Content-Type", "text/html");
 
 	ss << "<html>";
 	ss << "<head>";
@@ -143,6 +147,7 @@ void Response::setStatus(int code)
 
 	if (code >= 400)
 	{
+		setHeader("Connection", "close");
 		if (customErrorPages.count(statusCode))
 			loadFile(customErrorPages.at(statusCode));
 		else

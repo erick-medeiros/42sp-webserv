@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Methods Example</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+</head>
+
+<body>
+    <main class="container">
+        <nav>
+            <ul>
+                <h2>
+                    <li><a href="/tour" class="secondary">←</a></li>
+                    <li>Methods 📬</li>
+                </h2>
+            </ul>
+        </nav>
+
+        <div class="grid">
+            <button onclick="send('GET')">GET</button>
+            <button onclick="send('POST')">POST</button>
+            <button onclick="send('DELETE')">DELETE</button>
+            <button onclick="send('PATCH')">PATCH</button>
+        </div>
+        <article style="text-align: center"></article>
+    </main>
+    
+    <script>
+
+        function send(method) {
+            document.querySelector('article').setAttribute('aria-busy', true);
+            document.querySelector('article').innerHTML = "";
+            fetch(window.location.origin, { method: method })
+                .then(response => {
+                    document.querySelector('article').setAttribute('aria-busy', false);
+                    if (response.ok)
+                    {
+                        document.querySelector('article').innerHTML = `
+                            <hgroup>
+                                <h3>✅</h3>
+                                <h3>${response.status}</h3>
+                            </hgroup>
+                        `;
+                    }
+                    else
+                    {
+                        document.querySelector('article').innerHTML = `
+                            <hgroup>
+                                <h3>❌</h3>
+                                <h3>${response.status}</h3>
+                            </hgroup>
+                        `;
+                    }
+                })
+        }
+    </script>
+</body>
+
+</html>

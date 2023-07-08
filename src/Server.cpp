@@ -111,6 +111,13 @@ int Server::handleRequest(Connection &connection)
 	std::string serverRoot = config.getMainRoot();
 	std::string requestPath = request.getResourcePath();
 	std::string fullPath = serverRoot + requestPath;
+	int         requestErrorCode = request.getErrorCode();
+
+	if (requestErrorCode)
+	{
+		response.setStatus(requestErrorCode);
+		return 0;
+	}
 
 	std::vector<location_t> locations = connection.config.getLocations(requestPath);
 	if (!locations.empty())
@@ -143,8 +150,6 @@ int Server::handleRequest(Connection &connection)
 					t_cookie    cookie = cookies.get(nameCookie, valueCookie);
 					if (valueCookie == "" || cookie.value == "")
 					{
-						response.setHeader("Set-Cookie", nameCookie + "= ; path=/; "
-						                                              "expires=-1");
 						response.setStatus(HttpStatus::FORBIDDEN);
 						return 0;
 					}
