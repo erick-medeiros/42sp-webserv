@@ -27,7 +27,7 @@ run() {
 	TESTNAME="$(basename $(dirname $CONF))/$(basename $CONF)"
 	$BIN $CONF 1>$DEBUG_LOG 2>$DEBUG_LOG &
 	PID=$!
-	sleep 0.1
+	sleep 0.5
 	ps -p $PID 1>/dev/null 2>/dev/null
 	RUNNING=$?
 	if [ $RUNNING -eq 0 ]; then
