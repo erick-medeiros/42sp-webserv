@@ -3,17 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/07 20:11:46 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/08 12:12:45 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 
 Config::Config(void)
-    : _port(0), _clientBodySize(1024 * 1024), _mainRoot("."), _uploadPath("/uploads")
+    : _port(DEFAULT_PORT), _clientBodySize(1024 * 1024), _mainRoot("."),
+      _uploadPath("/uploads")
 {
 	this->_allowedMethods.push_back("GET");
 	this->_allowedMethods.push_back("POST");
@@ -66,8 +67,8 @@ int Config::add(std::string label, std::string value)
 
 bool Config::isValid(void) const
 {
-	if (_port == 0)
-		return false;
+	// if (_port == DEFAULT_PORT)
+	// 	return false;
 	return true;
 }
 
@@ -76,11 +77,11 @@ int Config::_setPort(std::string &value)
 	std::stringstream ss(value);
 	int               port;
 
-	if (_port != 0)
-	{
-		log.error("port: exist");
-		return FAILURE;
-	}
+	// if (_port != 0)
+	// {
+	// 	log.error("port: exist");
+	// 	return FAILURE;
+	// }
 
 	ss >> port;
 
@@ -681,7 +682,6 @@ std::vector<Config> Config::parseConfig(std::string &filedata)
 
 	for (std::list<labels_t>::iterator i = configs.begin(); i != configs.end(); i++)
 	{
-		std::cout << "--- server ---" << std::endl;
 		labels_t &server = *i;
 
 		Config config;

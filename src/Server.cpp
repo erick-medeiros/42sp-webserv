@@ -6,8 +6,6 @@ void Server::init(Config const &conf)
 {
 	_config = conf;
 
-	log.info("Server init in port " + utils::to_string(_config.getPort()));
-
 	listenToPort(_config.getPort());
 }
 

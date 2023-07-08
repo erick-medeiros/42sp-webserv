@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: mi <mi@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/06 17:51:41 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/08 12:11:28 by mi               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#define DEFAULT_PORT 8080
 
 typedef std::pair<std::string, std::string> pair_string_t;
 typedef std::list<pair_string_t>            labels_t;
