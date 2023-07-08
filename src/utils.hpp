@@ -31,6 +31,7 @@ bool         end_with(const std::string &text, const std::string &term);
 std::string  readFile(const std::string &path);
 bool         contains(std::vector<std::string> &, std::string const &);
 int          replace(std::string &str, const std::string &term, int value);
+int          countChars(const std::string &str, char character);
 
 } // namespace utils
 

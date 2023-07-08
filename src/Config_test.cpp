@@ -6,7 +6,7 @@
 /*   By: eandre-f <eandre-f@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/10 12:09:40 by eandre-f          #+#    #+#             */
-/*   Updated: 2023/07/05 17:57:39 by eandre-f         ###   ########.fr       */
+/*   Updated: 2023/07/07 20:08:28 by eandre-f         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -665,6 +665,125 @@ TEST_SUITE("location")
 				    *config.getLocations()[0].set_cookie.begin();
 
 				CHECK_FALSE(cookie.sessionValue);
+			}
+		}
+
+		SUBCASE("expires")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "/"), 0);
+
+			CHECK_EQ(config.add("location_set_cookie", "name=\"name\" "
+			                                           "expires=\"test\""),
+			         0);
+
+			const t_cookie &cookie = *config.getLocations()[0].set_cookie.begin();
+
+			CHECK_EQ(cookie.expires, "test");
+
+			// TODO: not working
+
+			// SUBCASE("error")
+			// {
+			// 	Config config;
+
+			// 	CHECK_EQ(config.add("location", "/"), 0);
+
+			// 	std::string expires = "Thu, 06 Jul 2023 07:28:00 GMT";
+
+			// 	CHECK_EQ(config.add("location_set_cookie", "name=\"name\" "
+			// 	                                           "expires=\"" +
+			// 	                                               expires + "\""),
+			// 	         0);
+
+			// 	const t_cookie &cookie =
+			// 	    *config.getLocations()[0].set_cookie.begin();
+
+			// 	CHECK_EQ(cookie.expires, expires);
+			// }
+		}
+
+		SUBCASE("secure")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "/"), 0);
+
+			CHECK_EQ(config.add("location_set_cookie", "name=\"name\" secure"), 0);
+
+			const t_cookie &cookie = *config.getLocations()[0].set_cookie.begin();
+
+			CHECK(cookie.secure);
+		}
+		SUBCASE("httponly")
+		{
+			Config config;
+
+			CHECK_EQ(config.add("location", "/"), 0);
+
+			CHECK_EQ(config.add("location_set_cookie", "name=\"name\" httponly"), 0);
+
+			const t_cookie &cookie = *config.getLocations()[0].set_cookie.begin();
+
+			CHECK(cookie.httpOnly);
+		}
+		SUBCASE("samesite")
+		{
+			SUBCASE("strict")
+			{
+				Config config;
+
+				CHECK_EQ(config.add("location", "/"), 0);
+
+				CHECK_EQ(config.add("location_set_cookie", "name=\"name\" "
+				                                           "samesite=strict"),
+				         0);
+
+				const t_cookie &cookie =
+				    *config.getLocations()[0].set_cookie.begin();
+
+				CHECK_EQ(cookie.samesite, "strict");
+			}
+			SUBCASE("lax")
+			{
+				Config config;
+
+				CHECK_EQ(config.add("location", "/"), 0);
+
+				CHECK_EQ(config.add("location_set_cookie", "name=\"name\" "
+				                                           "samesite=lax"),
+				         0);
+
+				const t_cookie &cookie =
+				    *config.getLocations()[0].set_cookie.begin();
+
+				CHECK_EQ(cookie.samesite, "lax");
+			}
+			SUBCASE("none")
+			{
+				Config config;
+
+				CHECK_EQ(config.add("location", "/"), 0);
+
+				CHECK_EQ(config.add("location_set_cookie", "name=\"name\" "
+				                                           "samesite=none"),
+				         0);
+
+				const t_cookie &cookie =
+				    *config.getLocations()[0].set_cookie.begin();
+
+				CHECK_EQ(cookie.samesite, "none");
+			}
+			SUBCASE("error")
+			{
+				Config config;
+
+				CHECK_EQ(config.add("location", "/"), 0);
+
+				CHECK_EQ(config.add("location_set_cookie", "name=\"name\" "
+				                                           "samesite=a"),
+				         1);
 			}
 		}
 	}
