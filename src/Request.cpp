@@ -40,6 +40,40 @@ void Request::parse(std::string const rawInput, Config const &config)
 
 void Request::parseBody(Config const &config)
 {
+	std::string transferEncoding = getHeaderValue("transfer-encoding");
+
+	if (transferEncoding == "chunked")
+	{
+		size_t            chunkSizeStrPos = unparsed.find("\r\n");
+		std::string       chunkSizeStr = unparsed.substr(0, chunkSizeStrPos);
+		std::stringstream ss(chunkSizeStr);
+		std::size_t       chunkSize = 0;
+		ss >> std::hex >> chunkSize;
+
+		// Wait until we have at least one chunk to parse
+		if (unparsed.size() < chunkSize)
+			return;
+		// Remove the size of the chunk and the \r\n from unparsed
+		unparsed.erase(0, chunkSizeStr.size() + 2);
+		// Append the chunk to the body
+		body.append(unparsed.substr(0, chunkSize));
+		// Remove the chunk from unparsed
+		unparsed.erase(0, chunkSize);
+		// If the unparsed data is the last chunk
+		if (unparsed.find("\r\n0\r\n") == 0 || unparsed.find("0\r\n") == 0)
+		{
+			bodyParsed = true;
+			return;
+		}
+		// If there is a trailing \r\n, remove it for the next chunk
+		if (unparsed.find("\r\n") == 0)
+			unparsed.erase(0, 2);
+		// If there is more data to parse, parse it
+		if (unparsed.size() > 0)
+			parseBody();
+		return;
+	}
+
 	// https://www.rfc-editor.org/rfc/rfc9112.html#section-6-4
 	if (contentLength > 0)
 	{
@@ -51,10 +85,12 @@ void Request::parseBody(Config const &config)
 		// Wait until unparsed has enough data to parse the body
 		if (unparsed.size() < contentLength)
 			return;
-
 		body = unparsed.substr(0, contentLength);
 		unparsed.erase(0, contentLength);
+		bodyParsed = true;
+		return;
 	}
+
 	bodyParsed = true;
 }
 

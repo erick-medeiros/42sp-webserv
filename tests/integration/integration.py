@@ -34,6 +34,14 @@ def post(URL, body):
         print("Error requests.post: " + URL)
         exit(1)
 
+def post_chunked(URL, body):
+    try:
+        response = requests.post(URL, data=body, headers={"Transfer-Encoding": "chunked"})
+        return response
+    except:
+        print("Error requests.post: " + URL)
+        exit(1)
+
 def delete(URL):
     try:
         response = requests.delete(URL)
