@@ -70,7 +70,7 @@ void Request::parseBody(Config const &config)
 			unparsed.erase(0, 2);
 		// If there is more data to parse, parse it
 		if (unparsed.size() > 0)
-			parseBody();
+			parseBody(config);
 		return;
 	}
 
