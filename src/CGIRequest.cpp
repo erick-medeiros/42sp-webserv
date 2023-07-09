@@ -20,6 +20,8 @@ std::string CGIRequest::exec(void)
 		return "";
 	}
 
+	std::signal(SIGCHLD, SIG_IGN);
+
 	int pid = fork();
 	if (pid == 0)
 	{
@@ -31,6 +33,28 @@ std::string CGIRequest::exec(void)
 		executeCGIScript();
 
 		return "";
+	}
+
+	int max_try = 3;
+	int status;
+
+	while (max_try > 0)
+	{
+		log.debug("CGI: try: " + utils::to_string(max_try));
+
+		sleep(1);
+
+		waitpid(pid, &status, WNOHANG);
+
+		if (status & WNOHANG)
+			max_try--;
+		else
+			max_try = 0;
+	}
+
+	if (status & WNOHANG)
+	{
+		kill(pid, SIGKILL);
 	}
 
 	waitpid(pid, NULL, 0);

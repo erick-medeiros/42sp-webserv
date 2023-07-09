@@ -1,6 +1,7 @@
 #ifndef CGIREQUEST_HPP
 #define CGIREQUEST_HPP
 
+#include <csignal>
 #include <fcntl.h>
 #include <iostream>
 #include <sstream>
