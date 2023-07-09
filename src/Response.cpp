@@ -99,14 +99,6 @@ void Response::addContentType(const std::string &fileExtenstion)
 		setHeader("Content-Type", "application/octet-stream");
 }
 
-void Response::parse(const Request &request)
-{
-	if (request.getMethod() == "GET")
-	{
-		loadFile(request.getResourcePath());
-	}
-}
-
 void Response::setCustomErrorPage(int statusCode, const std::string &path)
 {
 	customErrorPages[statusCode] = path;

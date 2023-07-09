@@ -41,7 +41,7 @@ class Server
 	Config &getConfig(void);
 
 	static std::string getRequestData(int clientSocket);
-	int                handleRequest(Connection &connection);
+	void               handleRequest(Connection &connection);
 
   private:
 	Config _config;
