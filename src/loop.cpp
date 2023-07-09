@@ -13,6 +13,7 @@
 #include "Config.hpp"
 #include "Connection.hpp"
 #include "EpollWrapper.hpp"
+#include "Logger.hpp"
 #include "Request.hpp"
 #include "Server.hpp"
 #include <csignal>
@@ -71,6 +72,13 @@ int loop(std::string path_config)
 
 		server.init(config);
 
+		if (server.getServerSocket() < 0)
+		{
+			log.error("Error creating server socket");
+			running(false);
+			return 1;
+		}
+
 		{ // socket
 			channel_t *channel = &channelServers[i];
 			channel->type = channel_t::CHANNEL_SOCKET;
@@ -99,7 +107,12 @@ int loop(std::string path_config)
 				Server *server = reinterpret_cast<Server *>(channel->ptr);
 				{ // client
 					Connection *cnn = new Connection(*server);
-					channel_t  *channelConnection = new channel_t;
+					if (cnn->fd < 0)
+					{
+						delete cnn;
+						continue;
+					}
+					channel_t *channelConnection = new channel_t;
 					channelConnection->type = channel_t::CHANNEL_CONNECTION;
 					channelConnection->ptr = cnn;
 					epoll_data_t data = {channelConnection};

@@ -12,7 +12,7 @@
 
 #include "Logger.hpp"
 
-e_log_level Logger::level = LOGGER_LEVEL_DEBUG;
+e_log_level Logger::level = LOGGER_LEVEL_INFO;
 bool        Logger::showColor = true;
 
 Logger::Logger() : _stream(std::cout) {}

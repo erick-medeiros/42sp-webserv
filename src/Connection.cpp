@@ -36,13 +36,13 @@ int Connection::acceptNewClient(int serverSocket)
 	if (clientSocket == -1)
 	{
 		log.error("--- Error: accept", strerror(errno));
-		exit(1);
+		return -1;
 	}
 	// --- Set non-blocking ---
 	if (!setNonBlocking(clientSocket))
 	{
 		log.error("--- Error: Set non-blocking");
-		exit(1);
+		return -1;
 	}
 	log.info("+++ New connection accepted on socket: " +
 	         utils::to_string(clientSocket));
@@ -54,7 +54,7 @@ int Connection::sendHttpResponse()
 	response.prepareMessage();
 	std::string message = response.getMessage();
 
-	log.warning("Sending response:\n" + message);
+	log.debug("Sending response:\n" + message);
 
 	if (send(fd, message.c_str(), message.size(), 0) < 0)
 	{

@@ -20,7 +20,7 @@ int Server::listenToPort(int port)
 	if (_serverSocket < 0)
 	{
 		log.error("socket", strerror(errno));
-		exit(1);
+		return -1;
 	}
 	log.info("Server socket created " + utils::to_string(_serverSocket));
 	// --- Configure socket options ---
@@ -28,7 +28,7 @@ int Server::listenToPort(int port)
 	if (setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
 	{
 		log.error("setsockopt", strerror(errno));
-		exit(1);
+		return -1;
 	}
 	// --- Bind socket with port ---
 	sockaddr_in server_address = createServerAddress(port);
@@ -37,18 +37,18 @@ int Server::listenToPort(int port)
 	{
 		log.error("bind port " + utils::to_string(port), strerror(errno));
 		close(_serverSocket);
-		exit(1);
+		return -1;
 	}
 	// --- Set non-blocking ---
 	if (!setNonBlocking(_serverSocket))
 	{
-		exit(1);
+		return -1;
 	}
 	// --- Set socket to listen for connections ---
 	if (listen(_serverSocket, 5) < 0)
 	{
 		log.error("listen", strerror(errno));
-		exit(1);
+		return -1;
 	}
 	log.info("Server listening on port " + utils::to_string(port));
 	return _serverSocket;
@@ -61,7 +61,7 @@ int Server::getPort()
 	if (getsockname(_serverSocket, (struct sockaddr *) &address, &len) < 0)
 	{
 		log.error("getsockname", strerror(errno));
-		exit(1);
+		return -1;
 	}
 	return ntohs(address.sin_port);
 }
@@ -85,7 +85,6 @@ std::string Server::getRequestData(int clientSocket)
 		return "";
 	}
 	buff[bytesRead] = 0;
-	log.info("Request size " + utils::to_string(bytesRead));
 	return std::string(buff, bytesRead);
 }
 
