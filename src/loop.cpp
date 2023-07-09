@@ -145,7 +145,8 @@ int loop(std::string path_config)
 					connection->request.parse(rawRequest, connection->config);
 					if (connection->request.isParsed())
 					{
-						std::cout << connection->request << std::endl;
+						if (Logger::level == LOGGER_LEVEL_DEBUG)
+							std::cout << connection->request << std::endl;
 						epoll_data_t data = {channel};
 						epoll.modify(connection->fd, data, EPOLLOUT);
 					}
