@@ -42,12 +42,13 @@ std::string CGIRequest::exec(void)
 	{
 		log.debug("CGI: try: " + utils::to_string(max_try));
 
-		sleep(1);
-
 		waitpid(pid, &status, WNOHANG);
 
 		if (status & WNOHANG)
+		{
 			max_try--;
+			sleep(1);
+		}
 		else
 			max_try = 0;
 	}
