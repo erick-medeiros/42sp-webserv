@@ -101,23 +101,25 @@ Config &Server::getConfig(void)
 
 static Cookie cookies;
 
-int Server::handleRequest(Connection &connection)
+void loadCustomErrorPages(Config &config, Response &response)
 {
-	Request    &request = connection.request;
-	Config     &config = connection.config;
-	Response   &response = connection.response;
-	std::string serverRoot = config.getMainRoot();
-	std::string requestPath = request.getResourcePath();
-	std::string fullPath = serverRoot + requestPath;
-	int         requestErrorCode = request.getErrorCode();
-
-	if (requestErrorCode)
+	std::map<int, std::string>           errorPages = config.getErrorPages();
+	std::map<int, std::string>::iterator it;
+	for (it = errorPages.begin(); it != errorPages.end(); it++)
 	{
-		response.setStatus(requestErrorCode);
-		return 0;
+		response.setCustomErrorPage(it->first, it->second);
 	}
+}
 
-	std::vector<location_t> locations = connection.config.getLocations(requestPath);
+bool requestHasError(Request &request)
+{
+	return (request.getErrorCode() != 0);
+}
+
+bool requestHasInvalidMethod(Request &request, Config &config)
+{
+	std::vector<location_t> locations =
+	    config.getLocations(request.getResourcePath());
 	if (!locations.empty())
 	{
 		for (size_t i = 0; i < locations.size(); ++i)
@@ -125,18 +127,69 @@ int Server::handleRequest(Connection &connection)
 			std::string requestMethod = request.getMethod();
 			if (!utils::contains(locations[i].http_methods, requestMethod))
 			{
-				log.error("invalid http method");
-				response.setStatus(HttpStatus::NOT_IMPLEMENTED);
-				return 0;
+				return true;
 			}
 		}
 	}
+	return false;
+}
 
+bool locationHasRedirection(std::vector<location_t> &locations)
+{
 	if (!locations.empty())
 	{
 		for (size_t i = 0; i < locations.size(); ++i)
 		{
-			bool redirect = true;
+			if (locations[i].http_redirection.first != 0)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+std::pair<int, std::string> getRedirection(std::vector<location_t> &locations)
+{
+	for (size_t i = 0; i < locations.size(); ++i)
+	{
+		if (locations[i].http_redirection.first != 0)
+		{
+			return locations[i].http_redirection;
+		}
+	}
+	return std::pair<int, std::string>(0, "");
+}
+
+void Server::handleRequest(Connection &connection)
+{
+	Request    &request = connection.request;
+	Config     &config = connection.config;
+	Response   &response = connection.response;
+	std::string serverRoot = config.getMainRoot();
+	std::string requestPath = request.getResourcePath();
+	std::string fullPath = serverRoot + requestPath;
+
+	loadCustomErrorPages(config, response);
+
+	if (requestHasError(request))
+	{
+		response.setStatus(request.getErrorCode());
+		return;
+	}
+
+	if (requestHasInvalidMethod(request, config))
+	{
+		response.setStatus(HttpStatus::NOT_IMPLEMENTED);
+		return;
+	}
+
+	std::vector<location_t> locations =
+	    config.getLocations(request.getResourcePath());
+	if (!locations.empty())
+	{
+		for (size_t i = 0; i < locations.size(); ++i)
+		{
 			if (locations[i].required_cookie.size() > 0)
 			{
 				std::set<std::string>::const_iterator it =
@@ -149,7 +202,7 @@ int Server::handleRequest(Connection &connection)
 					if (valueCookie == "" || cookie.value == "")
 					{
 						response.setStatus(HttpStatus::FORBIDDEN);
-						return 0;
+						return;
 					}
 					else
 					{
@@ -174,7 +227,6 @@ int Server::handleRequest(Connection &connection)
 
 						if (SetCookieValue == "")
 						{
-							redirect = false;
 							continue;
 						}
 
@@ -205,42 +257,29 @@ int Server::handleRequest(Connection &connection)
 					response.setHeader("Set-Cookie", setCookieHeader);
 				}
 			}
-			if (locations[i].http_redirection.first != 0 && redirect)
-			{
-				response.setStatus(locations[i].http_redirection.first);
-
-				std::string url = locations[i].http_redirection.second;
-
-				utils::replace(url, "$port", config.getPort());
-
-				response.setHeader("Location", url);
-				return 0;
-			}
 		}
 	}
 
-	// Prepare response with custom error pages
-	std::map<int, std::string>           errorPages = _config.getErrorPages();
-	std::map<int, std::string>::iterator it;
-	for (it = errorPages.begin(); it != errorPages.end(); it++)
+	if (locationHasRedirection(locations))
 	{
-		response.setCustomErrorPage(it->first, it->second);
+		std::pair<int, std::string> redirection = getRedirection(locations);
+		response.setStatus(redirection.first);
+		response.setHeader("Location", redirection.second);
+		return;
 	}
 
-	// If request is a multipart/form-data
 	if (request.isMultipart())
 	{
 		handleMultipart(connection);
 		response.setStatus(HttpStatus::SEE_OTHER);
-		response.setHeader("Location", requestPath);
-		return 0;
+		response.setHeader("Location", request.getResourcePath());
+		return;
 	}
 
-	// Request asked for a path that does not exist
 	if (!utils::pathExists(fullPath))
 	{
 		response.setStatus(HttpStatus::NOT_FOUND);
-		return 0;
+		return;
 	}
 
 	// If there is cgi enabled for this location
@@ -249,14 +288,14 @@ int Server::handleRequest(Connection &connection)
 		CGIRequest  cgi(fullPath, connection);
 		std::string result = cgi.exec();
 		response.setBody(result);
-		return 0;
+		return;
 	}
 
 	// Rquest body is too large
 	if (request.getBody().size() > _config.getClientBodySize())
 	{
 		response.setStatus(HttpStatus::PAYLOAD_TOO_LARGE);
-		return 0;
+		return;
 	}
 
 	// Request is a directory and autoindex is enabled
@@ -293,15 +332,15 @@ int Server::handleRequest(Connection &connection)
 	if (utils::isFile(fullPath))
 	{
 		response.loadFile(fullPath);
+		return;
 	}
 
-	return 0;
+	return;
 }
 
 void Server::handleMultipart(Connection &connection)
 {
-	Request &request = connection.request;
-
+	Request    &request = connection.request;
 	std::string body = request.getBody();
 	std::string contentType = request.getHeaders()["content-type"];
 	std::string boundary =
