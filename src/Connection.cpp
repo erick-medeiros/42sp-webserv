@@ -22,7 +22,7 @@ Connection::~Connection(void) {}
 
 int Connection::disconnect()
 {
-	log.info("--- Client disconnected from socket" + utils::to_string(fd));
+	log.info("--- Client disconnected from socket: " + utils::to_string(fd));
 	return close(fd);
 }
 
