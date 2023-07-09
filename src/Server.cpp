@@ -187,7 +187,8 @@ void Server::handleRequest(Connection &connection)
 	    config.getLocations(request.getResourcePath());
 	if (!locations.empty())
 	{
-		handleCookies(connection, locations);
+		if (handleCookies(connection, locations))
+			return;
 	}
 
 	if (locationHasRedirection(locations))
@@ -276,8 +277,7 @@ void Server::handleRequest(Connection &connection)
 	return;
 }
 
-void Server::handleCookies(Connection              &connection,
-                           std::vector<location_t> &locations)
+int Server::handleCookies(Connection &connection, std::vector<location_t> &locations)
 {
 	Request  &request = connection.request;
 	Response &response = connection.response;
@@ -296,7 +296,7 @@ void Server::handleCookies(Connection              &connection,
 				if (valueCookie == "" || cookie.value == "")
 				{
 					response.setStatus(HttpStatus::FORBIDDEN);
-					return;
+					return 1;
 				}
 				else
 				{
@@ -345,6 +345,7 @@ void Server::handleCookies(Connection              &connection,
 			}
 		}
 	}
+	return 0;
 }
 
 void Server::handleMultipart(Connection &connection)

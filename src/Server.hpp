@@ -49,7 +49,7 @@ class Server
 
 	int         listenToPort(int port);
 	void        handleMultipart(Connection &connection);
-	void        handleCookies(Connection &, std::vector<location_t> &);
+	int         handleCookies(Connection &, std::vector<location_t> &);
 	sockaddr_in createServerAddress(int port);
 };
 
