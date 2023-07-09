@@ -134,6 +134,33 @@ bool requestHasInvalidMethod(Request &request, Config &config)
 	return false;
 }
 
+bool locationHasRedirection(std::vector<location_t> &locations)
+{
+	if (!locations.empty())
+	{
+		for (size_t i = 0; i < locations.size(); ++i)
+		{
+			if (locations[i].http_redirection.first != 0)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+std::pair<int, std::string> getRedirection(std::vector<location_t> &locations)
+{
+	for (size_t i = 0; i < locations.size(); ++i)
+	{
+		if (locations[i].http_redirection.first != 0)
+		{
+			return locations[i].http_redirection;
+		}
+	}
+	return std::pair<int, std::string>(0, "");
+}
+
 void Server::handleRequest(Connection &connection)
 {
 	Request    &request = connection.request;
@@ -163,7 +190,6 @@ void Server::handleRequest(Connection &connection)
 	{
 		for (size_t i = 0; i < locations.size(); ++i)
 		{
-			bool redirect = true;
 			if (locations[i].required_cookie.size() > 0)
 			{
 				std::set<std::string>::const_iterator it =
@@ -201,7 +227,6 @@ void Server::handleRequest(Connection &connection)
 
 						if (SetCookieValue == "")
 						{
-							redirect = false;
 							continue;
 						}
 
@@ -232,23 +257,22 @@ void Server::handleRequest(Connection &connection)
 					response.setHeader("Set-Cookie", setCookieHeader);
 				}
 			}
-			if (locations[i].http_redirection.first != 0 && redirect)
-			{
-				response.setStatus(locations[i].http_redirection.first);
-
-				std::string url = locations[i].http_redirection.second;
-
-				utils::replace(url, "$port", config.getPort());
-
-				response.setHeader("Location", url);
-				return;
-			}
 		}
+	}
+
+	if (locationHasRedirection(locations))
+	{
+		std::pair<int, std::string> redirection = getRedirection(locations);
+		response.setStatus(redirection.first);
+		response.setHeader("Location", redirection.second);
+		return;
 	}
 
 	if (request.isMultipart())
 	{
 		handleMultipart(connection);
+		response.setStatus(HttpStatus::SEE_OTHER);
+		response.setHeader("Location", request.getResourcePath());
 		return;
 	}
 
@@ -317,7 +341,6 @@ void Server::handleRequest(Connection &connection)
 void Server::handleMultipart(Connection &connection)
 {
 	Request    &request = connection.request;
-	Response   &response = connection.response;
 	std::string body = request.getBody();
 	std::string contentType = request.getHeaders()["content-type"];
 	std::string boundary =
@@ -363,8 +386,6 @@ void Server::handleMultipart(Connection &connection)
 		}
 	}
 	request.updateBody(body);
-	response.setStatus(HttpStatus::SEE_OTHER);
-	response.setHeader("Location", request.getResourcePath());
 }
 
 // --- Helper functions ---
