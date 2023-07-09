@@ -179,7 +179,7 @@ void Server::handleRequest(Connection &connection)
 
 	if (requestHasInvalidMethod(request, config))
 	{
-		response.setStatus(HttpStatus::NOT_IMPLEMENTED);
+		response.setStatus(HttpStatus::METHOD_NOT_ALLOWED);
 		return;
 	}
 
@@ -330,7 +330,15 @@ void Server::handleRequest(Connection &connection)
 	// Request is a regular file
 	if (utils::isFile(fullPath))
 	{
-		response.loadFile(fullPath);
+		if (request.getMethod() == "DELETE")
+		{
+			if (remove(fullPath.c_str()) == 0)
+				response.setStatus(HttpStatus::OK);
+			else
+				response.setStatus(HttpStatus::INTERNAL_SERVER_ERROR);
+		}
+		else
+			response.loadFile(fullPath);
 		return;
 	}
 
