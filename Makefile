@@ -53,7 +53,7 @@ fclean: clean
 re: fclean all
 
 leaks: $(NAME)
-	$(VALGRIND) ./$(NAME) NORUN
+	$(VALGRIND) ./$(NAME) --no-run --log-level=NONE
 
 $(TESTER): CXXFLAGS += -Ilib
 $(TESTER): $(NAME) $(OBJ_TEST)

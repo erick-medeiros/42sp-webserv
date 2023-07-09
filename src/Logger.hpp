@@ -49,6 +49,9 @@ class Logger
 	Logger();
 	Logger(std::ostream &);
 	~Logger();
+
+	static void swithLevel(std::string);
+
 	void debug(std::string msg);
 	void info(std::string msg);
 	void warning(std::string msg);

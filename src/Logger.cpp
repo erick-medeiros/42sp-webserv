@@ -21,6 +21,21 @@ Logger::Logger(std::ostream &stream) : _stream(stream) {}
 
 Logger::~Logger() {}
 
+void Logger::swithLevel(std::string level)
+{
+	level = utils::trim(level);
+	if (level == "DEBUG")
+		Logger::level = LOGGER_LEVEL_DEBUG;
+	else if (level == "INFO")
+		Logger::level = LOGGER_LEVEL_INFO;
+	else if (level == "WARNING")
+		Logger::level = LOGGER_LEVEL_WARNING;
+	else if (level == "ERROR")
+		Logger::level = LOGGER_LEVEL_ERROR;
+	else if (level == "NONE")
+		Logger::level = LOGGER_LEVEL_NONE;
+}
+
 bool Logger::_checkLevel(e_log_level type)
 {
 	_type = type;

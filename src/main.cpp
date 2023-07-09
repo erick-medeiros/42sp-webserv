@@ -10,6 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Logger.hpp"
+#include "utils.hpp"
 #include <string>
 
 #define DEFAULT_CONF "./config/default.conf"
@@ -23,10 +25,18 @@ int main(int argc, char *argv[])
 
 	if (argc > 1)
 	{
-		if (std::string(argv[1]) == "NORUN")
-			running(false);
-		else
-			path_config = argv[1];
+		for (int i = 1; i < argc; i++)
+		{
+			std::string flagLogLevel = "--log-level=";
+			std::string arg = argv[i];
+
+			if (arg == "--no-run")
+				running(false);
+			else if (utils::start_with(arg, flagLogLevel))
+				Logger::swithLevel(arg.substr(flagLogLevel.size()));
+			else
+				path_config = argv[i];
+		}
 	}
 
 	return loop(path_config);
