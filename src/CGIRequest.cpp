@@ -14,7 +14,12 @@ CGIRequest::CGIRequest(std::string const &resource, Connection &connection)
 
 std::string CGIRequest::exec(void)
 {
-	int status;
+	if (access(this->fileScript.c_str(), R_OK) != 0)
+	{
+		log.error("CGI exec: invalid file", strerror(errno));
+		return "";
+	}
+
 	int pid = fork();
 	if (pid == 0)
 	{
@@ -24,17 +29,13 @@ std::string CGIRequest::exec(void)
 
 		prepareCGIRequest();
 		executeCGIScript();
-		// error
-		exit(1);
-	}
-	waitpid(pid, &status, 0);
-	if (WIFEXITED(status))
-		status = WEXITSTATUS(status);
-	else
-		status = 1;
 
-	std::string result = utils::readFile(getFileName());
-	return result;
+		return "";
+	}
+
+	waitpid(pid, NULL, 0);
+
+	return utils::readFile(getFileName());
 }
 
 std::string const &CGIRequest::getFileName(void) const
