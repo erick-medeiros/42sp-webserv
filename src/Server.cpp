@@ -6,7 +6,7 @@ void Server::init(Config const &conf)
 {
 	_config = conf;
 
-	listenToPort(_config.getPort());
+	_serverSocket = listenToPort(_config.getPort());
 }
 
 Server::~Server()

@@ -74,7 +74,7 @@ int loop(std::string path_config)
 
 		if (server.getServerSocket() < 0)
 		{
-			log.error("Error creating server socket");
+			log.error("Error creating server");
 			running(false);
 			return 1;
 		}
