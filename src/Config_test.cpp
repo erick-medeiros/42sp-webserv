@@ -119,11 +119,6 @@ TEST_SUITE("server name")
 		CHECK_EQ(serverNames[0], server1);
 		CHECK_EQ(serverNames[1], server2);
 	}
-
-	TEST_CASE("bad url")
-	{
-		// TODO: make
-	}
 }
 
 TEST_SUITE("error pages")
@@ -681,8 +676,6 @@ TEST_SUITE("location")
 			const t_cookie &cookie = *config.getLocations()[0].set_cookie.begin();
 
 			CHECK_EQ(cookie.expires, "test");
-
-			// TODO: not working
 
 			// SUBCASE("error")
 			// {

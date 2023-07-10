@@ -13,7 +13,7 @@
 #include "Request.hpp"
 #include "utils.hpp"
 
-#define HTML_ROOT "." // TODO: Trocar pelo root_path passado na conf
+#define HTML_ROOT "."
 #define HTTP_VERSION "HTTP/1.1"
 #define CRLF "\r\n"
 #define SP " "

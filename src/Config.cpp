@@ -121,7 +121,6 @@ int Config::_setServerName(std::string &value)
 	while (!ss.eof())
 	{
 		ss >> server_name;
-		// TODO: Checar se a string contem caracteres validos para um server_name
 		_serverNames.push_back(server_name);
 	}
 
@@ -517,7 +516,6 @@ std::vector<location_t> Config::getLocations(std::string path) const
 		if (path.find(it->location) == 0)
 			locations.push_back(*it);
 	}
-	// TODO (opcional) ordenar por "nesting" (mais especifico primeiro)
 	return locations;
 }
 

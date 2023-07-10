@@ -153,7 +153,6 @@ int loop(std::string path_config)
 				}
 				catch (std::exception const &e)
 				{
-					// TODO: handle exception properly...
 					log.error(e.what());
 					removeConnection(channel, epoll);
 				}
