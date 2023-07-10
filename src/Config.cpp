@@ -649,6 +649,10 @@ static std::list<labels_t> _getLabels(std::list<std::string> &lines)
 			while (!lines.empty())
 			{
 				std::string line = extractFront(lines);
+
+				if (utils::start_with(line, "#"))
+					continue;
+
 				if (line == "}")
 					break;
 				pair_string_t data = getLabel(line);
