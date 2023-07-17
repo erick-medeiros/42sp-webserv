@@ -23,11 +23,11 @@ EpollWrapper::EpollWrapper(size_t maxevents) : _maxevents(maxevents)
 	memset(events, 0, sizeof(epoll_event) * _maxevents);
 }
 
-int EpollWrapper::add(int fd, epoll_data_t data, uint32_t events)
+int EpollWrapper::add(int fd)
 {
 	struct epoll_event event;
-	event.events = events;
-	event.data = data;
+	event.events = EPOLLIN | EPOLLOUT;
+	event.data.fd = fd;
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, fd, &event) == -1)
 	{
 		log.error("epoll_ctl", strerror(errno));
@@ -36,11 +36,11 @@ int EpollWrapper::add(int fd, epoll_data_t data, uint32_t events)
 	return 0;
 }
 
-int EpollWrapper::modify(int fd, epoll_data_t data, uint32_t new_events)
+int EpollWrapper::modify(int fd)
 {
 	struct epoll_event event;
-	event.events = new_events;
-	event.data = data;
+	event.events = EPOLLOUT;
+	event.data.fd = fd;
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
 		log.error("epoll_ctl", strerror(errno));

@@ -42,8 +42,8 @@ class EpollWrapper
 	EpollWrapper(size_t maxevents);
 	~EpollWrapper(void);
 
-	int add(int fd, epoll_data_t data, uint32_t events);
-	int modify(int fd, epoll_data_t data, uint32_t new_events);
+	int add(int fd);
+	int modify(int fd);
 	int remove(int fd);
 
 	int wait(int timeout);

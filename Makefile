@@ -32,7 +32,7 @@ FORMAT = which clang-format >/dev/null 2>&1 \
 all: $(NAME)
 
 run: all
-	./$(NAME)
+	./$(NAME) --log-level=DEBUG
 
 $(NAME): $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
