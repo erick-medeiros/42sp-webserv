@@ -56,15 +56,15 @@ int loop(std::string path_config)
 		return (1);
 	}
 	std::map<int, Connection*> connections;
-	std::map<int, Server*>     serversMap;
-	Server                    servers[configs.size()];
+	std::map<int, Server*>     servers;
 	EpollWrapper              epoll(MAX_EVENTS * configs.size());
 	Cookie                    cookies;
 
 	size_t i = 0;
 	while (i < configs.size())
 	{
-		Server &server = servers[i];
+		Server *server_ptr = new Server();
+		Server &server = *server_ptr;
 		Config &config = configs[i];
 
 		server.init(config);
@@ -76,7 +76,7 @@ int loop(std::string path_config)
 			return 1;
 		}
 		epoll.add(server.getServerSocket());
-		serversMap[server.getServerSocket()] = &server;
+		servers[server.getServerSocket()] = &server;
 		i++;
 	}
 
@@ -96,7 +96,7 @@ int loop(std::string path_config)
 			// New connection
 			if (connections.find(fd) == connections.end())
 			{
-				Server *server = serversMap[fd];
+				Server *server = servers[fd];
 				// Create a connection
 				Connection *connection = new Connection(*server);
 				connections[connection->fd] = connection;
@@ -105,7 +105,7 @@ int loop(std::string path_config)
 			}
 
 			// Existing connection
-			Connection *connection = connections.find(fd)->second;
+			Connection *connection = connections[fd];
 
 			if (event.events & EPOLLERR)
 			{
@@ -151,5 +151,8 @@ int loop(std::string path_config)
 			}
 		}
 	}
+	std::map<int, Server*>::iterator it;
+	for (it = servers.begin(); it != servers.end(); it++)
+		delete it->second;
 	return 0;
 }
