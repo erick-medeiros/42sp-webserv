@@ -57,27 +57,25 @@ int loop(std::string path_config)
 	}
 	std::map<int, Connection*> connections;
 	std::map<int, Server*>     servers;
-	EpollWrapper              epoll(MAX_EVENTS * configs.size());
-	Cookie                    cookies;
+	EpollWrapper               epoll(MAX_EVENTS * configs.size());
+	Cookie                     cookies;
 
-	size_t i = 0;
-	while (i < configs.size())
+	// Setup servers
+	for (size_t i = 0; i < configs.size(); i++)
 	{
-		Server *server_ptr = new Server();
-		Server &server = *server_ptr;
+		Server *server = new Server();
 		Config &config = configs[i];
 
-		server.init(config);
+		server->init(config);
 
-		if (server.getServerSocket() < 0)
+		if (server->getServerSocket() < 0)
 		{
 			log.error("Error creating server");
 			running(false);
 			return 1;
 		}
-		epoll.add(server.getServerSocket());
-		servers[server.getServerSocket()] = &server;
-		i++;
+		epoll.add(server->getServerSocket());
+		servers[server->getServerSocket()] = server;
 	}
 
 	while (running(true))
@@ -107,13 +105,7 @@ int loop(std::string path_config)
 			// Existing connection
 			Connection *connection = connections[fd];
 
-			if (event.events & EPOLLERR)
-			{
-				removeConnection(connection, epoll);
-				continue;
-			}
-
-			if (event.events & (EPOLLRDHUP | EPOLLHUP))
+			if (event.events & EPOLLERR || event.events & (EPOLLRDHUP | EPOLLHUP))
 			{
 				removeConnection(connection, epoll);
 				continue;
@@ -130,7 +122,10 @@ int loop(std::string path_config)
 					{
 						if (Logger::level == LOGGER_LEVEL_DEBUG)
 							std::cout << connection->request << std::endl;
-						epoll.modify(connection->fd);
+						connection->server.handleRequest(*connection);
+						connection->sendHttpResponse();
+						removeConnection(connection, epoll);
+						continue;
 					}
 				}
 				catch (std::exception const &e)
@@ -140,17 +135,10 @@ int loop(std::string path_config)
 				}
 				continue;
 			}
-
-			// Response
-			if (event.events & EPOLLOUT)
-			{
-				connection->server.handleRequest(*connection);
-				connection->sendHttpResponse();
-				removeConnection(connection, epoll);
-				continue;
-			}
 		}
 	}
+
+	// Cleanup servers
 	std::map<int, Server*>::iterator it;
 	for (it = servers.begin(); it != servers.end(); it++)
 		delete it->second;
