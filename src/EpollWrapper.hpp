@@ -34,8 +34,9 @@ class EpollWrapper  : public EventWrapper
 	~EpollWrapper();
 
 	int add(int fd);
-	int modify(int fd);
+	int modify(int fd, epoll_data_t data, uint32_t new_events);
 	int remove(int fd);
+	int wait(int timeout);
 
 	std::vector<Event> getEvents(int timeout);
 

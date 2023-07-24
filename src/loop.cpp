@@ -50,10 +50,11 @@ int loop(std::string path_config)
 	{
 		file = Config::readFile(path_config);
 		configs = Config::parseConfig(file);
+		if (configs.empty())
+			throw std::runtime_error("No server found in config file");
 	}
 	catch (...)
 	{
-		std::cerr << "Error reading config file" << std::endl;
 		return (1);
 	}
 

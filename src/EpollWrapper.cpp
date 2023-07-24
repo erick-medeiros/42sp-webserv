@@ -46,15 +46,30 @@ int EpollWrapper::remove(int fd)
 	return 0;
 }
 
-std::vector<Event> EpollWrapper::getEvents(int timeout)
+int EpollWrapper::wait(int timeout)
 {
 	int fds = epoll_wait(_epoll_fd, events, _maxevents, timeout);
 	if (fds == -1)
-	{
 		log.error("epoll_wait", strerror(errno));
-		return std::vector<Event>();
+	return fds;
+}
+
+int EpollWrapper::modify(int fd, epoll_data_t data, uint32_t new_events)
+{
+	struct epoll_event event;
+	event.events = new_events;
+	event.data = data;
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, fd, &event) == -1)
+	{
+		log.error("epoll_ctl", strerror(errno));
+		return -1;
 	}
-	
+	return 0;
+}
+
+std::vector<Event> EpollWrapper::getEvents(int timeout)
+{
+	int fds = wait(timeout);
 	std::vector<Event> eventsVector;
 	eventsVector.reserve(fds);
 
