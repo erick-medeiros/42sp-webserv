@@ -16,7 +16,7 @@ std::string CGIRequest::exec(void)
 {
 	if (access(this->fileScript.c_str(), R_OK) != 0)
 	{
-		log.error("CGI exec: invalid file", strerror(errno));
+		logger.error("CGI exec: invalid file", strerror(errno));
 		return "";
 	}
 
@@ -40,7 +40,7 @@ std::string CGIRequest::exec(void)
 
 	while (max_try > 0)
 	{
-		log.debug("CGI: try: " + utils::to_string(max_try));
+		logger.debug("CGI: try: " + utils::to_string(max_try));
 
 		waitpid(pid, &status, WNOHANG);
 
@@ -181,7 +181,7 @@ void CGIRequest::destroyArrayOfStrings(char **envp) const
 {
 	for (char **p = envp; *p; ++p)
 	{
-		delete[] * p;
+		delete[] *p;
 	}
 	delete[] envp;
 }

@@ -20,7 +20,6 @@
 #include "Config.hpp"
 #include "Connection.hpp"
 #include "Cookie.hpp"
-#include "EpollWrapper.hpp"
 #include "HttpStatus.hpp"
 #include "Request.hpp"
 #include "Response.hpp"

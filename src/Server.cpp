@@ -1,5 +1,18 @@
 #include "Server.hpp"
 
+static bool setNonBlocking(int fd)
+{
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags == -1)
+		return false;
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
+	{
+		logger.error("fcntl", strerror(errno));
+		return false;
+	}
+	return true;
+}
+
 Server::Server(void) : _serverSocket(0) {}
 
 void Server::init(Config const &conf)
@@ -19,15 +32,15 @@ int Server::listenToPort(int port)
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverSocket < 0)
 	{
-		log.error("socket", strerror(errno));
+		logger.error("socket", strerror(errno));
 		return -1;
 	}
-	log.info("Server socket created " + utils::to_string(_serverSocket));
+	logger.info("Server socket created " + utils::to_string(_serverSocket));
 	// --- Configure socket options ---
 	int yes = 1;
 	if (setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
 	{
-		log.error("setsockopt", strerror(errno));
+		logger.error("setsockopt", strerror(errno));
 		return -1;
 	}
 	// --- Bind socket with port ---
@@ -35,7 +48,7 @@ int Server::listenToPort(int port)
 	if (bind(_serverSocket, (struct sockaddr *) &server_address,
 	         sizeof(server_address)) < 0)
 	{
-		log.error("bind port " + utils::to_string(port), strerror(errno));
+		logger.error("bind port " + utils::to_string(port), strerror(errno));
 		close(_serverSocket);
 		return -1;
 	}
@@ -47,10 +60,10 @@ int Server::listenToPort(int port)
 	// --- Set socket to listen for connections ---
 	if (listen(_serverSocket, 5) < 0)
 	{
-		log.error("listen", strerror(errno));
+		logger.error("listen", strerror(errno));
 		return -1;
 	}
-	log.info("Server listening on port " + utils::to_string(port));
+	logger.info("Server listening on port " + utils::to_string(port));
 	return _serverSocket;
 }
 
@@ -60,7 +73,7 @@ int Server::getPort()
 	socklen_t   len = sizeof(address);
 	if (getsockname(_serverSocket, (struct sockaddr *) &address, &len) < 0)
 	{
-		log.error("getsockname", strerror(errno));
+		logger.error("getsockname", strerror(errno));
 		return -1;
 	}
 	return ntohs(address.sin_port);
@@ -75,12 +88,12 @@ std::string Server::getRequestData(int clientSocket)
 
 	if (bytesRead == -1)
 	{
-		log.warning("Error: while receiving data");
+		logger.warning("Error: while receiving data");
 		return "";
 	}
 	if (bytesRead == 0)
 	{
-		log.warning("Error: client has closed its connection");
+		logger.warning("Error: client has closed its connection");
 		close(clientSocket);
 		return "";
 	}
@@ -317,7 +330,7 @@ int Server::handleCookies(Connection &connection, std::vector<location_t> &locat
 				{
 					std::string SetCookieValue = request.getParam(cookie.name);
 
-					log.info("SetCookieValue: " + SetCookieValue);
+					logger.info("SetCookieValue: " + SetCookieValue);
 
 					if (SetCookieValue == "")
 					{
@@ -327,8 +340,8 @@ int Server::handleCookies(Connection &connection, std::vector<location_t> &locat
 					std::string session = cookies.generateSession();
 					cookie.value = SetCookieValue;
 					cookies.set(session, cookie);
-					log.debug("create cookie: " + cookie.name + " " + session +
-					          " value " + cookie.value);
+					logger.debug("create cookie: " + cookie.name + " " + session +
+					             " value " + cookie.value);
 					cookie.value = session;
 				}
 

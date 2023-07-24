@@ -127,7 +127,7 @@ TEST_SUITE("Logger extra error")
 		Logger             log(oss);
 		Logger::showColor = false;
 
-		log.error("error", 1);
+		logger.error("error", 1);
 
 		CHECK_EQ(oss.str(), "error: 1\n");
 	}
@@ -138,7 +138,7 @@ TEST_SUITE("Logger extra error")
 		Logger::showColor = false;
 
 		char msg[] = "msg";
-		log.error("error", msg);
+		logger.error("error", msg);
 
 		CHECK_EQ(oss.str(), "error: msg\n");
 	}

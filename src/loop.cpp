@@ -12,11 +12,22 @@
 
 #include "Config.hpp"
 #include "Connection.hpp"
-#include "EpollWrapper.hpp"
+#include "EventWrapper.hpp"
 #include "Logger.hpp"
 #include "Request.hpp"
 #include "Server.hpp"
 #include <csignal>
+
+// Setup OS-specific event wrapper
+#ifdef __linux__
+#include "EpollWrapper.hpp"
+typedef EpollWrapper PlatformEventWrapper;
+#elif __APPLE__
+#include "KqueueWrapper.hpp"
+typedef KqueueWrapper PlatformEventWrapper;
+#else
+#error Unsupported operating system
+#endif
 
 bool running(bool status)
 {
@@ -59,20 +70,11 @@ int loop(std::string path_config)
 	}
 
 	std::cout << "Config file: " << path_config << std::endl;
-	
-	std::map<int, Connection*> connections;
-	std::map<int, Server*>     servers;
-	Cookie                     cookies;
-	EventWrapper 			   *eventWrapper;
 
-	// Setup OS-specific event wrapper
-	#ifdef __linux__
-        eventWrapper = new EpollWrapper(MAX_EVENTS);
-    #elif __APPLE__
-        eventWrapper = new KqueueEventWrapper();
-	#else
-        throw std::runtime_error("Unsupported operating system - Failed to create EventWrapper");
-    #endif
+	std::map<int, Connection *> connections;
+	std::map<int, Server *>     servers;
+	Cookie                      cookies;
+	EventWrapper               *eventWrapper = new PlatformEventWrapper(MAX_EVENTS);
 
 	// Setup servers
 	for (size_t i = 0; i < configs.size(); i++)
@@ -84,7 +86,7 @@ int loop(std::string path_config)
 
 		if (server->getServerSocket() < 0)
 		{
-			log.error("Error creating server");
+			logger.error("Error creating server");
 			running(false);
 			return 1;
 		}
@@ -96,14 +98,15 @@ int loop(std::string path_config)
 	{
 		std::vector<Event> events = eventWrapper->getEvents(1000);
 
-		for (std::vector<Event>::const_iterator it = events.begin(); it != events.end(); ++it)
+		for (std::vector<Event>::const_iterator it = events.begin();
+		     it != events.end(); ++it)
 		{
 			int fd = it->fd;
 
 			// New connection
 			if (connections.find(fd) == connections.end())
 			{
-				Server *server = servers[fd];
+				Server     *server = servers[fd];
 				Connection *connection = new Connection(*server);
 				connections[connection->fd] = connection;
 				eventWrapper->add(connection->fd);
@@ -135,7 +138,7 @@ int loop(std::string path_config)
 				}
 				catch (std::exception const &e)
 				{
-					log.error(e.what());
+					logger.error(e.what());
 					removeConnection(connection, eventWrapper);
 				}
 			}
@@ -143,7 +146,7 @@ int loop(std::string path_config)
 	}
 
 	// Cleanup servers
-	std::map<int, Server*>::iterator it;
+	std::map<int, Server *>::iterator it;
 	for (it = servers.begin(); it != servers.end(); it++)
 		delete it->second;
 	delete eventWrapper;

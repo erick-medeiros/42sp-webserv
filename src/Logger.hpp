@@ -62,6 +62,6 @@ class Logger
 };
 
 // global
-static Logger log;
+static Logger logger;
 
 #endif /* LOGGER_HPP */
