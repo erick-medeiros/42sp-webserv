@@ -16,6 +16,7 @@
 #include "Config.hpp"
 #include "Logger.hpp"
 #include "Request.hpp"
+#include "EventWrapper.hpp"
 #include <cstddef>
 #include <cstring>
 #include <errno.h>
@@ -24,29 +25,19 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 
-typedef struct
-{
-	enum channel_type_t
-	{
-		CHANNEL_SOCKET,
-		CHANNEL_CONNECTION
-	} type;
-	void *ptr;
-} channel_t;
-
-class EpollWrapper
+class EpollWrapper  : public EventWrapper 
 {
   public:
 	struct epoll_event *events;
 
 	EpollWrapper(size_t maxevents);
-	~EpollWrapper(void);
+	~EpollWrapper();
 
 	int add(int fd);
 	int modify(int fd);
 	int remove(int fd);
 
-	int wait(int timeout);
+	std::vector<Event> getEvents(int timeout);
 
   private:
 	int    _epoll_fd;

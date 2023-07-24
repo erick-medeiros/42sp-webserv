@@ -32,9 +32,9 @@ void shutdown(int sig)
 		running(false);
 }
 
-void removeConnection(Connection *connection, EpollWrapper &epoll)
+void removeConnection(Connection *connection, EventWrapper *eventWrapper)
 {
-	epoll.remove(connection->fd);
+	eventWrapper->remove(connection->fd);
 	connection->disconnect();
 	delete connection;
 }
@@ -53,12 +53,25 @@ int loop(std::string path_config)
 	}
 	catch (...)
 	{
+		std::cerr << "Error reading config file" << std::endl;
 		return (1);
 	}
+
+	std::cout << "Config file: " << path_config << std::endl;
+	
 	std::map<int, Connection*> connections;
 	std::map<int, Server*>     servers;
-	EpollWrapper               epoll(MAX_EVENTS * configs.size());
 	Cookie                     cookies;
+	EventWrapper 			   *eventWrapper;
+
+	// Setup OS-specific event wrapper
+	#ifdef __linux__
+        eventWrapper = new EpollWrapper(MAX_EVENTS);
+    #elif __APPLE__
+        eventWrapper = new KqueueEventWrapper();
+	#else
+        throw std::runtime_error("Unsupported operating system - Failed to create EventWrapper");
+    #endif
 
 	// Setup servers
 	for (size_t i = 0; i < configs.size(); i++)
@@ -74,45 +87,37 @@ int loop(std::string path_config)
 			running(false);
 			return 1;
 		}
-		epoll.add(server->getServerSocket());
+		eventWrapper->add(server->getServerSocket());
 		servers[server->getServerSocket()] = server;
 	}
 
 	while (running(true))
 	{
-		int numEvents = epoll.wait(0);
+		std::vector<Event> events = eventWrapper->getEvents(1000);
 
-		if (numEvents == -1)
-			running(false);
-
-		for (int i = 0; i < numEvents; ++i)
+		for (std::vector<Event>::const_iterator it = events.begin(); it != events.end(); ++it)
 		{
-			struct epoll_event &event = epoll.events[i];
-
-			int fd = event.data.fd;
+			int fd = it->fd;
 
 			// New connection
 			if (connections.find(fd) == connections.end())
 			{
 				Server *server = servers[fd];
-				// Create a connection
 				Connection *connection = new Connection(*server);
 				connections[connection->fd] = connection;
-				epoll.add(connection->fd);
+				eventWrapper->add(connection->fd);
 				continue;
 			}
 
 			// Existing connection
 			Connection *connection = connections[fd];
-
-			if (event.events & EPOLLERR || event.events & (EPOLLRDHUP | EPOLLHUP))
+			if (it->type == ERROR_EVENT || it->type == CLOSE_EVENT)
 			{
-				removeConnection(connection, epoll);
+				removeConnection(connection, eventWrapper);
 				continue;
 			}
 
-			// Request
-			if (event.events & EPOLLIN)
+			if (it->type == READ_EVENT)
 			{
 				try
 				{
@@ -124,16 +129,14 @@ int loop(std::string path_config)
 							std::cout << connection->request << std::endl;
 						connection->server.handleRequest(*connection);
 						connection->sendHttpResponse();
-						removeConnection(connection, epoll);
-						continue;
+						removeConnection(connection, eventWrapper);
 					}
 				}
 				catch (std::exception const &e)
 				{
 					log.error(e.what());
-					removeConnection(connection, epoll);
+					removeConnection(connection, eventWrapper);
 				}
-				continue;
 			}
 		}
 	}
@@ -142,5 +145,6 @@ int loop(std::string path_config)
 	std::map<int, Server*>::iterator it;
 	for (it = servers.begin(); it != servers.end(); it++)
 		delete it->second;
+	delete eventWrapper;
 	return 0;
 }

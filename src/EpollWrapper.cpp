@@ -36,19 +36,6 @@ int EpollWrapper::add(int fd)
 	return 0;
 }
 
-int EpollWrapper::modify(int fd)
-{
-	struct epoll_event event;
-	event.events = EPOLLOUT;
-	event.data.fd = fd;
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, fd, &event) == -1)
-	{
-		log.error("epoll_ctl", strerror(errno));
-		return -1;
-	}
-	return 0;
-}
-
 int EpollWrapper::remove(int fd)
 {
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, 0) == -1)
@@ -59,14 +46,30 @@ int EpollWrapper::remove(int fd)
 	return 0;
 }
 
-int EpollWrapper::wait(int timeout)
+std::vector<Event> EpollWrapper::getEvents(int timeout)
 {
 	int fds = epoll_wait(_epoll_fd, events, _maxevents, timeout);
 	if (fds == -1)
 	{
 		log.error("epoll_wait", strerror(errno));
+		return std::vector<Event>();
 	}
-	return fds;
+	
+	std::vector<Event> eventsVector;
+	eventsVector.reserve(fds);
+
+	for (int i = 0; i < fds; ++i) {
+		Event event;
+		event.fd = events[i].data.fd;
+		if (events[i].events & EPOLLERR)
+			event.type = ERROR_EVENT;
+		else if (events[i].events & EPOLLIN)
+			event.type = READ_EVENT;
+		else if ( events[i].events & (EPOLLRDHUP | EPOLLHUP))
+			event.type = CLOSE_EVENT;
+		eventsVector.push_back(event);
+	}
+	return eventsVector;
 }
 
 EpollWrapper::~EpollWrapper(void)
