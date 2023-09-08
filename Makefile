@@ -1,7 +1,7 @@
 NAME = webserv
 
 FILES = main.cpp Server.cpp Response.cpp Request.cpp utils.cpp Cookie.cpp
-FILES += CGIRequest.cpp Config.cpp Connection.cpp loop.cpp Logger.cpp
+FILES += CGIRequest.cpp Config.cpp Connection.cpp loop.cpp Logger.cpp EventWrapper.cpp
 
 ifeq ($(shell uname -s),Linux)
   FILES += EpollWrapper.cpp

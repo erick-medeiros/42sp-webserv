@@ -24,8 +24,6 @@
 #include "Request.hpp"
 #include "Response.hpp"
 
-#define MAX_EVENTS 500
-
 class Connection;
 
 class Server

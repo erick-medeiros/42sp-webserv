@@ -1,6 +1,8 @@
 #ifndef EVENT_WRAPPER_H
 #define EVENT_WRAPPER_H
 
+#define MAX_EVENTS 500
+
 #include <vector>
 
 enum EventType
@@ -24,5 +26,7 @@ class EventWrapper
 	virtual int                remove(int fd) = 0;
 	virtual std::vector<Event> getEvents(int timeout) = 0;
 };
+
+EventWrapper *createEventWrapper(void);
 
 #endif // EVENT_WRAPPER_H

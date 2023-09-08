@@ -17,17 +17,7 @@
 #include "Request.hpp"
 #include "Server.hpp"
 #include <csignal>
-
-// Setup OS-specific event wrapper
-#ifdef __linux__
-#include "EpollWrapper.hpp"
-typedef EpollWrapper PlatformEventWrapper;
-#elif __APPLE__
-#include "KqueueWrapper.hpp"
-typedef KqueueWrapper PlatformEventWrapper;
-#else
-#error Unsupported operating system
-#endif
+#include <typeinfo> // Used to get the name of the event wrapper
 
 bool running(bool status)
 {
@@ -74,7 +64,7 @@ int loop(std::string path_config)
 	std::map<int, Connection *> connections;
 	std::map<int, Server *>     servers;
 	Cookie                      cookies;
-	EventWrapper               *eventWrapper = new PlatformEventWrapper(MAX_EVENTS);
+	EventWrapper               *eventWrapper = createEventWrapper();
 
 	// Setup servers
 	for (size_t i = 0; i < configs.size(); i++)

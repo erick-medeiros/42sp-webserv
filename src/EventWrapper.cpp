@@ -4,17 +4,20 @@
 #elif __APPLE__
 #include "KqueueWrapper.hpp"
 #endif
-
+#include <iostream>
 
 class EpollWrapper;
 class KqueueWrapper;
 
-EventWrapper* createEventWrapper() {
+EventWrapper *createEventWrapper()
+{
 #ifdef __linux__
-    return new EpollWrapper(MAX_EVENTS);
+	std::cout << "-- LINUX detected, using Epoll --" << std::endl;
+	return new EpollWrapper(MAX_EVENTS);
 #elif __APPLE__
-    return new KqueueWrapper(MAX_EVENTS);
+	std::cout << "-- APPLE detected, using Kqueue --" << std::endl;
+	return new KqueueWrapper(MAX_EVENTS);
 #else
-    throw std::runtime_error("Unsupported platform");
+	throw std::runtime_error("Unsupported platform");
 #endif
 }
