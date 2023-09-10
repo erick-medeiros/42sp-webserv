@@ -32,6 +32,7 @@ class CGIRequest
 	std::string portNumber;
 	std::string _fileName;
 	std::string _result;
+	std::string scriptPath;
 	std::string getContentLength() const;
 	void        prepareCGIRequest();
 	void        initTemporaryDescriptor();

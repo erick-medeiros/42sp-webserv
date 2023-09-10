@@ -10,6 +10,14 @@ CGIRequest::CGIRequest(std::string const &resource, Connection &connection)
 {
 	this->fileScript = resource;
 	_fileName = CGI_RESPONSE + utils::to_string(connection.fd);
+
+#ifdef __APPLE__
+	this->scriptPath = "/usr/local/bin/";
+#elif __linux__
+	this->scriptPath = "/usr/bin/";
+#else
+	throw std::runtime_error("Unsupported OS");
+#endif
 }
 
 std::string CGIRequest::exec(void)
@@ -144,7 +152,7 @@ void CGIRequest::executeCGIScript(void)
 		throw std::runtime_error("dup2");
 	}
 
-	std::string const bin = "/usr/local/bin/" + this->script;
+	std::string const bin = this->scriptPath + this->script;
 	if (execve(bin.c_str(), this->scriptArgs, this->envp) == -1)
 	{
 		throw std::runtime_error("execve");
