@@ -14,9 +14,9 @@
 #define EPOLLWRAPPER_HPP
 
 #include "Config.hpp"
+#include "EventWrapper.hpp"
 #include "Logger.hpp"
 #include "Request.hpp"
-#include "EventWrapper.hpp"
 #include <cstddef>
 #include <cstring>
 #include <errno.h>
@@ -25,7 +25,7 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 
-class EpollWrapper  : public EventWrapper 
+class EpollWrapper : public EventWrapper
 {
   public:
 	struct epoll_event *events;

@@ -124,7 +124,7 @@ TEST_SUITE("Logger extra error")
 	TEST_CASE("int")
 	{
 		std::ostringstream oss;
-		Logger             log(oss);
+		Logger             logger(oss);
 		Logger::showColor = false;
 
 		logger.error("error", 1);
@@ -134,7 +134,7 @@ TEST_SUITE("Logger extra error")
 	TEST_CASE("char *")
 	{
 		std::ostringstream oss;
-		Logger             log(oss);
+		Logger             logger(oss);
 		Logger::showColor = false;
 
 		char msg[] = "msg";
