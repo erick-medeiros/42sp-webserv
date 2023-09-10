@@ -26,7 +26,7 @@ Config::~Config(void) {}
 
 int Config::add(std::string label, std::string value)
 {
-	log.debug("config: " + label + ": " + value);
+	logger.debug("config: " + label + ": " + value);
 	if (label == "port")
 		return _setPort(value);
 	if (label == "server_name")
@@ -61,7 +61,7 @@ int Config::add(std::string label, std::string value)
 		return _setRequiredCookie(value);
 	if (label == "location_set_cookie")
 		return _setSetCookie(value);
-	log.error("config label not match: " + label);
+	logger.error("config label not match: " + label);
 	return 1;
 }
 
@@ -79,7 +79,7 @@ int Config::_setPort(std::string &value)
 
 	// if (_port != 0)
 	// {
-	// 	log.error("port: exist");
+	// 	logger.error("port: exist");
 	// 	return FAILURE;
 	// }
 
@@ -87,13 +87,13 @@ int Config::_setPort(std::string &value)
 
 	if (port < 1024 || port > 49151)
 	{
-		log.error("port: range invalid");
+		logger.error("port: range invalid");
 		return FAILURE;
 	}
 
 	if (!ss.eof())
 	{
-		log.error("port: error value");
+		logger.error("port: error value");
 		return FAILURE;
 	}
 
@@ -106,12 +106,12 @@ int Config::_setServerName(std::string &value)
 {
 	if (_serverNames.size() > 0)
 	{
-		log.error("server_name: exist");
+		logger.error("server_name: exist");
 		return FAILURE;
 	}
 	if (value == "")
 	{
-		log.error("server_name empty");
+		logger.error("server_name empty");
 		return FAILURE;
 	}
 
@@ -139,7 +139,7 @@ int Config::_setErrorPage(std::string &value)
 
 	if (error < 400 || error > 599)
 	{
-		log.error("error_page: range err: " + value);
+		logger.error("error_page: range err: " + value);
 		return FAILURE;
 	}
 	_errorPage[error] = page;
@@ -197,7 +197,7 @@ int Config::_setHttpMethods(std::string &value)
 		verb = utils::trim(verb);
 		if (!_isValidHttpVerb(verb) || !utils::contains(_allowedMethods, verb))
 		{
-			log.error("invalid method: " + verb);
+			logger.error("invalid method: " + verb);
 			location.http_methods.clear();
 			return 1;
 		}
@@ -549,7 +549,7 @@ std::string Config::readFile(const std::string &filename)
 	}
 	else
 	{
-		log.error("Error: readFile: " + filename);
+		logger.error("Error: readFile: " + filename);
 		return "";
 	}
 
@@ -558,7 +558,7 @@ std::string Config::readFile(const std::string &filename)
 
 static void _panic(std::string err)
 {
-	log.error(err);
+	logger.error(err);
 	throw std::runtime_error("");
 }
 
@@ -599,6 +599,10 @@ static std::pair<std::string, std::string> getLabel(std::string &line)
 
 static std::string extractFront(std::list<std::string> &lines)
 {
+	if (lines.empty())
+	{
+		throw std::runtime_error("Cannot extract from an empty list");
+	}
 	std::string str = lines.front();
 	lines.pop_front();
 	return str;

@@ -10,13 +10,21 @@ CGIRequest::CGIRequest(std::string const &resource, Connection &connection)
 {
 	this->fileScript = resource;
 	_fileName = CGI_RESPONSE + utils::to_string(connection.fd);
+
+#ifdef __APPLE__
+	this->scriptPath = "/usr/local/bin/";
+#elif __linux__
+	this->scriptPath = "/usr/bin/";
+#else
+	throw std::runtime_error("Unsupported OS");
+#endif
 }
 
 std::string CGIRequest::exec(void)
 {
 	if (access(this->fileScript.c_str(), R_OK) != 0)
 	{
-		log.error("CGI exec: invalid file", strerror(errno));
+		logger.error("CGI exec: invalid file", strerror(errno));
 		return "";
 	}
 
@@ -40,7 +48,7 @@ std::string CGIRequest::exec(void)
 
 	while (max_try > 0)
 	{
-		log.debug("CGI: try: " + utils::to_string(max_try));
+		logger.debug("CGI: try: " + utils::to_string(max_try));
 
 		waitpid(pid, &status, WNOHANG);
 
@@ -144,7 +152,7 @@ void CGIRequest::executeCGIScript(void)
 		throw std::runtime_error("dup2");
 	}
 
-	std::string const bin = "/usr/bin/" + this->script;
+	std::string const bin = this->scriptPath + this->script;
 	if (execve(bin.c_str(), this->scriptArgs, this->envp) == -1)
 	{
 		throw std::runtime_error("execve");
@@ -181,7 +189,7 @@ void CGIRequest::destroyArrayOfStrings(char **envp) const
 {
 	for (char **p = envp; *p; ++p)
 	{
-		delete[] * p;
+		delete[] *p;
 	}
 	delete[] envp;
 }

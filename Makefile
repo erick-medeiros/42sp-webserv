@@ -1,7 +1,14 @@
 NAME = webserv
 
-FILES = main.cpp Server.cpp Response.cpp EpollWrapper.cpp Request.cpp utils.cpp
-FILES += Cookie.cpp CGIRequest.cpp Config.cpp Connection.cpp loop.cpp Logger.cpp
+FILES = main.cpp Server.cpp Response.cpp Request.cpp utils.cpp Cookie.cpp
+FILES += CGIRequest.cpp Config.cpp Connection.cpp loop.cpp Logger.cpp EventWrapper.cpp
+
+ifeq ($(shell uname -s),Linux)
+  FILES += EpollWrapper.cpp
+endif
+ifeq ($(shell uname -s),Darwin)
+  FILES += KqueueWrapper.cpp
+endif
 
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98

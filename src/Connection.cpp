@@ -12,6 +12,19 @@
 
 #include "Connection.hpp"
 
+static bool setNonBlocking(int fd)
+{
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags == -1)
+		return false;
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
+	{
+		logger.error("fcntl", strerror(errno));
+		return false;
+	}
+	return true;
+}
+
 Connection::Connection(Server &server)
     : fd(Connection::acceptNewClient(server.getServerSocket())), server(server),
       config(server.getConfig())
@@ -22,7 +35,7 @@ Connection::~Connection(void) {}
 
 int Connection::disconnect()
 {
-	log.info("--- Client disconnected from socket: " + utils::to_string(fd));
+	logger.info("--- Client disconnected from socket: " + utils::to_string(fd));
 	return close(fd);
 }
 
@@ -35,17 +48,17 @@ int Connection::acceptNewClient(int serverSocket)
 	    accept(serverSocket, (struct sockaddr *) &clientAddr, &clilen);
 	if (clientSocket == -1)
 	{
-		log.error("--- Error: accept", strerror(errno));
+		logger.error("--- Error: accept", strerror(errno));
 		return -1;
 	}
 	// --- Set non-blocking ---
 	if (!setNonBlocking(clientSocket))
 	{
-		log.error("--- Error: Set non-blocking");
+		logger.error("--- Error: Set non-blocking");
 		return -1;
 	}
-	log.info("+++ New connection accepted on socket: " +
-	         utils::to_string(clientSocket));
+	logger.info("+++ New connection accepted on socket: " +
+	            utils::to_string(clientSocket));
 	return clientSocket;
 }
 
@@ -54,7 +67,7 @@ int Connection::sendHttpResponse()
 	response.prepareMessage();
 	std::string message = response.getMessage();
 
-	log.debug("Sending response:\n" + message);
+	logger.debug("Sending response:\n" + message);
 
 	if (send(fd, message.c_str(), message.size(), 0) < 0)
 	{

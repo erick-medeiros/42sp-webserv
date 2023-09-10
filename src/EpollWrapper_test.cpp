@@ -46,9 +46,7 @@ TEST_SUITE("EpollWrapper")
 		int          pipefd[2];
 		_pipe(pipefd);
 
-		epoll_data_t data = {0};
-		data.fd = pipefd[PIPE_READ];
-		CHECK_EQ(epoll.add(pipefd[PIPE_READ], data, EPOLLIN), 0);
+		CHECK_EQ(epoll.add(pipefd[PIPE_READ]), 0);
 
 		_closepipe(pipefd);
 	}
@@ -61,10 +59,7 @@ TEST_SUITE("EpollWrapper")
 
 		write(pipefd[PIPE_WRITE], "test", 4);
 
-		epoll_data_t data = {0};
-		data.fd = pipefd[PIPE_READ];
-		CHECK_EQ(epoll.add(pipefd[PIPE_READ], data, EPOLLIN), 0);
-
+		CHECK_EQ(epoll.add(pipefd[PIPE_READ]), 0);
 		{
 			struct epoll_event &event = epoll.events[0];
 			CHECK_EQ(epoll.wait(0), 1);
@@ -77,6 +72,7 @@ TEST_SUITE("EpollWrapper")
 		}
 		{
 			epoll_data_t data = {0};
+			data.fd = pipefd[PIPE_READ];
 			CHECK_NE(epoll.modify(pipefd[PIPE_WRITE], data, EPOLLOUT), 0);
 		}
 
@@ -88,9 +84,7 @@ TEST_SUITE("EpollWrapper")
 		int          pipefd[2];
 		_pipe(pipefd);
 
-		epoll_data_t data = {0};
-		data.fd = pipefd[PIPE_READ];
-		CHECK_EQ(epoll.add(pipefd[PIPE_READ], data, EPOLLIN), 0);
+		CHECK_EQ(epoll.add(pipefd[PIPE_READ]), 0);
 		CHECK_EQ(epoll.remove(pipefd[PIPE_READ]), 0);
 		CHECK_EQ(epoll.remove(pipefd[PIPE_WRITE]), -1);
 
@@ -115,9 +109,7 @@ TEST_SUITE("EpollWrapper::wait")
 		int pipefd[2];
 		_pipe(pipefd);
 
-		epoll_data_t data = {0};
-		data.fd = pipefd[PIPE_READ];
-		CHECK_EQ(epoll.add(pipefd[PIPE_READ], data, EPOLLIN), 0);
+		CHECK_EQ(epoll.add(pipefd[PIPE_READ]), 0);
 		CHECK_EQ(epoll.wait(0), 0);
 
 		{ // write in pipe
@@ -164,12 +156,8 @@ TEST_SUITE("EpollWrapper::wait")
 		_pipe(pipefd_two);
 
 		{ // add
-			epoll_data_t data_one = {0};
-			data_one.fd = pipefd_one[PIPE_READ];
-			epoll_data_t data_two = {0};
-			data_two.fd = pipefd_two[PIPE_READ];
-			CHECK_EQ(epoll.add(pipefd_one[PIPE_READ], data_one, EPOLLIN), 0);
-			CHECK_EQ(epoll.add(pipefd_two[PIPE_READ], data_two, EPOLLIN), 0);
+			CHECK_EQ(epoll.add(pipefd_one[PIPE_READ]), 0);
+			CHECK_EQ(epoll.add(pipefd_two[PIPE_READ]), 0);
 			CHECK_EQ(epoll.wait(0), 0);
 		}
 
@@ -221,30 +209,5 @@ TEST_SUITE("EpollWrapper::wait")
 
 		_closepipe(pipefd_one);
 		_closepipe(pipefd_two);
-	}
-
-	TEST_CASE("one monitoring ~ edge triggered")
-	{
-		const int    maxevents = 1;
-		EpollWrapper epoll(maxevents);
-
-		int pipefd[2];
-		_pipe(pipefd);
-
-		// -- edge triggered
-		epoll_data_t data = {0};
-		data.fd = pipefd[PIPE_READ];
-		CHECK_EQ(epoll.add(pipefd[PIPE_READ], data, EPOLLIN | EPOLLET), 0);
-		CHECK_EQ(epoll.wait(0), 0);
-
-		{ // write in pipe
-			char str[5] = "test";
-			write(pipefd[PIPE_WRITE], str, strlen(str));
-		}
-
-		CHECK_EQ(epoll.wait(0), 1);
-		CHECK_EQ(epoll.wait(0), 0); // -- edge triggered
-
-		_closepipe(pipefd);
 	}
 }

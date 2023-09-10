@@ -24,12 +24,14 @@ void Request::parse(std::string const rawInput, Config const &config)
 		errorCode = HttpStatus::PAYLOAD_TOO_LARGE;
 		return;
 	}
+	logger.debug("Start line parsed");
 	if (!headersParsed)
 	{
 		parseHeaders();
 		if (!headersParsed)
 			return;
 	}
+	logger.debug("Headers parsed");
 	if (!bodyParsed)
 	{
 		parseBody(config);

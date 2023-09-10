@@ -20,12 +20,9 @@
 #include "Config.hpp"
 #include "Connection.hpp"
 #include "Cookie.hpp"
-#include "EpollWrapper.hpp"
 #include "HttpStatus.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
-
-#define MAX_EVENTS 500
 
 class Connection;
 

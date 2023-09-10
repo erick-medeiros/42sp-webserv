@@ -124,21 +124,21 @@ TEST_SUITE("Logger extra error")
 	TEST_CASE("int")
 	{
 		std::ostringstream oss;
-		Logger             log(oss);
+		Logger             logger(oss);
 		Logger::showColor = false;
 
-		log.error("error", 1);
+		logger.error("error", 1);
 
 		CHECK_EQ(oss.str(), "error: 1\n");
 	}
 	TEST_CASE("char *")
 	{
 		std::ostringstream oss;
-		Logger             log(oss);
+		Logger             logger(oss);
 		Logger::showColor = false;
 
 		char msg[] = "msg";
-		log.error("error", msg);
+		logger.error("error", msg);
 
 		CHECK_EQ(oss.str(), "error: msg\n");
 	}

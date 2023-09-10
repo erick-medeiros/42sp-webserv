@@ -12,11 +12,12 @@
 
 #include "Config.hpp"
 #include "Connection.hpp"
-#include "EpollWrapper.hpp"
+#include "EventWrapper.hpp"
 #include "Logger.hpp"
 #include "Request.hpp"
 #include "Server.hpp"
 #include <csignal>
+#include <typeinfo> // Used to get the name of the event wrapper
 
 bool running(bool status)
 {
@@ -32,15 +33,11 @@ void shutdown(int sig)
 		running(false);
 }
 
-void removeConnection(channel_t *channel, EpollWrapper &epoll)
+void removeConnection(Connection *connection, EventWrapper *eventWrapper)
 {
-	if (!channel)
-		return;
-	Connection *connection = reinterpret_cast<Connection *>(channel->ptr);
-	epoll.remove(connection->fd);
+	eventWrapper->remove(connection->fd);
 	connection->disconnect();
 	delete connection;
-	delete channel;
 }
 
 int loop(std::string path_config)
@@ -54,90 +51,71 @@ int loop(std::string path_config)
 	{
 		file = Config::readFile(path_config);
 		configs = Config::parseConfig(file);
+		if (configs.empty())
+			throw std::runtime_error("No server found in config file");
 	}
 	catch (...)
 	{
 		return (1);
 	}
-	Server       servers[configs.size()];
-	EpollWrapper epoll(MAX_EVENTS * configs.size());
-	Cookie       cookies;
-	channel_t    channelServers[configs.size()];
 
-	size_t i = 0;
-	while (i < configs.size())
+	std::cout << "Config file: " << path_config << std::endl;
+
+	std::map<int, Connection *> connections;
+	std::map<int, Server *>     servers;
+	Cookie                      cookies;
+	EventWrapper               *eventWrapper = createEventWrapper();
+
+	// Setup servers
+	for (size_t i = 0; i < configs.size(); i++)
 	{
-		Server &server = servers[i];
+		Server *server = new Server();
 		Config &config = configs[i];
 
-		server.init(config);
+		server->init(config);
 
-		if (server.getServerSocket() < 0)
+		if (server->getServerSocket() < 0)
 		{
-			log.error("Error creating server");
+			logger.error("Error creating server");
 			running(false);
 			return 1;
 		}
-
-		{ // socket
-			channel_t *channel = &channelServers[i];
-			channel->type = channel_t::CHANNEL_SOCKET;
-			channel->ptr = &servers[i];
-			epoll_data_t data = {channel};
-			epoll.add(server.getServerSocket(), data, EPOLLIN | EPOLLOUT);
-		}
-
-		i++;
+		eventWrapper->add(server->getServerSocket());
+		servers[server->getServerSocket()] = server;
 	}
 
 	while (running(true))
 	{
-		int numEvents = epoll.wait(0);
+		std::vector<Event> events = eventWrapper->getEvents(0);
 
-		if (numEvents == -1)
-			running(false);
-
-		for (int i = 0; i < numEvents; ++i)
+		for (std::vector<Event>::const_iterator it = events.begin();
+		     it != events.end(); ++it)
 		{
-			struct epoll_event &event = epoll.events[i];
-			channel_t *channel = reinterpret_cast<channel_t *>(event.data.ptr);
+			int fd = it->fd;
 
-			if (channel->type == channel_t::CHANNEL_SOCKET)
+			// New connection
+			if (connections.find(fd) == connections.end())
 			{
-				Server *server = reinterpret_cast<Server *>(channel->ptr);
-				{ // client
-					Connection *cnn = new Connection(*server);
-					if (cnn->fd < 0)
-					{
-						delete cnn;
-						continue;
-					}
-					channel_t *channelConnection = new channel_t;
-					channelConnection->type = channel_t::CHANNEL_CONNECTION;
-					channelConnection->ptr = cnn;
-					epoll_data_t data = {channelConnection};
-					epoll.add(cnn->fd, data, EPOLLIN);
-				}
+				Server     *server = servers[fd];
+				Connection *connection = new Connection(*server);
+				connections[connection->fd] = connection;
+				eventWrapper->add(connection->fd);
 				continue;
 			}
 
-			Connection *connection = reinterpret_cast<Connection *>(channel->ptr);
+			// Existing connection
+			Connection *connection = connections[fd];
+			// Connection was closed previously in this loop
+			if (!connection)
+				continue;
 
-			if (event.events & EPOLLERR)
+			if (it->type == ERROR_EVENT || it->type == CLOSE_EVENT)
 			{
-				log.error("Epoll error on socket", connection->fd);
-				removeConnection(channel, epoll);
+				removeConnection(connection, eventWrapper);
 				continue;
 			}
 
-			if (event.events & (EPOLLRDHUP | EPOLLHUP))
-			{
-				removeConnection(channel, epoll);
-				continue;
-			}
-
-			// Request
-			if (event.events & EPOLLIN)
+			if (it->type == READ_EVENT)
 			{
 				try
 				{
@@ -147,27 +125,25 @@ int loop(std::string path_config)
 					{
 						if (Logger::level == LOGGER_LEVEL_DEBUG)
 							std::cout << connection->request << std::endl;
-						epoll_data_t data = {channel};
-						epoll.modify(connection->fd, data, EPOLLOUT);
+						connection->server.handleRequest(*connection);
+						connection->sendHttpResponse();
+						removeConnection(connection, eventWrapper);
+						connections[fd] = NULL;
 					}
 				}
 				catch (std::exception const &e)
 				{
-					log.error(e.what());
-					removeConnection(channel, epoll);
+					logger.error(e.what());
+					removeConnection(connection, eventWrapper);
 				}
-				continue;
-			}
-
-			// Response
-			if (event.events & EPOLLOUT)
-			{
-				connection->server.handleRequest(*connection);
-				connection->sendHttpResponse();
-				removeConnection(channel, epoll);
-				continue;
 			}
 		}
 	}
+
+	// Cleanup servers
+	std::map<int, Server *>::iterator it;
+	for (it = servers.begin(); it != servers.end(); it++)
+		delete it->second;
+	delete eventWrapper;
 	return 0;
 }
