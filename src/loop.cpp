@@ -86,7 +86,7 @@ int loop(std::string path_config)
 
 	while (running(true))
 	{
-		std::vector<Event> events = eventWrapper->getEvents(1000);
+		std::vector<Event> events = eventWrapper->getEvents(0);
 
 		for (std::vector<Event>::const_iterator it = events.begin();
 		     it != events.end(); ++it)
@@ -105,6 +105,10 @@ int loop(std::string path_config)
 
 			// Existing connection
 			Connection *connection = connections[fd];
+			// Connection was closed previously in this loop
+			if (!connection)
+				continue;
+
 			if (it->type == ERROR_EVENT || it->type == CLOSE_EVENT)
 			{
 				removeConnection(connection, eventWrapper);
@@ -124,6 +128,7 @@ int loop(std::string path_config)
 						connection->server.handleRequest(*connection);
 						connection->sendHttpResponse();
 						removeConnection(connection, eventWrapper);
+						connections[fd] = NULL;
 					}
 				}
 				catch (std::exception const &e)

@@ -89,6 +89,7 @@ std::string Server::getRequestData(int clientSocket)
 	if (bytesRead == -1)
 	{
 		logger.warning("Error: while receiving data");
+		close(clientSocket);
 		return "";
 	}
 	if (bytesRead == 0)

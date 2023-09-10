@@ -144,7 +144,7 @@ void CGIRequest::executeCGIScript(void)
 		throw std::runtime_error("dup2");
 	}
 
-	std::string const bin = "/usr/bin/" + this->script;
+	std::string const bin = "/usr/local/bin/" + this->script;
 	if (execve(bin.c_str(), this->scriptArgs, this->envp) == -1)
 	{
 		throw std::runtime_error("execve");

@@ -599,6 +599,10 @@ static std::pair<std::string, std::string> getLabel(std::string &line)
 
 static std::string extractFront(std::list<std::string> &lines)
 {
+	if (lines.empty())
+	{
+		throw std::runtime_error("Cannot extract from an empty list");
+	}
 	std::string str = lines.front();
 	lines.pop_front();
 	return str;
